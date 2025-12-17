@@ -8,8 +8,9 @@ interface DownloadButtonProps {
 export default function DownloadButton({ imageUrl, filename = 'styled-room.jpg' }: DownloadButtonProps) {
     const handleDownload = () => {
         // In a real app, this would trigger an actual download
-        // For mock, we just show an alert
-        alert('Download started! (Mock functionality)');
+        // For mock, we just show an alert with the details
+        console.log('Downloading:', imageUrl);
+        alert(`Download started: ${filename} (Mock functionality)`);
     };
 
     return (

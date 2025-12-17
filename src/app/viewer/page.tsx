@@ -1,35 +1,48 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { BeforeAfterSlider, DownloadButton } from '@/components/viewer';
 import { mockResultImages, sampleRoomImage } from '@/data/mock';
 import { Style } from '@/types';
 
-export default function ViewerPage() {
-    const [beforeImage, setBeforeImage] = useState<string>(sampleRoomImage);
-    const [afterImage, setAfterImage] = useState<string>('');
-    const [selectedStyle, setSelectedStyle] = useState<Style | null>(null);
+// Helper to get initial data from sessionStorage
+function getInitialViewerData(): { beforeImage: string; afterImage: string; selectedStyle: Style | null } {
+    if (typeof window === 'undefined') {
+        return { beforeImage: sampleRoomImage, afterImage: mockResultImages['modern-loft'], selectedStyle: null };
+    }
 
-    useEffect(() => {
-        // Get data from sessionStorage
-        const storedImage = sessionStorage.getItem('uploadedImage');
-        const storedStyle = sessionStorage.getItem('selectedStyle');
+    const storedImage = sessionStorage.getItem('uploadedImage');
+    const storedStyle = sessionStorage.getItem('selectedStyle');
 
-        if (storedImage) {
-            const image = JSON.parse(storedImage);
-            setBeforeImage(image.preview);
+    let beforeImage = sampleRoomImage;
+    let afterImage = mockResultImages['modern-loft'];
+    let selectedStyle: Style | null = null;
+
+    if (storedImage) {
+        try {
+            beforeImage = JSON.parse(storedImage).preview || sampleRoomImage;
+        } catch {
+            beforeImage = sampleRoomImage;
         }
+    }
 
-        if (storedStyle) {
+    if (storedStyle) {
+        try {
             const style = JSON.parse(storedStyle);
-            setSelectedStyle(style);
-            setAfterImage(mockResultImages[style.id] || mockResultImages['modern-loft']);
-        } else {
-            // Default to modern-loft style
-            setAfterImage(mockResultImages['modern-loft']);
+            selectedStyle = style;
+            afterImage = mockResultImages[style.id] || mockResultImages['modern-loft'];
+        } catch {
+            afterImage = mockResultImages['modern-loft'];
         }
-    }, []);
+    }
+
+    return { beforeImage, afterImage, selectedStyle };
+}
+
+export default function ViewerPage() {
+    const [viewerData] = useState(getInitialViewerData);
+    const { beforeImage, afterImage, selectedStyle } = viewerData;
 
     return (
         <div className="min-h-screen py-20">

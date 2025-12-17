@@ -116,7 +116,7 @@ export default function Home() {
                   </svg>
                 ),
               },
-            ].map((feature, index) => (
+            ].map((feature) => (
               <div
                 key={feature.step}
                 className="relative p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 group"

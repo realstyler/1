@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,22 +8,24 @@ import { StyleGrid } from '@/components/styles';
 import { mockStyles, sampleRoomImage } from '@/data/mock';
 import { Style } from '@/types';
 
+// Helper to get initial uploaded image from sessionStorage
+function getInitialUploadedImage(): string {
+    if (typeof window === 'undefined') return sampleRoomImage;
+    const stored = sessionStorage.getItem('uploadedImage');
+    if (stored) {
+        try {
+            return JSON.parse(stored).preview || sampleRoomImage;
+        } catch {
+            return sampleRoomImage;
+        }
+    }
+    return sampleRoomImage;
+}
+
 export default function StylesPage() {
     const router = useRouter();
     const [selectedStyle, setSelectedStyle] = useState<Style | null>(null);
-    const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-
-    useEffect(() => {
-        // Get uploaded image from sessionStorage
-        const stored = sessionStorage.getItem('uploadedImage');
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            setUploadedImage(parsed.preview);
-        } else {
-            // Use sample if no upload
-            setUploadedImage(sampleRoomImage);
-        }
-    }, []);
+    const [uploadedImage] = useState<string>(getInitialUploadedImage);
 
     const handleSelectStyle = (style: Style) => {
         setSelectedStyle(style);
@@ -85,8 +87,8 @@ export default function StylesPage() {
                         onClick={handleContinue}
                         disabled={!selectedStyle}
                         className={`px-8 py-3 font-medium rounded-full transition-all duration-300 ${selectedStyle
-                                ? 'text-white bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/25'
-                                : 'text-white/40 bg-white/10 cursor-not-allowed'
+                            ? 'text-white bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/25'
+                            : 'text-white/40 bg-white/10 cursor-not-allowed'
                             }`}
                     >
                         Apply Style →

@@ -3,21 +3,28 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProgressBar, ProcessingSpinner } from '@/components/processing';
-import { processingStages } from '@/data/mock';
+import { processingStages } from '../../data/mock';
+
+// Helper to get initial style name from sessionStorage
+function getInitialStyleName(): string {
+    if (typeof window === 'undefined') return '';
+    const storedStyle = sessionStorage.getItem('selectedStyle');
+    if (storedStyle) {
+        try {
+            return JSON.parse(storedStyle).name || '';
+        } catch {
+            return '';
+        }
+    }
+    return '';
+}
 
 export default function ProcessingPage() {
     const router = useRouter();
     const [currentStageIndex, setCurrentStageIndex] = useState(0);
-    const [styleName, setStyleName] = useState('');
+    const [styleName] = useState(getInitialStyleName);
 
     useEffect(() => {
-        // Get selected style name
-        const storedStyle = sessionStorage.getItem('selectedStyle');
-        if (storedStyle) {
-            const style = JSON.parse(storedStyle);
-            setStyleName(style.name);
-        }
-
         // Simulate processing stages
         const interval = setInterval(() => {
             setCurrentStageIndex((prev) => {
@@ -77,12 +84,12 @@ export default function ProcessingPage() {
 
                     {/* Stage indicators */}
                     <div className="mt-12 flex justify-center gap-4">
-                        {processingStages.slice(0, -1).map((stage, index) => (
+                        {processingStages.slice(0, -1).map((stage: { stage: string }, index: number) => (
                             <div
                                 key={stage.stage}
                                 className={`w-3 h-3 rounded-full transition-all duration-300 ${index <= currentStageIndex
-                                        ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500'
-                                        : 'bg-white/20'
+                                    ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500'
+                                    : 'bg-white/20'
                                     }`}
                             />
                         ))}
