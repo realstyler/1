@@ -35,20 +35,28 @@ export default function Header() {
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
                         {[
-                            { href: '/', label: 'Home' },
-                            { href: '/upload', label: 'Upload' },
-                            { href: '/styles', label: 'Styles' },
-                        ].map(({ href, label }) => (
-                            <Link
-                                key={href}
-                                href={href}
-                                className={`text-sm font-medium transition-colors duration-200 ${pathname === href
-                                        ? 'text-white'
-                                        : 'text-white/60 hover:text-white'
-                                    }`}
-                            >
-                                {label}
-                            </Link>
+                            { href: '/', label: 'Dashboard' },
+                            { href: '/create', label: 'Create Design' },
+                            { href: '/history', label: 'History' },
+                            { href: '/settings', label: 'Settings', disabled: true },
+                        ].map(({ href, label, disabled }) => (
+                            <div key={href}>
+                                {disabled ? (
+                                    <span className="text-sm font-medium text-white/30 cursor-not-allowed">
+                                        {label}
+                                    </span>
+                                ) : (
+                                    <Link
+                                        href={href}
+                                        className={`text-sm font-medium transition-colors duration-200 ${pathname === href
+                                            ? 'text-white'
+                                            : 'text-white/60 hover:text-white'
+                                            }`}
+                                    >
+                                        {label}
+                                    </Link>
+                                )}
+                            </div>
                         ))}
                     </nav>
 
