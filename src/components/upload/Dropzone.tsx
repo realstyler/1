@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 
 interface DropzoneProps {
-    onImageSelect: (file: File, preview: string) => void;
+    onImageSelect: (files: File[]) => void;
 }
 
 export default function Dropzone({ onImageSelect }: DropzoneProps) {
@@ -28,47 +28,45 @@ export default function Dropzone({ onImageSelect }: DropzoneProps) {
         setIsDragging(false);
     }, []);
 
+    const processFiles = useCallback((fileList: FileList | null) => {
+        if (!fileList || fileList.length === 0) return;
+
+        const validFiles: File[] = [];
+        Array.from(fileList).forEach(file => {
+            if (file.type.startsWith('image/')) {
+                validFiles.push(file);
+            }
+        });
+
+        if (validFiles.length > 0) {
+            onImageSelect(validFiles);
+        }
+    }, [onImageSelect]);
+
     const handleDrop = useCallback(
         (e: React.DragEvent) => {
             e.preventDefault();
             e.stopPropagation();
             setIsDragging(false);
-
-            const files = e.dataTransfer.files;
-            if (files && files.length > 0) {
-                const file = files[0];
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        onImageSelect(file, reader.result as string);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
+            processFiles(e.dataTransfer.files);
         },
-        [onImageSelect]
+        [processFiles]
     );
 
     const handleFileInput = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
-            const files = e.target.files;
-            if (files && files.length > 0) {
-                const file = files[0];
-                const reader = new FileReader();
-                reader.onload = () => {
-                    onImageSelect(file, reader.result as string);
-                };
-                reader.readAsDataURL(file);
-            }
+            processFiles(e.target.files);
+            // Reset input so same files can be selected again if needed
+            e.target.value = '';
         },
-        [onImageSelect]
+        [processFiles]
     );
 
     return (
         <div
             className={`relative w-full max-w-2xl mx-auto aspect-video rounded-2xl border-2 border-dashed transition-all duration-300 ${isDragging
-                    ? 'border-violet-500 bg-violet-500/10 scale-[1.02]'
-                    : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
+                ? 'border-violet-500 bg-violet-500/10 scale-[1.02]'
+                : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
                 }`}
             onDragEnter={handleDragIn}
             onDragLeave={handleDragOut}
@@ -77,7 +75,8 @@ export default function Dropzone({ onImageSelect }: DropzoneProps) {
         >
             <input
                 type="file"
-                accept="image/*"
+                accept="image/png, image/jpeg, image/webp"
+                multiple
                 onChange={handleFileInput}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
@@ -101,14 +100,15 @@ export default function Dropzone({ onImageSelect }: DropzoneProps) {
                 </div>
 
                 <h3 className="text-xl font-semibold text-white mb-2">
-                    Drop your room photo here
+                    Drop your room photos here
                 </h3>
                 <p className="text-white/50 text-center mb-4">
                     or click to browse from your device
                 </p>
-                <p className="text-white/30 text-sm">
-                    Supports JPG, PNG, WebP • Max 10MB
-                </p>
+                <div className="flex flex-col items-center text-sm text-white/30 space-y-1">
+                    <p>Supports JPG, PNG, WebP • Max 10MB each</p>
+                    <p>Up to 5 images</p>
+                </div>
             </div>
 
             {/* Animated border gradient */}
