@@ -21,88 +21,150 @@ function getInitialStyleName(): string {
 
 export default function ProcessingPage() {
     const router = useRouter();
-    const [currentStageIndex, setCurrentStageIndex] = useState(0);
     const [styleName] = useState(getInitialStyleName);
+    const [images, setImages] = useState<{ id: string; preview: string; progress: number; status: 'queued' | 'processing' | 'completed' }[]>([]);
+    const [isComplete, setIsComplete] = useState(false);
 
     useEffect(() => {
-        // Simulate processing stages
-        const interval = setInterval(() => {
-            setCurrentStageIndex((prev) => {
-                if (prev < processingStages.length - 1) {
-                    return prev + 1;
+        // Load images
+        if (typeof window !== 'undefined') {
+            const stored = sessionStorage.getItem('uploadedImages');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    setImages(parsed.map((img: any) => ({ ...img, progress: 0, status: 'queued' })));
+                } catch {
+                    setImages([]);
                 }
-                return prev;
-            });
-        }, 1500);
-
-        return () => clearInterval(interval);
+            }
+        }
     }, []);
 
-    // Redirect when complete
     useEffect(() => {
-        if (currentStageIndex === processingStages.length - 1) {
+        if (images.length === 0) return;
+
+        // Simulate parallel processing
+        const interval = setInterval(() => {
+            setImages(prev => {
+                const newState = prev.map(img => {
+                    if (img.status === 'completed') return img;
+
+                    if (img.status === 'queued') {
+                        // Random chance to start processing
+                        if (Math.random() > 0.7) return { ...img, status: 'processing' as const, progress: 5 };
+                        return img;
+                    }
+
+                    if (img.status === 'processing') {
+                        const newProgress = img.progress + Math.random() * 15;
+                        if (newProgress >= 100) return { ...img, progress: 100, status: 'completed' as const };
+                        return { ...img, progress: newProgress };
+                    }
+                    return img;
+                });
+
+                // Check completion
+                const allComplete = newState.every(img => img.status === 'completed');
+                if (allComplete && !isComplete) {
+                    setIsComplete(true);
+                }
+
+                return newState;
+            });
+        }, 500);
+
+        return () => clearInterval(interval);
+    }, [images.length, isComplete]);
+
+    // Handle initial kick-off for first image
+    useEffect(() => {
+        if (images.length > 0 && images.every(i => i.status === 'queued')) {
+            setTimeout(() => {
+                setImages(prev => {
+                    const newImages = [...prev];
+                    if (newImages[0]) newImages[0].status = 'processing';
+                    return newImages;
+                });
+            }, 500);
+        }
+    }, [images]);
+
+    // Redirect when complete logic
+    useEffect(() => {
+        if (isComplete) {
+            // Save to history
+            const storedStyle = sessionStorage.getItem('selectedStyle');
+            const style = storedStyle ? JSON.parse(storedStyle) : null;
+
+            const historyItem = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                styleName: style?.name || 'Unknown Style',
+                imageCount: images.length,
+                images: images.map(img => img.preview) // Saving data URLs to local storage (not ideal for prod but ok for demo)
+            };
+
+            const existingHistory = JSON.parse(localStorage.getItem('designHistory') || '[]');
+            localStorage.setItem('designHistory', JSON.stringify([historyItem, ...existingHistory]));
+
             const timeout = setTimeout(() => {
                 router.push('/viewer');
             }, 1000);
             return () => clearTimeout(timeout);
         }
-    }, [currentStageIndex, router]);
-
-    const currentStage = processingStages[currentStageIndex];
+    }, [isComplete, images, router]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center py-20">
-            <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                {/* Animated background */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 rounded-full blur-3xl animate-pulse" />
-                </div>
-
-                <div className="relative z-10">
+        <div className="min-h-screen py-20 px-4">
+            <div className="max-w-4xl mx-auto">
+                <div className="text-center mb-12">
                     {/* Spinner */}
                     <div className="flex justify-center mb-8">
                         <ProcessingSpinner />
                     </div>
 
-                    {/* Status */}
                     <h1 className="text-3xl font-bold mb-4">
-                        {currentStage.stage === 'complete' ? 'All Done!' : 'Transforming Your Room'}
+                        {isComplete ? 'All Done!' : 'Transforming Your Rooms'}
                     </h1>
-
                     {styleName && (
                         <p className="text-violet-400 font-medium mb-2">
                             Applying {styleName} style
                         </p>
                     )}
-
-                    <p className="text-white/60 mb-8 h-6">
-                        {currentStage.message}
+                    <p className="text-white/60">
+                        {isComplete ? 'Redirecting to results...' : 'Our AI is generating your new designs in parallel.'}
                     </p>
+                </div>
 
-                    {/* Progress bar */}
-                    <ProgressBar progress={currentStage.progress} />
-
-                    {/* Stage indicators */}
-                    <div className="mt-12 flex justify-center gap-4">
-                        {processingStages.slice(0, -1).map((stage: { stage: string }, index: number) => (
-                            <div
-                                key={stage.stage}
-                                className={`w-3 h-3 rounded-full transition-all duration-300 ${index <= currentStageIndex
-                                    ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500'
-                                    : 'bg-white/20'
-                                    }`}
-                            />
-                        ))}
-                    </div>
-
-                    {/* Fun facts while waiting */}
-                    <div className="mt-12 p-6 rounded-2xl bg-white/5 border border-white/10">
-                        <p className="text-white/40 text-sm mb-2">Did you know?</p>
-                        <p className="text-white/70">
-                            Our AI analyzes over 10,000 design elements to create
-                            the perfect transformation for your space.
-                        </p>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {images.map((img, idx) => (
+                        <div key={idx} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center gap-4">
+                            <div className="w-20 h-20 relative rounded-lg overflow-hidden flex-shrink-0 bg-black/20">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={img.preview} alt={`Room ${idx + 1}`} className="w-full h-full object-cover opacity-60" />
+                                {img.status === 'completed' && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-green-500/20">
+                                        <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-sm font-medium text-white/80">Room {idx + 1}</span>
+                                    <span className="text-xs text-white/50 uppercase">{img.status}</span>
+                                </div>
+                                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all duration-300 ${img.status === 'completed' ? 'bg-green-500' : 'bg-gradient-to-r from-violet-500 to-fuchsia-500'
+                                            }`}
+                                        style={{ width: `${img.progress}%` }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
