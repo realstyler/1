@@ -5,8 +5,10 @@ export interface Style {
     name: string;
     description: string;
     thumbnail: string;
-    category: 'modern' | 'classic' | 'minimalist' | 'bold';
+    category: 'modern' | 'classic' | 'minimalist' | 'bold' | 'luxury' | 'lighting';
 }
+
+export type Model = 'openai' | 'gemini' | 'stable-diffusion';
 
 export interface UploadedImage {
     id: string;

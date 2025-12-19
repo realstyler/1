@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { StyleGrid } from '@/components/styles';
+import ModelSelector from '@/components/styles/ModelSelector';
 import { mockStyles, sampleRoomImage } from '@/data/mock';
-import { Style } from '@/types';
+import { Style, Model } from '@/types';
 
 // Helper to get initial uploaded image from sessionStorage
 function getInitialUploadedImage(): string {
@@ -25,10 +26,16 @@ function getInitialUploadedImage(): string {
 export default function StylesPage() {
     const router = useRouter();
     const [selectedStyle, setSelectedStyle] = useState<Style | null>(null);
+    const [selectedModel, setSelectedModel] = useState<Model>('openai');
     const [uploadedImage] = useState<string>(getInitialUploadedImage);
 
     const handleSelectStyle = (style: Style) => {
         setSelectedStyle(style);
+    };
+
+    const handleSelectModel = (model: Model) => {
+        setSelectedModel(model);
+        sessionStorage.setItem('selectedModel', model);
     };
 
     const handleContinue = () => {
@@ -49,6 +56,12 @@ export default function StylesPage() {
                         Each style has been curated by professional designers.
                     </p>
                 </div>
+
+                {/* Model Selector */}
+                <ModelSelector
+                    selectedModel={selectedModel}
+                    onSelectModel={handleSelectModel}
+                />
 
                 {/* Current Image Preview */}
                 {uploadedImage && (
