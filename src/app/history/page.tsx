@@ -28,49 +28,51 @@ export default function HistoryPage() {
     }, []);
 
     return (
-        <div className="min-h-screen py-20">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold mb-4">Design History</h1>
-                    <p className="text-white/60">
+        <div className="min-h-screen py-32 bg-[#fafafa]">
+            <div className="max-w-6xl mx-auto px-6">
+                <div className="text-center mb-16">
+                    <h1 className="text-4xl md:text-5xl font-serif italic font-medium text-zinc-900 mb-6">
+                        Design History
+                    </h1>
+                    <p className="text-zinc-500 max-w-xl mx-auto text-lg font-light">
                         View your past design transformations.
                     </p>
                 </div>
 
                 {history.length === 0 ? (
-                    <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/10 flex items-center justify-center">
-                            <svg className="w-8 h-8 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="text-center py-24 bg-white rounded-3xl border border-zinc-200 shadow-sm max-w-2xl mx-auto">
+                        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-zinc-100 flex items-center justify-center">
+                            <svg className="w-8 h-8 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-semibold mb-2">No history yet</h3>
-                        <p className="text-white/60 mb-8">Start transforming your rooms to see them here.</p>
+                        <h3 className="text-xl font-medium text-zinc-900 mb-2">No history yet</h3>
+                        <p className="text-zinc-500 mb-8">Start transforming your rooms to see them here.</p>
                         <Link
                             href="/upload"
-                            className="px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-full font-medium transition-colors"
+                            className="inline-block px-8 py-3 bg-zinc-900 text-white rounded-full text-sm font-medium hover:bg-black transition-colors"
                         >
                             Create New Design
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid gap-6">
+                    <div className="grid gap-8">
                         {history.map((item) => (
-                            <div key={item.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors">
-                                <div className="flex items-center justify-between mb-4">
+                            <div key={item.id} className="bg-white border border-zinc-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex items-center justify-between mb-6">
                                     <div>
-                                        <h3 className="text-xl font-semibold">{item.styleName}</h3>
-                                        <p className="text-white/60 text-sm">
+                                        <h3 className="text-xl font-serif font-medium text-zinc-900 mb-1">{item.styleName}</h3>
+                                        <p className="text-zinc-500 text-sm">
                                             {new Date(item.date).toLocaleDateString()} • {item.imageCount} image{item.imageCount !== 1 ? 's' : ''}
                                         </p>
                                     </div>
-                                    <span className="px-3 py-1 bg-green-500/20 text-green-400 text-sm rounded-full">
+                                    <span className="px-4 py-1.5 bg-zinc-100 text-zinc-600 text-xs font-bold tracking-wider uppercase rounded-full">
                                         Completed
                                     </span>
                                 </div>
-                                <div className="flex gap-4 overflow-x-auto pb-2">
+                                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                                     {item.images.map((img, idx) => (
-                                        <div key={idx} className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-black/20">
+                                        <div key={idx} className="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-100 border border-zinc-100">
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img src={img} alt="Result" className="w-full h-full object-cover" />
                                         </div>

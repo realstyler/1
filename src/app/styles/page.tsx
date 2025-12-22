@@ -46,12 +46,12 @@ export default function StylesPage() {
     };
 
     return (
-        <div className="min-h-screen py-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen py-32 bg-[#fafafa]">
+            <div className="max-w-7xl mx-auto px-6">
                 {/* Header */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold mb-4">Choose Your Style</h1>
-                    <p className="text-white/60 max-w-xl mx-auto">
+                <div className="text-center mb-16">
+                    <h1 className="text-4xl md:text-5xl font-serif italic font-medium text-zinc-900 mb-6">Choose Your Style</h1>
+                    <p className="text-zinc-500 max-w-xl mx-auto text-lg font-light">
                         Select the interior design style you want to apply to your room.
                         Each style has been curated by professional designers.
                     </p>
@@ -65,9 +65,9 @@ export default function StylesPage() {
 
                 {/* Current Image Preview */}
                 {uploadedImage && (
-                    <div className="mb-12">
-                        <p className="text-white/40 text-sm text-center mb-4">Your room</p>
-                        <div className="relative w-full max-w-md mx-auto aspect-video rounded-xl overflow-hidden border border-white/10">
+                    <div className="mb-16">
+                        <p className="text-zinc-400 text-xs font-bold tracking-widest uppercase text-center mb-4">Your room</p>
+                        <div className="relative w-full max-w-lg mx-auto aspect-video rounded-2xl overflow-hidden border border-zinc-200 shadow-sm">
                             <Image
                                 src={uploadedImage}
                                 alt="Your room"
@@ -80,7 +80,7 @@ export default function StylesPage() {
                 )}
 
                 {/* Style Grid */}
-                <div className="mb-12">
+                <div className="mb-16">
                     <StyleGrid
                         styles={mockStyles}
                         selectedStyle={selectedStyle}
@@ -89,31 +89,31 @@ export default function StylesPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pb-20">
                     <Link
                         href="/upload"
-                        className="px-6 py-3 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all duration-300"
+                        className="px-8 py-3 text-zinc-500 hover:text-zinc-900 font-medium transition-colors"
                     >
-                        ← Change Photo
+                        Change Photo
                     </Link>
                     <button
                         onClick={handleContinue}
                         disabled={!selectedStyle}
-                        className={`px-8 py-3 font-medium rounded-full transition-all duration-300 ${selectedStyle
-                            ? 'text-white bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/25'
-                            : 'text-white/40 bg-white/10 cursor-not-allowed'
+                        className={`px-10 py-3.5 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${selectedStyle
+                            ? 'bg-zinc-900 text-white hover:bg-black shadow-lg hover:shadow-xl translate-y-0 hover:-translate-y-0.5'
+                            : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
                             }`}
                     >
-                        Apply Style →
+                        APPLY STYLE
                     </button>
                 </div>
 
                 {/* Selected Style Info */}
                 {selectedStyle && (
-                    <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 max-w-md mx-auto text-center">
-                        <p className="text-white/40 text-sm mb-2">Selected style</p>
-                        <h3 className="text-xl font-semibold text-white">{selectedStyle.name}</h3>
-                        <p className="text-white/60 mt-1">{selectedStyle.description}</p>
+                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl p-6 rounded-2xl max-w-md w-full mx-4 text-center animate-in slide-in-from-bottom-4 fade-in">
+                        <p className="text-zinc-400 text-[10px] uppercase tracking-widest font-bold mb-2">Selected style</p>
+                        <h3 className="text-xl font-serif font-medium text-zinc-900">{selectedStyle.name}</h3>
+                        <p className="text-zinc-500 text-sm mt-1">{selectedStyle.description}</p>
                     </div>
                 )}
             </div>
