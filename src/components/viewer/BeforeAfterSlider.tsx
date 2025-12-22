@@ -6,9 +6,16 @@ import { useState, useRef, useCallback } from 'react';
 interface BeforeAfterSliderProps {
     beforeImage: string;
     afterImage: string;
+    beforeLabel?: string;
+    afterLabel?: string;
 }
 
-export default function BeforeAfterSlider({ beforeImage, afterImage }: BeforeAfterSliderProps) {
+export default function BeforeAfterSlider({
+    beforeImage,
+    afterImage,
+    beforeLabel = "Before",
+    afterLabel = "After"
+}: BeforeAfterSliderProps) {
     const [sliderPosition, setSliderPosition] = useState(50);
     const containerRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
@@ -43,7 +50,7 @@ export default function BeforeAfterSlider({ beforeImage, afterImage }: BeforeAft
     return (
         <div
             ref={containerRef}
-            className="relative w-full max-w-4xl mx-auto aspect-video rounded-2xl overflow-hidden cursor-ew-resize select-none"
+            className="relative w-full aspect-[4/3] cursor-ew-resize select-none"
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
@@ -59,8 +66,8 @@ export default function BeforeAfterSlider({ beforeImage, afterImage }: BeforeAft
                     className="object-cover"
                     unoptimized
                 />
-                <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white text-sm font-medium">
-                    After
+                <div className="absolute bottom-4 right-4 bg-white text-black px-3 py-1.5 rounded-full text-xs font-medium">
+                    {afterLabel}
                 </div>
             </div>
 
@@ -78,8 +85,8 @@ export default function BeforeAfterSlider({ beforeImage, afterImage }: BeforeAft
                         unoptimized
                     />
                 </div>
-                <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white text-sm font-medium">
-                    Before
+                <div className="absolute bottom-4 left-4 bg-black/80 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm">
+                    {beforeLabel}
                 </div>
             </div>
 
