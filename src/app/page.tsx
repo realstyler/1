@@ -152,8 +152,8 @@ export default function Home() {
           {/* Right Column - Before/After Comparison */}
           <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white lg:mt-0">
             <BeforeAfterSlider
-              beforeImage="https://ext.same-assets.com/896819420/1850330870.jpeg"
-              afterImage="https://ext.same-assets.com/896819420/1090215329.jpeg"
+              beforeImage="/modern_living_room_1766406771698.png"
+              afterImage="/yellow_chair_interior_1766406787652.png"
               beforeLabel="ORIGINAL"
               afterLabel="RESTYLED"
             />
@@ -365,7 +365,7 @@ export default function Home() {
             ].map((style, index) => (
               <div key={index} className="min-w-[280px] md:min-w-[320px] snap-start group cursor-pointer">
                 <div className="space-y-3">
-                  <div className="relative aspect-[4/3] rounded-lg overflow-hidden">
+                  <div className="relative aspect-[3/4] rounded-lg overflow-hidden">
                     <Image
                       src={style.img}
                       alt={`${style.title} style`}
