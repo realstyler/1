@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import BeforeAfterSlider from "@/components/viewer/BeforeAfterSlider";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useState, useRef } from "react";
 
@@ -40,7 +39,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#f8f8f7]">
       {/* Navigation */}
-      <Navbar />
 
       {/* Hero Section */}
       <section className="container mx-auto px-6 py-16 md:py-24">

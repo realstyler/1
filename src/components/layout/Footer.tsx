@@ -67,8 +67,8 @@ export default function Footer() {
                         <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-widest mb-6">Legal</h4>
                         <ul className="space-y-4">
                             {[
-                                { name: 'Privacy', href: '#' },
-                                { name: 'Terms', href: '#' }
+                                { name: 'Privacy', href: '/privacy' },
+                                { name: 'Terms', href: '/terms' }
                             ].map((item) => (
                                 <li key={item.name}>
                                     <Link
