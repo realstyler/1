@@ -1,31 +1,51 @@
+import Footer from '@/components/layout/Footer';
+
 export default function FeaturesPage() {
     return (
-        <div className="min-h-screen py-20 px-4">
-            <div className="max-w-4xl mx-auto text-center">
-                <h1 className="text-4xl font-bold mb-6">Features</h1>
-                <p className="text-white/60 mb-12">
-                    Discover the power of AI-driven interior design with RealStyler.
-                </p>
+        <div className="min-h-screen bg-white">
 
-                <div className="grid md:grid-cols-2 gap-8 text-left">
-                    <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                        <h3 className="text-xl font-semibold mb-2">Smart Style Transfer</h3>
-                        <p className="text-white/60">Upload your room and instantly see it transformed into any style you choose.</p>
+            <div className="py-24 px-6">
+                <div className="max-w-4xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h1 className="text-4xl md:text-5xl font-serif text-neutral-900 mb-6">Features</h1>
+                        <p className="text-neutral-500 max-w-2xl mx-auto text-lg leading-relaxed">
+                            Discover the power of AI-driven interior design with RealStyler. We combine precision geometry with advanced style transfer.
+                        </p>
                     </div>
-                    <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                        <h3 className="text-xl font-semibold mb-2">Multi-Room Processing</h3>
-                        <p className="text-white/60">Upload up to 5 images at once and process your entire home in one go.</p>
-                    </div>
-                    <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                        <h3 className="text-xl font-semibold mb-2">High-Res Export</h3>
-                        <p className="text-white/60">Download crystal clear images perfect for presentations or contractors.</p>
-                    </div>
-                    <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                        <h3 className="text-xl font-semibold mb-2">Style History</h3>
-                        <p className="text-white/60">Keep track of all your designs and revisit them anytime.</p>
+
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="p-8 bg-neutral-50 border border-neutral-200 rounded-3xl hover:shadow-lg transition-all duration-300">
+                            <h3 className="text-xl font-serif font-medium text-neutral-900 mb-3">Smart Style Transfer</h3>
+                            <p className="text-neutral-600 leading-relaxed">
+                                Upload your room and instantly see it transformed into any style you choose. Our AI maintains the structural integrity of your space while completely reimagining the aesthetics.
+                            </p>
+                        </div>
+
+                        <div className="p-8 bg-neutral-50 border border-neutral-200 rounded-3xl hover:shadow-lg transition-all duration-300">
+                            <h3 className="text-xl font-serif font-medium text-neutral-900 mb-3">Multi-Room Processing</h3>
+                            <p className="text-neutral-600 leading-relaxed">
+                                Efficiently process unlimited images. Perfect for restyling an entire home or managing multiple client projects simultaneously.
+                            </p>
+                        </div>
+
+                        <div className="p-8 bg-neutral-50 border border-neutral-200 rounded-3xl hover:shadow-lg transition-all duration-300">
+                            <h3 className="text-xl font-serif font-medium text-neutral-900 mb-3">High-Res Export</h3>
+                            <p className="text-neutral-600 leading-relaxed">
+                                Download crystal clear 4K images perfect for client presentations, marketing materials, or detailed contractor references.
+                            </p>
+                        </div>
+
+                        <div className="p-8 bg-neutral-50 border border-neutral-200 rounded-3xl hover:shadow-lg transition-all duration-300">
+                            <h3 className="text-xl font-serif font-medium text-neutral-900 mb-3">Style History</h3>
+                            <p className="text-neutral-600 leading-relaxed">
+                                Every generation is saved to your personal history. Compare iterations, revisit previous ideas, and keep track of your design evolution.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <Footer />
         </div>
     );
 }

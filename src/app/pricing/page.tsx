@@ -1,11 +1,9 @@
 import Link from 'next/link';
-import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
 export default function PricingPage() {
     return (
         <div className="min-h-screen bg-white">
-            <Navbar />
 
             <div className="py-24 px-6">
                 <div className="max-w-7xl mx-auto">
