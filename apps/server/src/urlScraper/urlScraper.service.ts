@@ -1,5 +1,6 @@
 import { load } from "cheerio";
 import { isImageUrl } from "../utils/isImageUrl.util.js";
+import ApiError from "../errors/apiError.js";
 
 class URLScraperService {
   async scrapeUrl(url: string) {
@@ -31,7 +32,7 @@ class URLScraperService {
       .find((src) => src && src.startsWith("http"));
 
     if (!imgSrc) {
-      throw new Error("Image not found");
+      throw new ApiError("Image not found", 404);
     }
 
     return imgSrc;

@@ -1,6 +1,7 @@
 import express from "express";
 import "dotenv/config";
 import urlScraperRouter from "./urlScraper/urlScraper.router.js";
+import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -12,6 +13,8 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api", urlScraperRouter);
+
+app.use(errorMiddleware);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
