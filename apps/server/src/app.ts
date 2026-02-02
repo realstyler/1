@@ -4,6 +4,7 @@ import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import billingRouter from "./billing/billing.router.js";
 import webhooksRouter from "./webhooks/webhooks.router.js";
 import { environment } from "./config/environment.js";
+import imageUploadRouter from "./upload/imageUpload.router.js";
 
 const PORT = environment.PORT;
 const app = express();
@@ -16,6 +17,7 @@ app.get("/", (_req, res) => {
   res.send("Hello from server");
 });
 
+app.use("/api", imageUploadRouter)
 app.use("/api", urlScraperRouter);
 app.use("/api", billingRouter);
 

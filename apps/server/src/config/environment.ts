@@ -18,6 +18,10 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string(),
   STRIPE_PRICE_ID: z.string(),
 
+  SUPABASE_URL: z.url(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string(),
+  SUPABASE_BUCKET_NAME: z.string(),
+
   CLIENT_URL: z.url(),
 });
 
