@@ -1,5 +1,5 @@
+import { environment } from "../config/environment.js";
 import { stripe } from "../lib/stripe.js";
-import "dotenv/config"
 
 class BillingService {
   async createCheckoutSession() {
@@ -8,13 +8,13 @@ class BillingService {
 
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID,
+          price: environment.STRIPE_PRICE_ID,
           quantity: 1,
         },
       ],
 
-      success_url: process.env.CLIENT_URL,
-      cancel_url: process.env.CLIENT_URL,
+      success_url: environment.CLIENT_URL,
+      cancel_url: environment.CLIENT_URL,
     });
 
     return session;
@@ -24,7 +24,7 @@ class BillingService {
     const event = stripe.webhooks.constructEvent(
       payload,
       header,
-      process.env.STRIPE_WEBHOOK_SECRET!,
+      environment.STRIPE_WEBHOOK_SECRET!,
     );
 
     console.log("event", event)

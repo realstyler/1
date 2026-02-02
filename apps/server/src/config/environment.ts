@@ -1,0 +1,24 @@
+import "dotenv/config";
+import { z } from "zod";
+
+/**
+ * Runtime env validation.
+ * App MUST crash on startup if config is invalid.
+ */
+const envSchema = z.object({
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
+
+  PORT: z.coerce.number().default(4000),
+
+  GEMINI_API_KEY: z.string(),
+
+  STRIPE_SECRET_KEY: z.string(),
+  STRIPE_WEBHOOK_SECRET: z.string(),
+  STRIPE_PRICE_ID: z.string(),
+
+  CLIENT_URL: z.url(),
+});
+
+export const environment = envSchema.parse(process.env);

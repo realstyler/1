@@ -1,11 +1,11 @@
 import express from "express";
-import "dotenv/config";
 import urlScraperRouter from "./urlScraper/urlScraper.router.js";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import billingRouter from "./billing/billing.router.js";
 import webhooksRouter from "./webhooks/webhooks.router.js";
+import { environment } from "./config/environment.js";
 
-const PORT = process.env.PORT || 4000;
+const PORT = environment.PORT;
 const app = express();
 
 app.use("/webhooks", webhooksRouter);

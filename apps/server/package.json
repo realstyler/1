@@ -21,7 +21,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "node-fetch": "^3.3.2",
-    "stripe": "^20.3.0"
+    "stripe": "^20.3.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/cheerio": "^1.0.0",
