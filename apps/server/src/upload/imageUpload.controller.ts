@@ -4,7 +4,7 @@ import { imageUploadService } from "./imageUpload.service.js";
 class ImageUploadController {
   uploadImages = async (req: Request, res: Response) => {
     const files = req.files as Express.Multer.File[];
-    const result = await imageUploadService.uploadImages(files);
+    const result = await imageUploadService.uploadTemporaryImages(files);
     res.json(result);
   };
 }

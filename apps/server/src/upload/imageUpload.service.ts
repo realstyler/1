@@ -5,7 +5,7 @@ import ApiError from "../errors/apiError.js";
 import { MAX_FILE_SIZE } from "../constants.js";
 
 class ImageUploadService {
-  async uploadImages(files: Express.Multer.File[]) {
+  async uploadTemporaryImages(files: Express.Multer.File[]) {
     if (!files || files.length === 0) {
       throw new ApiError("No files uploaded", 400);
     }
@@ -34,16 +34,47 @@ class ImageUploadService {
       const fileName = `${fileId}.${fileExt}`;
       const filePath = `tmp/${fileName}`;
 
-      const urlData = await this.uploadToSupabase({
+      const signedUrl = await this.uploadToSupabase({
         file,
         bucketName: environment.SUPABASE_BUCKET_NAME,
         filePath,
       });
 
-      results.push({ id: fileId, url: urlData!.signedUrl });
+      results.push({ id: fileId, url: signedUrl! });
     }
 
     return results;
+  }
+
+  async uploadGeneratedImage(params: { buffer: Buffer; mimeType: string }) {
+    const fileId = uuidv4();
+    const ext = params.mimeType.split("/")[1];
+    const filePath = `generated/${fileId}.${ext}`;
+
+    const { error } = await supabaseAdmin.storage
+      .from(environment.SUPABASE_BUCKET_NAME)
+      .upload(filePath, params.buffer, {
+        contentType: params.mimeType,
+        upsert: false,
+      });
+
+    if (error) throw new ApiError(error.message, error.status);
+
+    const { data } = await supabaseAdmin.storage
+      .from(environment.SUPABASE_BUCKET_NAME)
+      .getPublicUrl(filePath);
+
+    return {
+      path: filePath,
+      url: data.publicUrl,
+    };
+  }
+
+  async downloadImage(filePath: string) {
+    return await this.downloadFromSupabase(
+      environment.SUPABASE_BUCKET_NAME,
+      filePath,
+    );
   }
 
   private async uploadToSupabase({
@@ -68,7 +99,17 @@ class ImageUploadService {
       .from(bucketName)
       .createSignedUrl(filePath, 300); // 5 minutes
 
-    return urlData;
+    return urlData?.signedUrl;
+  }
+
+  private async downloadFromSupabase(bucketName: string, filePath: string) {
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucketName)
+      .download(filePath);
+
+    if (error) throw new ApiError(error.message, error.status);
+
+    return data;
   }
 }
 
