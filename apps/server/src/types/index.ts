@@ -21,3 +21,15 @@ export type Job<T = any> = {
 export type UpdateJob<T = any> = Partial<
   Pick<Job<T>, "status" | "result" | "errorMessage">
 >;
+
+export type UploadedImage = {
+  id: string;
+  path: string;
+  url: string;
+};
+
+export type UploadBufferParams = {
+  buffer: Buffer;
+  mimeType: string;
+  filePath: string;
+};

@@ -4,9 +4,70 @@ import { environment } from "../config/environment.js";
 import ApiError from "../errors/apiError.js";
 import { MAX_FILE_SIZE } from "../constants.js";
 import unwrapSupabaseStorageError from "../utils/unwrapSupabaseStorageError.util.js";
+import type { UploadBufferParams, UploadedImage } from "../types/index.js";
+
+const BUCKET = environment.SUPABASE_BUCKET_NAME;
 
 class ImageUploadService {
-  async uploadTemporaryImages(files: Express.Multer.File[]) {
+  async uploadTemporaryImages(
+    files: Express.Multer.File[],
+  ): Promise<UploadedImage[]> {
+    this.validateFiles(files);
+
+    return Promise.all(
+      files.map(async (file) => {
+        const id = uuidv4();
+        const filePath = this.generateFilePath("tmp", id, file.mimetype);
+
+        await this.uploadBuffer({
+          buffer: file.buffer,
+          mimeType: file.mimetype,
+          filePath,
+        });
+
+        const url = await this.createSignedUrl(filePath, 300);
+
+        return { id, path: filePath, url };
+      }),
+    );
+  }
+
+  async uploadGeneratedImage(params: {
+    buffer: Buffer;
+    mimeType: string;
+  }): Promise<UploadedImage> {
+    const id = uuidv4();
+    const filePath = this.generateFilePath("generated", id, params.mimeType);
+
+    await this.uploadBuffer({
+      buffer: params.buffer,
+      mimeType: params.mimeType,
+      filePath,
+    });
+
+    const url = await this.createSignedUrl(filePath, 300);
+
+    return { id, path: filePath, url };
+  }
+
+  async downloadImage(filePath: string): Promise<Blob> {
+    const { data, error } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .download(filePath);
+
+    if (error) {
+      const { message, status } = await unwrapSupabaseStorageError(error);
+      throw new ApiError(message, status);
+    }
+
+    return data;
+  }
+
+  // =======================
+  // Private helpers
+  // =======================
+
+  private validateFiles(files?: Express.Multer.File[]) {
     if (!files || files.length === 0) {
       throw new ApiError("No files uploaded", 400);
     }
@@ -21,79 +82,31 @@ class ImageUploadService {
 
       if (file.size > MAX_FILE_SIZE) {
         throw new ApiError(
-          `File "${file.originalname}" exceeds 10MB limit`,
+          `File "${file.originalname}" exceeds size limit`,
           400,
         );
       }
     }
-
-    const results = [];
-
-    for (const file of files) {
-      const fileId = uuidv4();
-      const fileExt = file.originalname.split(".").pop();
-      const fileName = `${fileId}.${fileExt}`;
-      const filePath = `tmp/${fileName}`;
-
-      const signedUrl = await this.uploadToSupabase({
-        file,
-        bucketName: environment.SUPABASE_BUCKET_NAME,
-        filePath,
-      });
-
-      results.push({ id: fileId, url: signedUrl! });
-    }
-
-    return results;
   }
 
-  async uploadGeneratedImage(params: { buffer: Buffer; mimeType: string }) {
-    const fileId = uuidv4();
-    const ext = params.mimeType.split("/")[1];
-    const filePath = `generated/${fileId}.${ext}`;
-
-    const { error } = await supabaseAdmin.storage
-      .from(environment.SUPABASE_BUCKET_NAME)
-      .upload(filePath, params.buffer, {
-        contentType: params.mimeType,
-        upsert: false,
-      });
-
-    if (error) {
-      const { message, status } = await unwrapSupabaseStorageError(error);
-      throw new ApiError(message, status);
-    }
-
-    const { data } = await supabaseAdmin.storage
-      .from(environment.SUPABASE_BUCKET_NAME)
-      .getPublicUrl(filePath);
-
-    return {
-      path: filePath,
-      url: data.publicUrl,
-    };
+  private generateFilePath(
+    folder: "tmp" | "generated",
+    id: string,
+    mimeType: string,
+  ): string {
+    const ext = mimeType.split("/")[1];
+    return `${folder}/${id}.${ext}`;
   }
 
-  async downloadImage(filePath: string) {
-    return await this.downloadFromSupabase(
-      environment.SUPABASE_BUCKET_NAME,
-      filePath,
-    );
-  }
-
-  private async uploadToSupabase({
-    file,
-    bucketName,
+  private async uploadBuffer({
+    buffer,
+    mimeType,
     filePath,
-  }: {
-    file: Express.Multer.File;
-    bucketName: string;
-    filePath: string;
-  }) {
+  }: UploadBufferParams): Promise<void> {
     const { error } = await supabaseAdmin.storage
-      .from(bucketName)
-      .upload(filePath, file.buffer, {
-        contentType: file.mimetype,
+      .from(BUCKET)
+      .upload(filePath, buffer, {
+        contentType: mimeType,
         upsert: false,
       });
 
@@ -101,31 +114,28 @@ class ImageUploadService {
       const { message, status } = await unwrapSupabaseStorageError(error);
       throw new ApiError(message, status);
     }
-
-    const { data: urlData, error: storageError } = await supabaseAdmin.storage
-      .from(bucketName)
-      .createSignedUrl(filePath, 300); // 5 minutes
-
-    if (storageError) {
-      const { message, status } =
-        await unwrapSupabaseStorageError(storageError);
-      throw new ApiError(message, status);
-    }
-
-    return urlData?.signedUrl;
   }
 
-  private async downloadFromSupabase(bucketName: string, filePath: string) {
+  private async createSignedUrl(
+    filePath: string,
+    expiresInSeconds: number,
+  ): Promise<string> {
     const { data, error } = await supabaseAdmin.storage
-      .from(bucketName)
-      .download(filePath);
+      .from(BUCKET)
+      .createSignedUrl(filePath, expiresInSeconds);
 
-    if (error) {
+    if (error || !data?.signedUrl) {
       const { message, status } = await unwrapSupabaseStorageError(error);
       throw new ApiError(message, status);
     }
 
-    return data;
+    return data.signedUrl;
+  }
+
+  private getPublicUrl(filePath: string): string {
+    const { data } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(filePath);
+
+    return data.publicUrl;
   }
 }
 
