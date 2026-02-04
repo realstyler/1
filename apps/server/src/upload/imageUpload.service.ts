@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { environment } from "../config/environment.js";
 import ApiError from "../errors/apiError.js";
 import { MAX_FILE_SIZE } from "../constants.js";
+import unwrapSupabaseStorageError from "../utils/unwrapSupabaseStorageError.util.js";
 
 class ImageUploadService {
   async uploadTemporaryImages(files: Express.Multer.File[]) {
@@ -58,7 +59,10 @@ class ImageUploadService {
         upsert: false,
       });
 
-    if (error) throw new ApiError(error.message, error.status);
+    if (error) {
+      const { message, status } = await unwrapSupabaseStorageError(error);
+      throw new ApiError(message, status);
+    }
 
     const { data } = await supabaseAdmin.storage
       .from(environment.SUPABASE_BUCKET_NAME)
@@ -93,11 +97,20 @@ class ImageUploadService {
         upsert: false,
       });
 
-    if (error) throw new ApiError(error.message, error.status);
+    if (error) {
+      const { message, status } = await unwrapSupabaseStorageError(error);
+      throw new ApiError(message, status);
+    }
 
-    const { data: urlData } = await supabaseAdmin.storage
+    const { data: urlData, error: storageError } = await supabaseAdmin.storage
       .from(bucketName)
       .createSignedUrl(filePath, 300); // 5 minutes
+
+    if (storageError) {
+      const { message, status } =
+        await unwrapSupabaseStorageError(storageError);
+      throw new ApiError(message, status);
+    }
 
     return urlData?.signedUrl;
   }
@@ -107,7 +120,10 @@ class ImageUploadService {
       .from(bucketName)
       .download(filePath);
 
-    if (error) throw new ApiError(error.message, error.status);
+    if (error) {
+      const { message, status } = await unwrapSupabaseStorageError(error);
+      throw new ApiError(message, status);
+    }
 
     return data;
   }

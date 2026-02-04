@@ -1,3 +1,23 @@
 import type { MODELS } from "../constants.js";
 
 export type Model = (typeof MODELS)[number];
+
+export type JobStatus =
+  | "pending"
+  | "completed"
+  | "failed"
+  | "completed_with_errors";
+
+export type Job<T = any> = {
+  id: string;
+  status: JobStatus;
+  input: any; // data transferred for generation (images, prompts, etc.)
+  result?: T; // generation result (URL, base64, etc.)
+  errorMessage?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type UpdateJob<T = any> = Partial<
+  Pick<Job<T>, "status" | "result" | "errorMessage">
+>;

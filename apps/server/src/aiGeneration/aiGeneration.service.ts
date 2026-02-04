@@ -6,6 +6,7 @@ import { geminiProvider } from "../ai-providers/geminiProvider.js";
 import { mockGenProvider } from "../ai-providers/mockGenProvider.js";
 import { openaiProvider } from "../ai-providers/openaiProvider.js";
 import { stableDiffusionProvider } from "../ai-providers/stableDiffusionProvider.js";
+import { jobService } from "../job-pooling/job.service.js";
 
 const generatingPrompt = `
     Interior redesign of the same room shown in the reference image.
@@ -30,9 +31,61 @@ const generatingPrompt = `
 
 class AIGenerationService {
   async restyle(images: { path: string; mimeType: string }[], model: Model) {
-    return await Promise.allSettled(
-      images.map((img) => this.restyleByProvider(img, model)),
-    );
+    const jobId = await jobService.createJob({ images, model });
+
+    setImmediate(async () => {
+      try {
+        const results = await Promise.allSettled(
+          images.map(async (img) => {
+            try {
+              return await this.restyleByProvider(img, model);
+            } catch (err: any) {
+              const message =
+                err instanceof Error
+                  ? err.message
+                  : typeof err === "string"
+                    ? err
+                    : "Something went wrong";
+
+              throw message;
+            }
+          }),
+        );
+
+        const hasSuccess = results.some((r) => r.status === "fulfilled");
+        const hasFailure = results.some((r) => r.status === "rejected");
+
+        if (!hasSuccess) {
+          // all fell
+          await jobService.updateJob(jobId, {
+            status: "failed",
+            errorMessage: "All generations failed",
+            result: results,
+          });
+          return;
+        }
+
+        if (hasFailure) {
+          // partially successful
+          await jobService.updateJob(jobId, {
+            status: "completed_with_errors",
+            errorMessage: "Some generations failed",
+            result: results,
+          });
+          return;
+        }
+
+        // all successful
+        await jobService.completeJob(jobId, results);
+      } catch (err: any) {
+        await jobService.updateJob(jobId, {
+          status: "failed",
+          errorMessage: err.message,
+        });
+      }
+    });
+
+    return { jobId, status: "pending" };
   }
 
   private async restyleByProvider(
@@ -50,7 +103,7 @@ class AIGenerationService {
       prompt: generatingPrompt,
     });
 
-    if (!generatedBuffer) throw new ApiError("Failed to generate image", 500);
+    if (!generatedBuffer) throw new Error("Failed to generate image");
 
     return await imageUploadService.uploadGeneratedImage({
       buffer: generatedBuffer,
