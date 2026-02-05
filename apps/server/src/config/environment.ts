@@ -14,6 +14,7 @@ const envSchema = z.object({
   USE_MOCK_AI: z.coerce.boolean(),
 
   GEMINI_API_KEY: z.string(),
+  SD_API_KEY: z.string(),
 
   GEMINI_MODEL: z.string(),
 

@@ -99,6 +99,7 @@ class AIGenerationService {
 
     const generatedBuffer = await this.generateImage(model, {
       base64Image,
+      blob,
       mimeType: image.mimeType,
       prompt: generatingPrompt,
     });
@@ -132,6 +133,7 @@ class AIGenerationService {
     model: Model,
     data: {
       base64Image: string;
+      blob: Blob;
       mimeType: string;
       prompt: string;
     },

@@ -11,6 +11,7 @@ class GeminiProvider implements ImageGenerationProviderI {
     prompt,
   }: {
     base64Image: string;
+    blob: Blob;
     mimeType: string;
     prompt: string;
   }) {

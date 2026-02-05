@@ -4,6 +4,7 @@ import type { ImageGenerationProviderI } from "../interfaces/imageGenerationProv
 class OpenaiProvider implements ImageGenerationProviderI {
   async generateImage({}: {
     base64Image: string;
+    blob: Blob;
     mimeType: string;
     prompt: string;
   }) {
