@@ -2,8 +2,22 @@ import { environment } from "../config/environment.js";
 import { stripe } from "../lib/stripe.js";
 
 class BillingService {
-  async createCheckoutSession() {
+  async createCustomer({ email, name }: { email: string; name: string }) {
+    const customer = await stripe.customers.create({
+      email,
+      name,
+    });
+
+    console.log("CREATED CUSTOMER ==================");
+    console.log(customer);
+    console.log("CREATED CUSTOMER ==================");
+
+    return customer;
+  }
+
+  async createCheckoutSession(stripeCustomerId: string) {
     const session = await stripe.checkout.sessions.create({
+      customer: stripeCustomerId,
       mode: "subscription",
 
       line_items: [
@@ -27,7 +41,7 @@ class BillingService {
       environment.STRIPE_WEBHOOK_SECRET!,
     );
 
-    console.log("event", event)
+    console.log("event", event);
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;

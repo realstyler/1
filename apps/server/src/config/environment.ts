@@ -26,6 +26,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string(),
   SUPABASE_BUCKET_NAME: z.string(),
 
+  DATABASE_URL: z.string(),
   CLIENT_URL: z.url(),
 });
 
