@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/app.js",
     "prestart": "npm run build",
-    "seed": "tsx src/lib/prisma/seed.ts"
+    "seed": "tsx src/lib/prisma/seed.ts",
+    "seed-prompts": "tsx src/lib/prisma/seed-prompts.ts"
   },
   "keywords": [],
   "author": "",

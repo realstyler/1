@@ -23,7 +23,7 @@ class AIGenerationService {
     const jobIds: string[] = [];
 
     for (const img of images) {
-      const jobId = await jobService.createJob({ img, model });
+      const jobId = await jobService.createJob({ img, model, style });
       jobIds.push(jobId);
 
       setImmediate(async () => {
