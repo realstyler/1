@@ -12,6 +12,9 @@ const envSchema = z.object({
 
   PORT: z.coerce.number().default(4000),
   USE_MOCK_AI: z.coerce.boolean().default(false),
+  SESSION_SECRET: z.string().default("secret_key"),
+  DATABASE_URL: z.string(),
+  CLIENT_URL: z.url(),
 
   GEMINI_API_KEY: z.string(),
   SD_API_KEY: z.string(),
@@ -26,8 +29,8 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string(),
   SUPABASE_BUCKET_NAME: z.string(),
 
-  DATABASE_URL: z.string(),
-  CLIENT_URL: z.url(),
+  REDIS_HOST: z.string().default("localhost"),
+  REDIS_PORT: z.coerce.number().default(6379),
 });
 
 export const environment = envSchema.parse(process.env);
