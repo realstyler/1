@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../prisma/generated/client"
 }
 
 datasource db {
@@ -88,6 +89,18 @@ model UsageTracking {
   @@unique([userId, periodStart, periodEnd])
   @@index([userId])
   @@map("usage_tracking")
+}
+
+model StylePrompt {
+  preset       StylePreset @id
+  displayName  String      @map("display_name")
+  description  String
+  content      String // prompt template
+  colorPalette String?     @map("color_palette")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("style_prompt")
 }
 
 enum StylePreset {

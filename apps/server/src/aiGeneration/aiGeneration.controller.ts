@@ -1,14 +1,11 @@
 import type { Request, Response } from "express";
 import { aiGenerationService } from "./aiGeneration.service.js";
-import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
-import { RestyleSchema } from "./ai.schemas.js";
 import { jobService } from "../job-pooling/job.service.js";
 import ApiError from "../errors/apiError.js";
 
 class AIGenerationController {
   restyle = async (req: Request, res: Response) => {
-    const { model, images } = zodParseOrThrow(RestyleSchema, req.body);
-    const result = await aiGenerationService.restyle(images, model);
+    const result = await aiGenerationService.restyle(req.body);
     res.json(result);
   };
 

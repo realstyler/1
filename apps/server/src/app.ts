@@ -9,11 +9,14 @@ import imageUploadRouter from "./upload/imageUpload.router.js";
 import aiGenerationRouter from "./aiGeneration/aiGeneration.router.js";
 import authRouter from "./auth/auth.router.js";
 import initRedisStore from "./lib/redis.js";
+import { promptCacheService } from "./prompts/prompts.service.js";
+import promptsRouter from "./prompts/prompts.router.js";
 
 (async () => {
   const PORT = environment.PORT;
   const app = express();
   const store = await initRedisStore(); // connect Redis or fallback
+  await promptCacheService.load(); // load and save prompts
 
   app.use("/webhooks", webhooksRouter);
 
@@ -43,6 +46,7 @@ import initRedisStore from "./lib/redis.js";
   app.use("/api", urlScraperRouter);
   app.use("/api", aiGenerationRouter);
   app.use("/api", billingRouter);
+  app.use("/api", promptsRouter);
 
   app.use(errorMiddleware);
 
