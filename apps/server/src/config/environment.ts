@@ -17,6 +17,7 @@ const envSchema = z.object({
   CLIENT_URL: z.url(),
 
   GEMINI_API_KEY: z.string(),
+  OPENAI_API_KEY: z.string(),
   SD_API_KEY: z.string(),
 
   GEMINI_MODEL: z.string(),
