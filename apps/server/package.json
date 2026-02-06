@@ -4,10 +4,11 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "tsx watch src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "prestart": "npm run build"
+    "prestart": "npm run build",
+    "seed": "tsx src/lib/prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "@prisma/client": "^7.3.0",
     "@supabase/supabase-js": "^2.93.3",
     "axios": "^1.13.4",
+    "bcrypt": "^6.0.0",
     "cheerio": "^1.2.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
@@ -29,6 +31,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cheerio": "^1.0.0",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.0.0",

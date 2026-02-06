@@ -2,9 +2,11 @@ import type { Request, Response } from "express";
 import { billingService } from "./billing.service.js";
 
 class BillingController {
-  createCheckoutSession = async (_: Request, res: Response) => {
-    const session = await billingService.createCheckoutSession();
-    res.json({ url: session.url });
+  createCheckoutSession = async (req: Request, res: Response) => {
+    // const customerId = req.user.stripeCustomerId
+    // const session = await billingService.createCheckoutSession();
+    // res.json({ url: session.url });
+    res.end()
   };
 
   webhook = async (req: Request, res: Response) => {

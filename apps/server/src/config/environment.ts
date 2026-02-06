@@ -11,7 +11,7 @@ const envSchema = z.object({
     .default("development"),
 
   PORT: z.coerce.number().default(4000),
-  USE_MOCK_AI: z.coerce.boolean(),
+  USE_MOCK_AI: z.coerce.boolean().default(false),
 
   GEMINI_API_KEY: z.string(),
   SD_API_KEY: z.string(),
