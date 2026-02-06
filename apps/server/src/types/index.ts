@@ -13,13 +13,13 @@ export type Job<T = any> = {
   status: JobStatus;
   input: any; // data transferred for generation (images, prompts, etc.)
   result?: T; // generation result (URL, base64, etc.)
-  errorMessage?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  error?: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type UpdateJob<T = any> = Partial<
-  Pick<Job<T>, "status" | "result" | "errorMessage">
+  Pick<Job<T>, "status" | "result" | "error">
 >;
 
 export type UploadedImage = {

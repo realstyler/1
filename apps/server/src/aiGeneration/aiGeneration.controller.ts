@@ -21,6 +21,17 @@ class AIGenerationController {
 
     res.json(job);
   };
+
+  getJobs = async (req: Request, res: Response) => {
+    const jobIds = req.body as string[];
+    if (!jobIds) throw new ApiError("Jobs Ids is required", 400);
+
+    const results = await Promise.all(
+      jobIds.map((job) => jobService.getJob(job)),
+    );
+
+    res.json(results);
+  };
 }
 
 export const aiGenerationController = new AIGenerationController();

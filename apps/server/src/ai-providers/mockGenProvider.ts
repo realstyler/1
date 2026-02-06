@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { ImageGenerationProviderI } from "../interfaces/imageGenerationProvider.js";
+import { delay } from "../utils/delay.util.js";
 
 class MockGeminiProvider implements ImageGenerationProviderI {
   async generateImage({}: {
@@ -9,7 +10,7 @@ class MockGeminiProvider implements ImageGenerationProviderI {
     mimeType: string;
     prompt: string;
   }) {
-    await Promise.resolve(setTimeout(() => {}, 4000));
+    await delay(4000);
     return fs.readFileSync(path.resolve("./src/__mocks__/mock-generated.png"));
   }
 }

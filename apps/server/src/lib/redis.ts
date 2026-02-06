@@ -1,10 +1,10 @@
-import { createClient } from "redis";
+import { createClient, type RedisClientType } from "redis";
 import { RedisStore } from "connect-redis";
 import session from "express-session";
 import { environment } from "../config/environment.js";
 
-let redisStore; // Store for express-session
-let redisClient;
+let redisStore: RedisStore | session.MemoryStore; // Store for express-session
+export let redisClient: RedisClientType;
 
 export default async function initRedisStore() {
   try {
