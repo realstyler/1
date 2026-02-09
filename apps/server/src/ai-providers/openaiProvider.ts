@@ -8,17 +8,21 @@ class OpenaiProvider implements ImageGenerationProviderI {
   });
 
   async generateImage({
-    blob,
+    buffer,
     prompt,
+    mimeType,
   }: {
     base64Image: string;
     blob: Blob;
+    buffer: Buffer<ArrayBuffer>;
     mimeType: string;
     prompt: string;
   }) {
+    const file = new File([buffer], "input.png", { type: mimeType });
+
     const result = await this.openai.images.edit({
       model: "gpt-image-1",
-      image: blob,
+      image: file,
       prompt,
     });
 

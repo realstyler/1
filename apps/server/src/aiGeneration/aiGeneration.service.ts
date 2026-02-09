@@ -31,6 +31,8 @@ class AIGenerationService {
           const result = await this.restyleByProvider(img, model, style);
           await jobService.completeJob(jobId, result);
         } catch (err: any) {
+          console.error(`Failed to generate restyle for image ${img.path}, model: ${model}, style: ${style}, jobId: ${jobId}`)
+          console.error(err)
           await jobService.updateJob(jobId, {
             status: "failed",
             error: err.message,
@@ -57,6 +59,7 @@ class AIGenerationService {
     const generatedBuffer = await this.generateImage(model, {
       base64Image,
       blob,
+      buffer,
       mimeType: image.mimeType,
       prompt,
     });
@@ -91,6 +94,7 @@ class AIGenerationService {
     data: {
       base64Image: string;
       blob: Blob;
+      buffer: Buffer<ArrayBuffer>;
       mimeType: string;
       prompt: string;
     },
