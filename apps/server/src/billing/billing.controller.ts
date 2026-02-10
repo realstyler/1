@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { billingService } from "./billing.service.js";
 import ApiError from "../errors/apiError.js";
+import { billingWebhooks } from "./billing.webhooks.js";
 
 class BillingController {
   createCheckoutSession = async (req: any, res: Response) => {
@@ -20,7 +21,7 @@ class BillingController {
 
   webhook = async (req: Request, res: Response) => {
     const sig = req.headers["stripe-signature"]!;
-    await billingService.webhookHandler(req.body.toString(), sig);
+    await billingWebhooks.webhookHandler(req.body.toString(), sig);
     res.end();
   };
 }
