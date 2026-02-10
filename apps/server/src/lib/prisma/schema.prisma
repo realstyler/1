@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../prisma/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String  @id @default(uuid())
+  name             String
+  email            String  @unique
+  passwordHash     String  @map("password_hash")
+  stripeCustomerId String? @map("stripe_customer_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  projects      Project[]
+  subscriptions Subscription[]
+  usageTracking UsageTracking[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String      @id @default(uuid())
+  userId      String      @map("user_id")
+  name        String
+  stylePreset StylePreset @map("style_preset")
+  shareId     String      @unique @map("share_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images ProjectImage[]
+
+  @@index([userId])
+  @@map("projects")
+}
+
+model ProjectImage {
+  id        String @id @default(uuid())
+  projectId String @map("project_id")
+
+  originalUrl String  @map("original_url")
+  restyledUrl String? @map("restyled_url")
+  orderIndex  Int     @map("order_index")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_images")
+}
+
+model Subscription {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+
+  stripeSubscriptionId String             @unique @map("stripe_subscription_id")
+  planTier             PlanTier           @map("plan_tier")
+  status               SubscriptionStatus
+
+  currentPeriodStart DateTime @map("current_period_start")
+  currentPeriodEnd   DateTime @map("current_period_end")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("subscriptions")
+}
+
+model UsageTracking {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+
+  imagesUsed  Int @default(0) @map("images_used")
+  imagesLimit Int @map("images_limit")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, periodStart, periodEnd])
+  @@index([userId])
+  @@map("usage_tracking")
+}
+
+model StylePrompt {
+  preset       StylePreset @id
+  displayName  String      @map("display_name")
+  description  String
+  content      String // prompt template
+  colorPalette String?     @map("color_palette")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("style_prompt")
+}
+
+enum StylePreset {
+  SCANDINAVIAN
+  MINIMAL_LUXE
+  MODERN_COASTAL
+  JAPANDI
+  BOLD_COLOUR
+  URBAN_INDUSTRIAL
+  HAMPTONS_CLASSIC
+  MID_CENTURY_MODERN
+}
+
+enum PlanTier {
+  PRO
+  PRO_PLUS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELED
+  PAST_DUE
+  UNPAID
+  TRIALING
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+}
