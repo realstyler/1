@@ -1,8 +1,11 @@
+import Stripe from "stripe";
 import { environment } from "../config/environment.js";
 import ApiError from "../errors/apiError.js";
+import { PlanTier } from "../lib/prisma/generated/client/index.js";
 import { prisma } from "../lib/prisma/index.js";
 import { stripe } from "../lib/stripe.js";
 import type { UserDTO } from "../user/user.dto.js";
+import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
 import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import type { CreateCustomerDTO } from "./billing.dto.js";
 import {
@@ -10,9 +13,6 @@ import {
   PRICE_TO_TIER,
   TIER_TO_PRICE_ID,
 } from "./billing.schemas.js";
-import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
-import { PlanTier } from "../lib/prisma/generated/client/index.js";
-import type Stripe from "stripe";
 
 class BillingService {
   async createCustomer(input: CreateCustomerDTO) {
@@ -133,16 +133,20 @@ class BillingService {
       case "customer.subscription.deleted":
         await this.handleSubscriptionDeleted(event);
         break;
+
+      case "invoice.paid":
+      case "invoice.payment_succeeded":
+        await this.handleInvoicePaid(event);
+        break;
+
+      case "invoice.payment_failed":
+        await this.handleInvoicePaymentFailed(event);
+        break;
     }
   }
 
   private async handleCompleteSession(event: Stripe.Event) {
-    if (event.type !== "checkout.session.completed")
-      throw new Error(
-        `Event type should be \"checkout.session.completed\n, not ${event.type}`,
-      );
-
-    const session = event.data.object;
+    const session = event.data.object as Stripe.Checkout.Session;
     const stripeSubscriptionId = session.subscription as string;
 
     const subscription = await stripe.subscriptions.retrieve(
@@ -153,13 +157,19 @@ class BillingService {
     const item = subscription.items.data[0]!;
 
     const planTier = PRICE_TO_TIER[item.price.id];
-    if (!planTier) throw new Error("Unknown plan tier");
+    if (!planTier) {
+      console.error("Unknown plan tier");
+      return;
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: session.metadata!.userId },
     });
 
-    if (!user) throw new Error("User not found");
+    if (!user) {
+      console.error("User not found");
+      return;
+    }
 
     const periodStart = item.current_period_start;
     const periodEnd = item.current_period_end;
@@ -184,19 +194,20 @@ class BillingService {
   }
 
   private async handleSubscriptionUpdated(event: Stripe.Event) {
-    if (event.type !== "customer.subscription.updated")
-      throw new Error(
-        `Event type should be \"customer.subscription.updated\n, not ${event.type}`,
-      );
-
-    const subscription = event.data.object;
+    const subscription = event.data.object as Stripe.Subscription;
 
     const item = subscription.items.data[0];
-    if (!item) throw new Error("Item not found");
-    const priceId = item.price.id;
+    if (!item) {
+      console.error(`Item not found from subscription ${subscription.id}`);
+      return;
+    }
 
+    const priceId = item.price.id;
     const planTier = PRICE_TO_TIER[priceId];
-    if (!planTier) throw new Error("Unknown plan tier");
+    if (!planTier) {
+      console.error("Unknown plan tier");
+      return;
+    }
 
     const periodStart = item.current_period_start;
     const periodEnd = item.current_period_end;
@@ -215,21 +226,100 @@ class BillingService {
   }
 
   private async handleSubscriptionDeleted(event: Stripe.Event) {
-    if (event.type !== "customer.subscription.deleted")
-      throw new Error(
-        `Event type should be \"customer.subscription.deleted\n, not ${event.type}`,
-      );
-
-    const subscription = event.data.object;
+    const subscription = event.data.object as Stripe.Subscription;
 
     await prisma.subscription.update({
       where: { stripeSubscriptionId: subscription.id },
       data: {
-        status: "CANCELED",
+        status: mapStripeStatus(subscription.status),
       },
     });
 
     console.log("Subscription canceled:", subscription.id);
+  }
+
+  private async handleInvoicePaid(event: Stripe.Event) {
+    const invoice = event.data.object as Stripe.Invoice;
+
+    // @ts-ignore
+    const subscriptionId = invoice.subscription as string;
+    if (!subscriptionId) {
+      console.log(`${event.type} without subscription`);
+      return;
+    }
+
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+      expand: ["items.data.price"],
+    });
+
+    const item = subscription.items.data[0];
+    if (!item) {
+      console.error(`Item not found from subscription ${subscription.id}`);
+      return;
+    }
+
+    const planTier = PRICE_TO_TIER[item.price.id];
+    if (!planTier) {
+      console.error("Unknown plan tier");
+      return;
+    }
+
+    await prisma.subscription.update({
+      where: { stripeSubscriptionId: subscriptionId },
+      data: {
+        status: mapStripeStatus(subscription.status),
+        currentPeriodStart: new Date(item.current_period_start * 1000),
+        currentPeriodEnd: new Date(item.current_period_end * 1000),
+        planTier,
+      },
+    });
+
+    console.log("Payment success:", subscriptionId);
+  }
+
+  private async handleInvoicePaymentFailed(event: Stripe.Event) {
+    const invoice = event.data.object as Stripe.Invoice;
+
+    // @ts-ignore
+    const subscriptionId = invoice.subscription as string | null;
+    if (!subscriptionId) {
+      console.log("invoice.payment_failed without subscription");
+      return;
+    }
+
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+      expand: ["items.data.price"],
+    });
+
+    const item = subscription.items.data[0];
+    if (!item) {
+      console.error(`Item not found from subscription ${subscription.id}`);
+      return;
+    }
+
+    const planTier = PRICE_TO_TIER[item.price.id];
+
+    const periodStart = item.current_period_start;
+    const periodEnd = item.current_period_end;
+
+    await prisma.subscription.update({
+      where: { stripeSubscriptionId: subscriptionId },
+      data: {
+        status: "PAST_DUE",
+        currentPeriodStart: new Date(periodStart * 1000),
+        currentPeriodEnd: new Date(periodEnd * 1000),
+        planTier,
+      },
+    });
+
+    console.log("Payment FAILED:", {
+      subscriptionId,
+      customer: invoice.customer,
+      attempt_count: invoice.attempt_count,
+      next_payment_attempt: invoice.next_payment_attempt,
+    });
+
+    // TODO: restrict access | send email
   }
 }
 
