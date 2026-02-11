@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma/index.js";
 import { stripe } from "../lib/stripe.js";
 import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
 import { PRICE_TO_TIER } from "./billing.schemas.js";
+import { quotaService } from "../quota/quota.service.js";
 
 class BillingWebhooks {
   async webhookHandler(payload: string, header: string | string[]) {
@@ -29,7 +30,6 @@ class BillingWebhooks {
         break;
 
       case "invoice.paid":
-      case "invoice.payment_succeeded":
         await this.handleInvoicePaid(event);
         break;
 
@@ -65,25 +65,32 @@ class BillingWebhooks {
       return;
     }
 
-    const periodStart = item.current_period_start;
-    const periodEnd = item.current_period_end;
+    const currentPeriodStart = new Date(item.current_period_start * 1000);
+    const currentPeriodEnd = new Date(item.current_period_end * 1000);
 
-    await prisma.subscription.upsert({
+    const sub = await prisma.subscription.upsert({
       where: { stripeSubscriptionId },
       create: {
         userId: user.id,
         stripeSubscriptionId,
         planTier,
         status: mapStripeStatus(subscription.status),
-        currentPeriodStart: new Date(periodStart * 1000),
-        currentPeriodEnd: new Date(periodEnd * 1000),
+        currentPeriodStart,
+        currentPeriodEnd,
       },
       update: {
         planTier,
         status: mapStripeStatus(subscription.status),
-        currentPeriodStart: new Date(periodStart * 1000),
-        currentPeriodEnd: new Date(periodEnd * 1000),
+        currentPeriodStart,
+        currentPeriodEnd,
       },
+    });
+
+    await quotaService.createPeriod({
+      userId: sub.userId,
+      periodStart: currentPeriodStart,
+      periodEnd: currentPeriodEnd,
+      imagesLimit: quotaService.getImagesLimitByPlan(sub.planTier),
     });
   }
 
@@ -103,17 +110,24 @@ class BillingWebhooks {
       return;
     }
 
-    const periodStart = item.current_period_start;
-    const periodEnd = item.current_period_end;
+    const currentPeriodStart = new Date(item.current_period_start * 1000);
+    const currentPeriodEnd = new Date(item.current_period_end * 1000);
 
-    await prisma.subscription.update({
+    const sub = await prisma.subscription.update({
       where: { stripeSubscriptionId: subscription.id },
       data: {
         planTier,
         status: mapStripeStatus(subscription.status),
-        currentPeriodStart: new Date(periodStart * 1000),
-        currentPeriodEnd: new Date(periodEnd * 1000),
+        currentPeriodStart,
+        currentPeriodEnd,
       },
+    });
+
+    await quotaService.createPeriod({
+      userId: sub.userId,
+      periodStart: currentPeriodStart,
+      periodEnd: currentPeriodEnd,
+      imagesLimit: quotaService.getImagesLimitByPlan(sub.planTier),
     });
 
     console.log("Subscription updated:", subscription.id, planTier);
@@ -158,14 +172,24 @@ class BillingWebhooks {
       return;
     }
 
-    await prisma.subscription.update({
+    const currentPeriodStart = new Date(item.current_period_start * 1000);
+    const currentPeriodEnd = new Date(item.current_period_end * 1000);
+
+    const sub = await prisma.subscription.update({
       where: { stripeSubscriptionId: subscriptionId },
       data: {
         status: mapStripeStatus(subscription.status),
-        currentPeriodStart: new Date(item.current_period_start * 1000),
-        currentPeriodEnd: new Date(item.current_period_end * 1000),
+        currentPeriodStart,
+        currentPeriodEnd,
         planTier,
       },
+    });
+
+    await quotaService.createPeriod({
+      userId: sub.userId,
+      periodStart: currentPeriodStart,
+      periodEnd: currentPeriodEnd,
+      imagesLimit: quotaService.getImagesLimitByPlan(sub.planTier),
     });
 
     console.log("Payment success:", subscriptionId);

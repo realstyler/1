@@ -65,22 +65,17 @@ class BillingService {
 
     // ===== NO SUBSCRIPTION → CREATE =====
     if (!active) {
-      const session = await stripe.checkout.sessions.create(
-        {
-          customer: user.stripeCustomerId,
-          mode: "subscription",
-          line_items: [{ price: priceId, quantity: 1 }],
-          metadata: {
-            userId: user.id,
-            planTier: plan,
-          },
-          success_url: environment.CLIENT_URL,
-          cancel_url: environment.CLIENT_URL,
+      const session = await stripe.checkout.sessions.create({
+        customer: user.stripeCustomerId,
+        mode: "subscription",
+        line_items: [{ price: priceId, quantity: 1 }],
+        metadata: {
+          userId: user.id,
+          planTier: plan,
         },
-        {
-          idempotencyKey: `checkout_${user.id}`,
-        },
-      );
+        success_url: environment.CLIENT_URL,
+        cancel_url: environment.CLIENT_URL,
+      });
 
       return { type: "checkout", url: session.url };
     }

@@ -1,9 +1,14 @@
 import { Router, type Router as ExpressRouter } from "express";
 import { aiGenerationController } from "./aiGeneration.controller.js";
+import { sessionUser } from "../middlewares/sessionUser.js";
 
 const aiGenerationRouter: ExpressRouter = Router();
 
-aiGenerationRouter.post("/restyle", aiGenerationController.restyle);
+aiGenerationRouter.post(
+  "/restyle",
+  sessionUser,
+  aiGenerationController.restyle,
+);
 aiGenerationRouter.get("/restyle/jobs", aiGenerationController.getJobs);
 aiGenerationRouter.get("/restyle/:jobId", aiGenerationController.getJobById);
 

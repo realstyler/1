@@ -1,11 +1,29 @@
 import { z } from "zod";
 import { environment } from "../config/environment.js";
-import { PlanTier } from "../lib/prisma/generated/client/index.js";
+import {
+  PlanTier,
+  SubscriptionStatus,
+} from "../lib/prisma/generated/client/index.js";
+import type Stripe from "stripe";
 
 export const CreateCustomerSchema = z.object({
   email: z.email({ message: "Invalid email format" }),
   name: z.string({ message: "Name is required" }),
 });
+
+export const MAP_STRIPE_STATUS: Record<
+  Stripe.Subscription.Status,
+  SubscriptionStatus
+> = {
+  active: "ACTIVE",
+  canceled: "CANCELED",
+  incomplete: "INCOMPLETE",
+  incomplete_expired: "INCOMPLETE_EXPIRED",
+  past_due: "PAST_DUE",
+  paused: "PAUSED",
+  trialing: "TRIALING",
+  unpaid: "UNPAID",
+};
 
 export const TIER_TO_PRICE_ID: Record<string, string> = {
   PRO: environment.STRIPE_PRICE_ID_PRO,

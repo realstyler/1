@@ -11,16 +11,25 @@ import type { StylePreset } from "../lib/prisma/generated/client/index.js";
 import { promptCacheService } from "../prompts/prompts.service.js";
 import { RestyleSchema } from "./ai.schemas.js";
 import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
+import { quotaService } from "../quota/quota.service.js";
 
 class AIGenerationService {
   // every user has the opportunity to restyle
-  async restyle(input: {
-    images: { path: string; mimeType: string }[];
-    model: Model;
-    style: StylePreset;
-  }) {
+  async restyle(
+    userId: string,
+    input: {
+      images: { path: string; mimeType: string }[];
+      model: Model;
+      style: StylePreset;
+    },
+  ) {
     const { model, style, images } = zodParseOrThrow(RestyleSchema, input);
     const jobIds: string[] = [];
+
+    const reservedQuota = await quotaService.reserveQuotaAtomic(
+      userId,
+      images.length,
+    );
 
     for (const img of images) {
       const jobId = await jobService.createJob({ img, model, style });
@@ -28,11 +37,14 @@ class AIGenerationService {
 
       setImmediate(async () => {
         try {
-          const result = await this.restyleByProvider(img, model, style);
+          const result = await this.restyleByProvider(img, model, style); // generate or throw error
           await jobService.completeJob(jobId, result);
         } catch (err: any) {
-          console.error(`Failed to generate restyle for image ${img.path}, model: ${model}, style: ${style}, jobId: ${jobId}`)
-          console.error(err)
+          console.error(
+            `Failed to generate restyle for image ${img.path}, model: ${model}, style: ${style}, jobId: ${jobId}`,
+          );
+          console.error(err);
+          await quotaService.refundQuota(reservedQuota.id, 1);
           await jobService.updateJob(jobId, {
             status: "failed",
             error: err.message,
