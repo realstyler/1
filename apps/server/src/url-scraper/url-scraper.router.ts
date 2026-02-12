@@ -1,5 +1,5 @@
 import { Router, type Router as ExpressRouter } from "express";
-import { urlScraperController } from "./urlScraper.controller.js";
+import { urlScraperController } from "./url-scraper.controller.js";
 
 const urlScraperRouter: ExpressRouter = Router();
 

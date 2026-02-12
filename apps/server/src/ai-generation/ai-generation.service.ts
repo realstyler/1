@@ -1,6 +1,6 @@
 import ApiError from "../errors/apiError.js";
 import { environment } from "../config/environment.js";
-import { imageUploadService } from "../upload/imageUpload.service.js";
+import { imageUploadService } from "../upload/image-upload.service.js";
 import type { Model } from "../types/index.js";
 import { geminiProvider } from "../ai-providers/geminiProvider.js";
 import { mockGenProvider } from "../ai-providers/mockGenProvider.js";
