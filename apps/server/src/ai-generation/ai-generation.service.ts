@@ -36,19 +36,40 @@ class AIGenerationService {
       jobIds.push(jobId);
 
       setImmediate(async () => {
-        try {
+        const startRestyle = async () => {
           const result = await this.restyleByProvider(img, model, style); // generate or throw error
           await jobService.completeJob(jobId, result);
+        };
+
+        try {
+          await startRestyle();
         } catch (err: any) {
           console.error(
             `Failed to generate restyle for image ${img.path}, model: ${model}, style: ${style}, jobId: ${jobId}`,
           );
           console.error(err);
-          await quotaService.refundQuota(reservedQuota.id, 1);
-          await jobService.updateJob(jobId, {
-            status: "failed",
-            error: err.message,
-          });
+
+          try {
+            await jobService.updateJob(jobId, {
+              status: "failed",
+              error: err.message,
+            });
+
+            console.log("Trying auto restyle");
+
+            await startRestyle();
+          } catch (err: any) {
+            console.error(
+              `Failed to generate restyle for image ${img.path}, model: ${model}, style: ${style}, jobId: ${jobId}`,
+            );
+            console.error(err);
+
+            await quotaService.refundQuota(reservedQuota.id, 1);
+            await jobService.updateJob(jobId, {
+              status: "failed_final",
+              error: err.message,
+            });
+          }
         }
       });
     }
