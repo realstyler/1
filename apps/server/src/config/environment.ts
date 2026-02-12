@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { z } from "zod";
+import ms, { type StringValue } from "ms";
 
 /**
  * Runtime env validation.
@@ -16,6 +17,16 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   CLIENT_URL: z.url(),
 
+  PLAN_LIMIT_FREE: z.coerce.number().min(0),
+  PLAN_LIMIT_PRO: z.coerce.number().min(0),
+  PLAN_LIMIT_PRO_PLUS: z.coerce.number().min(0),
+  FREE_PERIOD: z
+    .custom<StringValue>()
+    .default("1m")
+    .refine((v) => typeof ms(v) === "number", {
+      message: "Invalid duration format",
+    }),
+
   GEMINI_API_KEY: z.string(),
   OPENAI_API_KEY: z.string(),
   SD_API_KEY: z.string(),
@@ -26,6 +37,7 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string(),
   STRIPE_PRICE_ID_PRO: z.string(),
   STRIPE_PRICE_ID_PRO_PLUS: z.string(),
+  STRIPE_PORTAL_CONFIGURATION: z.string(),
 
   SUPABASE_URL: z.url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string(),

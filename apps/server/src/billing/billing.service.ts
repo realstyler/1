@@ -3,15 +3,12 @@ import ApiError from "../errors/apiError.js";
 import { PlanTier } from "../lib/prisma/generated/client/index.js";
 import { prisma } from "../lib/prisma/index.js";
 import { stripe } from "../lib/stripe.js";
-import { quotaService } from "../quota/quota.service.js";
 import type { UserDTO } from "../user/user.dto.js";
-import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
 import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import type { CreateCustomerDTO } from "./billing.dto.js";
 import {
   CreateCustomerSchema,
-  PRICE_TO_TIER,
-  TIER_TO_PRICE_ID,
+  TIER_TO_PRICE_ID
 } from "./billing.schemas.js";
 
 class BillingService {
@@ -60,7 +57,6 @@ class BillingService {
         line_items: [{ price: priceId, quantity: 1 }],
         metadata: {
           userId: user.id,
-          planTier: plan,
         },
         success_url: environment.CLIENT_URL,
         cancel_url: environment.CLIENT_URL,
@@ -69,25 +65,14 @@ class BillingService {
       return { type: "checkout", url: session.url };
     }
 
-    // ===== ALREADY SUBSCRIBED =====
-    const currentPriceId = active.items.data[0]?.price.id;
-    if (!currentPriceId) throw new Error("Price not found");
-
-    if (currentPriceId === priceId)
-      throw new ApiError("User already on this plan", 400);
-
-    // ===== UPDATE SUBSCRIPTION (UPGRADE/DOWNGRADE) =====
-    await stripe.subscriptions.update(active.id, {
-      items: [
-        {
-          id: active.items.data[0]!.id,
-          price: priceId,
-        },
-      ],
-      proration_behavior: "create_prorations",
+    // // ===== ALREADY SUBSCRIBED =====
+    const session = await stripe.billingPortal.sessions.create({
+      customer: user.stripeCustomerId,
+      return_url: environment.CLIENT_URL,
+      configuration: environment.STRIPE_PORTAL_CONFIGURATION,
     });
 
-    return { type: "updated" };
+    return { type: "portal", url: session.url };
   }
 
   async getActiveSubscription(stripeCustomerId: string) {
@@ -101,74 +86,6 @@ class BillingService {
         ["active", "trialing", "past_due"].includes(sub.status),
       ) ?? null
     );
-  }
-
-  async repairQuotaFromStripe(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-    if (!user || !user.stripeCustomerId) return;
-
-    const subscription = await this.getActiveSubscription(
-      user.stripeCustomerId,
-    );
-    if (!subscription) throw new Error("Subscription not found");
-
-    const item = subscription.items.data[0];
-    if (!item) throw new Error("Subscription item not found");
-
-    const planTier = PRICE_TO_TIER[item.price.id];
-    if (!planTier) throw new Error("Unknown plan tier");
-
-    const periodStart = new Date(item.current_period_start * 1000);
-    const periodEnd = new Date(item.current_period_end * 1000);
-
-    await prisma.subscription.upsert({
-      where: { stripeSubscriptionId: subscription.id },
-      create: {
-        userId: user.id,
-        stripeSubscriptionId: subscription.id,
-        planTier,
-        status: mapStripeStatus(subscription.status),
-        currentPeriodStart: periodStart,
-        currentPeriodEnd: periodEnd,
-      },
-      update: {
-        planTier,
-        status: mapStripeStatus(subscription.status),
-        currentPeriodStart: periodStart,
-        currentPeriodEnd: periodEnd,
-      },
-    });
-
-    const imagesLimit = quotaService.getImagesLimitByPlan(planTier);
-
-    await prisma.usageTracking.upsert({
-      where: {
-        userId_periodStart_periodEnd: {
-          userId,
-          periodStart,
-          periodEnd,
-        },
-      },
-      create: {
-        userId,
-        periodStart,
-        periodEnd,
-        imagesUsed: 0,
-        imagesLimit,
-      },
-      update: {
-        periodStart,
-        periodEnd,
-      },
-    });
-
-    console.log("Quota repaired from Stripe", {
-      userId,
-      periodStart,
-      periodEnd,
-    });
   }
 }
 

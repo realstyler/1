@@ -86,8 +86,7 @@ class BillingWebhooks {
       },
     });
 
-    await quotaService.createPeriod({
-      userId: sub.userId,
+    await quotaService.upsertPeriod(sub.userId, {
       periodStart: currentPeriodStart,
       periodEnd: currentPeriodEnd,
       imagesLimit: quotaService.getImagesLimitByPlan(sub.planTier),
@@ -123,8 +122,7 @@ class BillingWebhooks {
       },
     });
 
-    await quotaService.createPeriod({
-      userId: sub.userId,
+    await quotaService.upsertPeriod(sub.userId, {
       periodStart: currentPeriodStart,
       periodEnd: currentPeriodEnd,
       imagesLimit: quotaService.getImagesLimitByPlan(sub.planTier),
@@ -149,8 +147,8 @@ class BillingWebhooks {
   private async handleInvoicePaid(event: Stripe.Event) {
     const invoice = event.data.object as Stripe.Invoice;
 
-    // @ts-ignore
-    const subscriptionId = invoice.subscription as string;
+    const subscriptionId = invoice.parent?.subscription_details
+      ?.subscription as string;
     if (!subscriptionId) {
       console.log(`${event.type} without subscription`);
       return;
@@ -185,8 +183,7 @@ class BillingWebhooks {
       },
     });
 
-    await quotaService.createPeriod({
-      userId: sub.userId,
+    await quotaService.upsertPeriod(sub.userId, {
       periodStart: currentPeriodStart,
       periodEnd: currentPeriodEnd,
       imagesLimit: quotaService.getImagesLimitByPlan(sub.planTier),
