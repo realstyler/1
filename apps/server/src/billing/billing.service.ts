@@ -6,10 +6,7 @@ import { stripe } from "../lib/stripe.js";
 import type { UserDTO } from "../user/user.dto.js";
 import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import type { CreateCustomerDTO } from "./billing.dto.js";
-import {
-  CreateCustomerSchema,
-  TIER_TO_PRICE_ID
-} from "./billing.schemas.js";
+import { CreateCustomerSchema, TIER_TO_PRICE_ID } from "./billing.schemas.js";
 
 class BillingService {
   async createCustomer(input: CreateCustomerDTO) {
@@ -57,6 +54,11 @@ class BillingService {
         line_items: [{ price: priceId, quantity: 1 }],
         metadata: {
           userId: user.id,
+        },
+        subscription_data: {
+          metadata: {
+            userId: user.id,
+          },
         },
         success_url: environment.CLIENT_URL,
         cancel_url: environment.CLIENT_URL,
