@@ -1,18 +1,19 @@
 import type { Request, Response } from "express";
 import { authService } from "./auth.service.js";
 import { userService } from "../user/user.service.js";
+import mapUser from "../utils/mapUser.util.js";
 
 class AuthController {
   register = async (req: any, res: Response) => {
     const user = await authService.register(req.body);
     req.session.userId = user.id;
-    res.json(user);
+    res.json(mapUser(user));
   };
 
   login = async (req: any, res: Response) => {
     const user = await authService.login(req.body);
     req.session.userId = user.id;
-    res.json(user);
+    res.json(mapUser(user));
   };
 
   logout = (req: Request, res: Response) => {
@@ -25,7 +26,7 @@ class AuthController {
 
   me = async (req: any, res: any) => {
     const user = await userService.getUserById(req.session.userId);
-    res.json(user);
+    res.json(mapUser(user));
   };
 }
 
