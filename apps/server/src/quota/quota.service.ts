@@ -1,36 +1,56 @@
+import ms from "ms";
+import { PRICE_TO_TIER } from "../billing/billing.schemas.js";
 import { billingService } from "../billing/billing.service.js";
+import { environment } from "../config/environment.js";
 import ApiError from "../errors/apiError.js";
 import type { PlanTier } from "../lib/prisma/generated/client/index.js";
 import { prisma } from "../lib/prisma/index.js";
+import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
 import type { QuotaPeriodCreateDTO } from "./quota.dto.js";
 
 class QuotaService {
-  async createPeriod(input: QuotaPeriodCreateDTO) {
-    return prisma.usageTracking.upsert({
-      where: {
-        userId_periodStart_periodEnd: {
-          userId: input.userId,
-          periodStart: input.periodStart,
-          periodEnd: input.periodEnd,
-        },
-      },
-      create: input,
-      update: {
-        imagesLimit: input.imagesLimit,
-      },
+  async upsertPeriod(userId: string, input: QuotaPeriodCreateDTO) {
+    const usage = await this.getLastUsagePeriod(userId);
+
+    if (!usage)
+      return prisma.usageTracking.create({
+        data: { ...input, userId },
+      });
+    else
+      return prisma.usageTracking.update({
+        where: { id: usage.id },
+        data: input,
+      });
+  }
+
+  async createFreePeriod(userId: string) {
+    const freeTime = ms(environment.FREE_PERIOD);
+    const periodStart = new Date();
+    const periodEnd = new Date(periodStart.getTime() + freeTime);
+
+    console.log(`CREATE FREE PERIOD FOR USER ${userId}`);
+
+    return this.upsertPeriod(userId, {
+      periodStart,
+      periodEnd,
+      imagesLimit: this.getImagesLimitByPlan("FREE"),
     });
   }
 
   async assertQuotaAvailable(userId: string, count: number) {
     let usage = await this.getLastUsagePeriod(userId);
 
+    // ===== SELF HEAL FROM STRIPE =====
     if (!usage) {
       console.log("Quota missing → repairing from Stripe...");
-      await billingService.repairQuotaFromStripe(userId);
-      usage = await this.getLastUsagePeriod(userId);
+      try {
+        await this.repairQuotaFromStripe(userId);
+        usage = await this.getLastUsagePeriod(userId);
+      } catch {}
     }
 
-    if (!usage) throw new ApiError("No quota tracking found for user", 400);
+    // ===== FALLBACK FREE PERIOD =====
+    if (!usage) usage = await this.createFreePeriod(userId);
 
     if (usage.imagesUsed + count > usage.imagesLimit)
       throw new ApiError(
@@ -72,9 +92,84 @@ class QuotaService {
     });
   }
 
-  getImagesLimitByPlan(plan?: PlanTier) {
-    return plan === "PRO" ? 2 : plan === "PRO_PLUS" ? 5 : 10;
+  async repairQuotaFromStripe(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user || !user.stripeCustomerId) return;
+
+    const subscription = await billingService.getActiveSubscription(
+      user.stripeCustomerId,
+    );
+    console.log(user, subscription);
+    if (!subscription) throw new Error("Subscription not found");
+
+    const item = subscription.items.data[0];
+    if (!item) throw new Error("Subscription item not found");
+
+    const planTier = PRICE_TO_TIER[item.price.id];
+    if (!planTier) throw new Error("Unknown plan tier");
+
+    const periodStart = new Date(item.current_period_start * 1000);
+    const periodEnd = new Date(item.current_period_end * 1000);
+
+    await prisma.subscription.upsert({
+      where: { stripeSubscriptionId: subscription.id },
+      create: {
+        userId: user.id,
+        stripeSubscriptionId: subscription.id,
+        planTier,
+        status: mapStripeStatus(subscription.status),
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
+      },
+      update: {
+        planTier,
+        status: mapStripeStatus(subscription.status),
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
+      },
+    });
+
+    const imagesLimit = quotaService.getImagesLimitByPlan(planTier);
+
+    await prisma.usageTracking.upsert({
+      where: {
+        userId_periodStart_periodEnd: {
+          userId,
+          periodStart,
+          periodEnd,
+        },
+      },
+      create: {
+        userId,
+        periodStart,
+        periodEnd,
+        imagesUsed: 0,
+        imagesLimit,
+      },
+      update: {
+        periodStart,
+        periodEnd,
+      },
+    });
+
+    console.log("Quota repaired from Stripe", {
+      userId,
+      periodStart,
+      periodEnd,
+    });
+  }
+
+  getImagesLimitByPlan(plan: PlanTier | "FREE") {
+    return PLAN_LIMITS[plan];
   }
 }
 
 export const quotaService = new QuotaService();
+
+export const PLAN_LIMITS = {
+  FREE: environment.PLAN_LIMIT_FREE,
+  PRO: environment.PLAN_LIMIT_PRO,
+  PRO_PLUS: environment.PLAN_LIMIT_PRO_PLUS,
+};

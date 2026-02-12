@@ -17,8 +17,8 @@ class BillingWebhooks {
     console.log("EVENT", event.type);
 
     switch (event.type) {
-      case "checkout.session.completed":
-        await this.handleCompleteSession(event);
+      case "customer.subscription.created":
+        await this.handleSubscriptionCreated(event);
         break;
 
       case "customer.subscription.updated":
@@ -39,15 +39,10 @@ class BillingWebhooks {
     }
   }
 
-  private async handleCompleteSession(event: Stripe.Event) {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const stripeSubscriptionId = session.subscription as string;
-
-    const subscription = await stripe.subscriptions.retrieve(
-      stripeSubscriptionId,
-      { expand: ["items.data.price"] },
-    );
-
+  private async handleSubscriptionCreated(
+    event: Stripe.CustomerSubscriptionCreatedEvent,
+  ) {
+    const subscription = event.data.object;
     const item = subscription.items.data[0]!;
 
     const planTier = PRICE_TO_TIER[item.price.id];
@@ -57,7 +52,7 @@ class BillingWebhooks {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.metadata!.userId },
+      where: { id: subscription.metadata!.userId },
     });
 
     if (!user) {
@@ -69,10 +64,10 @@ class BillingWebhooks {
     const currentPeriodEnd = new Date(item.current_period_end * 1000);
 
     const sub = await prisma.subscription.upsert({
-      where: { stripeSubscriptionId },
+      where: { stripeSubscriptionId: subscription.id },
       create: {
         userId: user.id,
-        stripeSubscriptionId,
+        stripeSubscriptionId: subscription.id,
         planTier,
         status: mapStripeStatus(subscription.status),
         currentPeriodStart,
@@ -86,16 +81,17 @@ class BillingWebhooks {
       },
     });
 
-    await quotaService.createPeriod({
-      userId: sub.userId,
+    await quotaService.upsertPeriod(sub.userId, {
       periodStart: currentPeriodStart,
       periodEnd: currentPeriodEnd,
       imagesLimit: quotaService.getImagesLimitByPlan(sub.planTier),
     });
   }
 
-  private async handleSubscriptionUpdated(event: Stripe.Event) {
-    const subscription = event.data.object as Stripe.Subscription;
+  private async handleSubscriptionUpdated(
+    event: Stripe.CustomerSubscriptionUpdatedEvent,
+  ) {
+    const subscription = event.data.object;
 
     const item = subscription.items.data[0];
     if (!item) {
@@ -123,8 +119,7 @@ class BillingWebhooks {
       },
     });
 
-    await quotaService.createPeriod({
-      userId: sub.userId,
+    await quotaService.upsertPeriod(sub.userId, {
       periodStart: currentPeriodStart,
       periodEnd: currentPeriodEnd,
       imagesLimit: quotaService.getImagesLimitByPlan(sub.planTier),
@@ -133,8 +128,10 @@ class BillingWebhooks {
     console.log("Subscription updated:", subscription.id, planTier);
   }
 
-  private async handleSubscriptionDeleted(event: Stripe.Event) {
-    const subscription = event.data.object as Stripe.Subscription;
+  private async handleSubscriptionDeleted(
+    event: Stripe.CustomerSubscriptionDeletedEvent,
+  ) {
+    const subscription = event.data.object;
 
     await prisma.subscription.update({
       where: { stripeSubscriptionId: subscription.id },
@@ -146,11 +143,11 @@ class BillingWebhooks {
     console.log("Subscription canceled:", subscription.id);
   }
 
-  private async handleInvoicePaid(event: Stripe.Event) {
-    const invoice = event.data.object as Stripe.Invoice;
+  private async handleInvoicePaid(event: Stripe.InvoicePaidEvent) {
+    const invoice = event.data.object;
 
-    // @ts-ignore
-    const subscriptionId = invoice.subscription as string;
+    const subscriptionId = invoice.parent?.subscription_details
+      ?.subscription as string;
     if (!subscriptionId) {
       console.log(`${event.type} without subscription`);
       return;
@@ -185,8 +182,7 @@ class BillingWebhooks {
       },
     });
 
-    await quotaService.createPeriod({
-      userId: sub.userId,
+    await quotaService.upsertPeriod(sub.userId, {
       periodStart: currentPeriodStart,
       periodEnd: currentPeriodEnd,
       imagesLimit: quotaService.getImagesLimitByPlan(sub.planTier),
@@ -195,13 +191,15 @@ class BillingWebhooks {
     console.log("Payment success:", subscriptionId);
   }
 
-  private async handleInvoicePaymentFailed(event: Stripe.Event) {
-    const invoice = event.data.object as Stripe.Invoice;
+  private async handleInvoicePaymentFailed(
+    event: Stripe.InvoicePaymentFailedEvent,
+  ) {
+    const invoice = event.data.object;
 
-    // @ts-ignore
-    const subscriptionId = invoice.subscription as string | null;
+    const subscriptionId = invoice.parent?.subscription_details
+      ?.subscription as string;
     if (!subscriptionId) {
-      console.log("invoice.payment_failed without subscription");
+      console.log(`${event.type} without subscription`);
       return;
     }
 

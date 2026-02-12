@@ -1,5 +1,4 @@
 export type QuotaPeriodDTO = {
-  userId: string;
   periodStart: Date;
   periodEnd: Date;
   imagesUsed: number;
