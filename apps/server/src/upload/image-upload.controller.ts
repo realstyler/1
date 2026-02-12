@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { imageUploadService } from "./imageUpload.service.js";
+import { imageUploadService } from "./image-upload.service.js";
 
 class ImageUploadController {
   uploadImages = async (req: Request, res: Response) => {

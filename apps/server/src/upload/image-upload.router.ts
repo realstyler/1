@@ -1,5 +1,5 @@
 import { Router, type Router as ExpressRouter } from "express";
-import { imageUploadController } from "./imageUpload.controller.js";
+import { imageUploadController } from "./image-upload.controller.js";
 import { uploadImagesMulter } from "../middlewares/multerMiddleware.js";
 
 const imageUploadRouter: ExpressRouter = Router();

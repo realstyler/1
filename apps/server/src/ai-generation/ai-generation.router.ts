@@ -1,5 +1,5 @@
 import { Router, type Router as ExpressRouter } from "express";
-import { aiGenerationController } from "./aiGeneration.controller.js";
+import { aiGenerationController } from "./ai-generation.controller.js";
 import { sessionUser } from "../middlewares/sessionUser.js";
 
 const aiGenerationRouter: ExpressRouter = Router();

@@ -1,12 +1,12 @@
 import express from "express";
 import session from "express-session";
-import urlScraperRouter from "./urlScraper/urlScraper.router.js";
+import urlScraperRouter from "./url-scraper/url-scraper.router.js";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import billingRouter from "./billing/billing.router.js";
 import webhooksRouter from "./webhooks/webhooks.router.js";
 import { environment } from "./config/environment.js";
-import imageUploadRouter from "./upload/imageUpload.router.js";
-import aiGenerationRouter from "./aiGeneration/aiGeneration.router.js";
+import imageUploadRouter from "./upload/image-upload.router.js";
+import aiGenerationRouter from "./ai-generation/ai-generation.router.js";
 import authRouter from "./auth/auth.router.js";
 import initRedisStore from "./lib/redis.js";
 import { promptCacheService } from "./prompts/prompts.service.js";

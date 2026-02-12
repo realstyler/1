@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { aiGenerationService } from "./aiGeneration.service.js";
+import { aiGenerationService } from "./ai-generation.service.js";
 import { jobService } from "../job-pooling/job.service.js";
 import ApiError from "../errors/apiError.js";
 import type { UserDTO } from "../user/user.dto.js";

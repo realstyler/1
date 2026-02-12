@@ -1,3 +1,4 @@
+import { billingService } from "../billing/billing.service.js";
 import ApiError from "../errors/apiError.js";
 import type { PlanTier } from "../lib/prisma/generated/client/index.js";
 import { prisma } from "../lib/prisma/index.js";
@@ -21,14 +22,22 @@ class QuotaService {
   }
 
   async assertQuotaAvailable(userId: string, count: number) {
-    const usage = await this.getLastUsagePeriod(userId);
+    let usage = await this.getLastUsagePeriod(userId);
+
+    if (!usage) {
+      console.log("Quota missing → repairing from Stripe...");
+      await billingService.repairQuotaFromStripe(userId);
+      usage = await this.getLastUsagePeriod(userId);
+    }
+
     if (!usage) throw new ApiError("No quota tracking found for user", 400);
 
     if (usage.imagesUsed + count > usage.imagesLimit)
       throw new ApiError(
-        `Quota exceeded. Available ${usage.imagesLimit - usage.imagesUsed} quota`,
+        `Quota exceeded. Available ${usage.imagesLimit - usage.imagesUsed}`,
         403,
       );
+
     return usage;
   }
 

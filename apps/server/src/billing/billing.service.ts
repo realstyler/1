@@ -3,10 +3,16 @@ import ApiError from "../errors/apiError.js";
 import { PlanTier } from "../lib/prisma/generated/client/index.js";
 import { prisma } from "../lib/prisma/index.js";
 import { stripe } from "../lib/stripe.js";
+import { quotaService } from "../quota/quota.service.js";
 import type { UserDTO } from "../user/user.dto.js";
+import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
 import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import type { CreateCustomerDTO } from "./billing.dto.js";
-import { CreateCustomerSchema, TIER_TO_PRICE_ID } from "./billing.schemas.js";
+import {
+  CreateCustomerSchema,
+  PRICE_TO_TIER,
+  TIER_TO_PRICE_ID,
+} from "./billing.schemas.js";
 
 class BillingService {
   async createCustomer(input: CreateCustomerDTO) {
@@ -44,24 +50,7 @@ class BillingService {
     const priceId = TIER_TO_PRICE_ID[plan];
     if (!priceId) throw new ApiError(`Price not found by plan ${plan}`);
 
-    const activeList = await stripe.subscriptions.list({
-      customer: user.stripeCustomerId,
-      status: "active",
-      limit: 1,
-    });
-    const trialingList = await stripe.subscriptions.list({
-      customer: user.stripeCustomerId,
-      status: "trialing",
-      limit: 1,
-    });
-    const pastDueList = await stripe.subscriptions.list({
-      customer: user.stripeCustomerId,
-      status: "past_due",
-      limit: 1,
-    });
-
-    const active =
-      activeList.data[0] ?? trialingList.data[0] ?? pastDueList.data[0];
+    const active = await this.getActiveSubscription(user.stripeCustomerId);
 
     // ===== NO SUBSCRIPTION → CREATE =====
     if (!active) {
@@ -99,6 +88,87 @@ class BillingService {
     });
 
     return { type: "updated" };
+  }
+
+  async getActiveSubscription(stripeCustomerId: string) {
+    const list = await stripe.subscriptions.list({
+      customer: stripeCustomerId,
+      limit: 10,
+    });
+
+    return (
+      list.data.find((sub) =>
+        ["active", "trialing", "past_due"].includes(sub.status),
+      ) ?? null
+    );
+  }
+
+  async repairQuotaFromStripe(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user || !user.stripeCustomerId) return;
+
+    const subscription = await this.getActiveSubscription(
+      user.stripeCustomerId,
+    );
+    if (!subscription) throw new Error("Subscription not found");
+
+    const item = subscription.items.data[0];
+    if (!item) throw new Error("Subscription item not found");
+
+    const planTier = PRICE_TO_TIER[item.price.id];
+    if (!planTier) throw new Error("Unknown plan tier");
+
+    const periodStart = new Date(item.current_period_start * 1000);
+    const periodEnd = new Date(item.current_period_end * 1000);
+
+    await prisma.subscription.upsert({
+      where: { stripeSubscriptionId: subscription.id },
+      create: {
+        userId: user.id,
+        stripeSubscriptionId: subscription.id,
+        planTier,
+        status: mapStripeStatus(subscription.status),
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
+      },
+      update: {
+        planTier,
+        status: mapStripeStatus(subscription.status),
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
+      },
+    });
+
+    const imagesLimit = quotaService.getImagesLimitByPlan(planTier);
+
+    await prisma.usageTracking.upsert({
+      where: {
+        userId_periodStart_periodEnd: {
+          userId,
+          periodStart,
+          periodEnd,
+        },
+      },
+      create: {
+        userId,
+        periodStart,
+        periodEnd,
+        imagesUsed: 0,
+        imagesLimit,
+      },
+      update: {
+        periodStart,
+        periodEnd,
+      },
+    });
+
+    console.log("Quota repaired from Stripe", {
+      userId,
+      periodStart,
+      periodEnd,
+    });
   }
 }
 

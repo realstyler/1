@@ -16,15 +16,13 @@ class AuthService {
 
     const passwordHash = await bcrypt.hash(data.password, 10);
 
-    const user = await prisma.user.create({
+    return prisma.user.create({
       data: {
         email: data.email,
         passwordHash,
         name: data.name,
       },
     });
-
-    return user;
   }
 
   async login(input: LoginDTO) {

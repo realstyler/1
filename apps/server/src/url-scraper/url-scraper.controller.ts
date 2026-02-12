@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { urlScraperService } from "./urlScraper.service.js";
+import { urlScraperService } from "./url-scraper.service.js";
 
 class URLScraperController {
   scrapeUrl = async (req: Request, res: Response) => {
