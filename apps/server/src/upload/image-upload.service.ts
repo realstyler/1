@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "../lib/supabase.js";
 import { v4 as uuidv4 } from "uuid";
 import { environment } from "../config/environment.js";
-import ApiError from "../errors/apiError.js";
+import ApiError from "../errors/apiErrors.js";
 import { MAX_FILE_SIZE } from "../constants.js";
 import unwrapSupabaseStorageError from "../utils/unwrapSupabaseStorageError.util.js";
 import type { UploadBufferParams, UploadedImage } from "../types/index.js";

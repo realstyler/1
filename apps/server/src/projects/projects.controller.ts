@@ -1,4 +1,8 @@
-import ApiError from "../errors/apiError.js";
+import ApiError, {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from "../errors/apiErrors.js";
 import { prisma } from "../lib/prisma/index.js";
 import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import { CreateProjectSchema } from "./projects.schema.js";
@@ -25,17 +29,17 @@ class ProjectsController {
 
   async share(req: any, res: any) {
     const { id } = req.params;
-    if (!id) throw new ApiError("Project ID is required", 400);
+    if (!id) throw new BadRequestError("Project ID is required");
     const user = req.user;
 
     const project = await prisma.project.findUnique({
       where: { id },
     });
 
-    if (!project) throw new ApiError("Project not found", 404);
+    if (!project) throw new NotFoundError("Project not found");
 
     if (project.userId !== user.id)
-      throw new ApiError("You are not owner of the project", 403);
+      throw new ForbiddenError("You are not owner of the project");
 
     await prisma.project.update({
       where: { id },
@@ -49,7 +53,7 @@ class ProjectsController {
 
   async getById(req: any, res: any) {
     const { id } = req.params;
-    if (!id) throw new ApiError("Project ID is required", 400);
+    if (!id) throw new BadRequestError("Project ID is required");
     const user = req.user;
 
     const project = await prisma.project.findUnique({
@@ -64,7 +68,7 @@ class ProjectsController {
 
   async delete(req: any, res: any) {
     const { id } = req.params;
-    if (!id) throw new ApiError("Project ID is required", 400);
+    if (!id) throw new BadRequestError("Project ID is required");
     const user = req.user;
 
     const project = await prisma.project.delete({
@@ -88,7 +92,7 @@ class ProjectsController {
 
   async getByShareId(req: any, res: any) {
     const { shareId } = req.params;
-    if (!shareId) throw new ApiError("Project ID is required", 400);
+    if (!shareId) throw new BadRequestError("Project ID is required");
 
     const project = await prisma.project.findUnique({
       where: { shareId },

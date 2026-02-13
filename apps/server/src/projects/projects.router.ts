@@ -13,7 +13,7 @@ projectsRouter.post(
 );
 
 projectsRouter.post(
-  "/projects/share",
+  "/projects/share/:id",
   requireAuth,
   sessionUser,
   projectsController.share,

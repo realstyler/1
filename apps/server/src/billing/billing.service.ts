@@ -1,5 +1,5 @@
 import { environment } from "../config/environment.js";
-import ApiError from "../errors/apiError.js";
+import ApiError from "../errors/apiErrors.js";
 import { PlanTier } from "../lib/prisma/generated/client/index.js";
 import { prisma } from "../lib/prisma/index.js";
 import { stripe } from "../lib/stripe.js";

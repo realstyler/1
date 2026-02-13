@@ -2,7 +2,7 @@ import ms from "ms";
 import { PRICE_TO_TIER } from "../billing/billing.schemas.js";
 import { billingService } from "../billing/billing.service.js";
 import { environment } from "../config/environment.js";
-import ApiError from "../errors/apiError.js";
+import ApiError from "../errors/apiErrors.js";
 import type { PlanTier } from "../lib/prisma/generated/client/index.js";
 import { prisma } from "../lib/prisma/index.js";
 import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
