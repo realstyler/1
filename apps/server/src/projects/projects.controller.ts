@@ -1,29 +1,12 @@
-import ApiError, {
-  BadRequestError,
-  ForbiddenError,
-  NotFoundError,
+import {
+    BadRequestError
 } from "../errors/apiErrors.js";
-import { prisma } from "../lib/prisma/index.js";
-import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
-import { CreateProjectSchema } from "./projects.schema.js";
+import { projectsService } from "./projects.service.js";
 
 class ProjectsController {
   async create(req: any, res: any) {
     const user = req.user;
-
-    const { name, stylePreset } = zodParseOrThrow(
-      CreateProjectSchema,
-      req.body,
-    );
-
-    const project = await prisma.project.create({
-      data: {
-        name,
-        stylePreset,
-        user: { connect: user.id },
-      },
-    });
-
+    const project = await projectsService.create(user, req.body);
     res.json(project);
   }
 
@@ -32,22 +15,7 @@ class ProjectsController {
     if (!id) throw new BadRequestError("Project ID is required");
     const user = req.user;
 
-    const project = await prisma.project.findUnique({
-      where: { id },
-    });
-
-    if (!project) throw new NotFoundError("Project not found");
-
-    if (project.userId !== user.id)
-      throw new ForbiddenError("You are not owner of the project");
-
-    await prisma.project.update({
-      where: { id },
-      data: {
-        shareId: crypto.randomUUID(),
-      },
-    });
-
+    await projectsService.share(user, id);
     res.status(204).end();
   }
 
@@ -56,13 +24,7 @@ class ProjectsController {
     if (!id) throw new BadRequestError("Project ID is required");
     const user = req.user;
 
-    const project = await prisma.project.findUnique({
-      where: { id, userId: user.id },
-      include: {
-        images: true,
-      },
-    });
-
+    const project = await projectsService.getById(user, id);
     res.json(project);
   }
 
@@ -71,22 +33,7 @@ class ProjectsController {
     if (!id) throw new BadRequestError("Project ID is required");
     const user = req.user;
 
-    const project = await prisma.project.delete({
-      where: {
-        id,
-        userId: user.id,
-      },
-      include: {
-        images: true,
-      },
-    });
-
-    if (!project)
-      throw new ApiError(
-        "Project not found or you are not owner of the project",
-        400,
-      );
-
+    const project = await projectsService.delete(user, id);
     res.json(project);
   }
 
@@ -94,13 +41,7 @@ class ProjectsController {
     const { shareId } = req.params;
     if (!shareId) throw new BadRequestError("Project ID is required");
 
-    const project = await prisma.project.findUnique({
-      where: { shareId },
-      include: {
-        images: true,
-      },
-    });
-
+    const project = await projectsService.getByShareId(shareId)
     res.json(project);
   }
 }
