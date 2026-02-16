@@ -40,21 +40,6 @@ class ProjectsService {
     });
   }
 
-  async share(user: UserDTO, id: string) {
-    const project = await prisma.project.findUnique({
-      where: { id, userId: user.id },
-    });
-
-    if (!project) throw new NotFoundError("Project not found");
-
-    await prisma.project.update({
-      where: { id },
-      data: {
-        shareId: crypto.randomUUID(),
-      },
-    });
-  }
-
   async getAll(
     user: UserDTO,
     params: {
@@ -128,6 +113,21 @@ class ProjectsService {
 
     await prisma.project.delete({ where: { id: project.id } });
     return project;
+  }
+
+  async share(user: UserDTO, id: string) {
+    const project = await prisma.project.findUnique({
+      where: { id, userId: user.id },
+    });
+
+    if (!project) throw new NotFoundError("Project not found");
+
+    await prisma.project.update({
+      where: { id },
+      data: {
+        shareId: crypto.randomUUID(),
+      },
+    });
   }
 
   async getByShareId(shareId: string) {

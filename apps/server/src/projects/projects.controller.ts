@@ -11,15 +11,6 @@ class ProjectsController {
     res.json(project);
   }
 
-  async share(req: any, res: any) {
-    const { id } = req.params;
-    if (!id) throw new BadRequestError("Project ID is required");
-    const user = req.user;
-
-    await projectsService.share(user, id);
-    res.status(204).end();
-  }
-
   async getAll(req: any, res: any) {
     const params = zodParseOrThrow(ParamsGetAll, req.query);
     const user = req.user;
@@ -51,6 +42,15 @@ class ProjectsController {
 
     const project = await projectsService.delete(user, id);
     res.json(project);
+  }
+
+  async share(req: any, res: any) {
+    const { id } = req.params;
+    if (!id) throw new BadRequestError("Project ID is required");
+    const user = req.user;
+
+    await projectsService.share(user, id);
+    res.status(204).end();
   }
 
   async getByShareId(req: any, res: any) {

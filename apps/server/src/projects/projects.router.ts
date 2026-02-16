@@ -12,13 +12,6 @@ projectsRouter.post(
   projectsController.create,
 );
 
-projectsRouter.post(
-  "/projects/share/:id",
-  requireAuth,
-  sessionUser,
-  projectsController.share,
-);
-
 projectsRouter.get(
   "/projects",
   requireAuth,
@@ -38,6 +31,13 @@ projectsRouter.delete(
   requireAuth,
   sessionUser,
   projectsController.delete,
+);
+
+projectsRouter.post(
+  "/projects/share/:id",
+  requireAuth,
+  sessionUser,
+  projectsController.share,
 );
 
 projectsRouter.get(
