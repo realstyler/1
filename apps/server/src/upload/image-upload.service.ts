@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "../lib/supabase.js";
 import { v4 as uuidv4 } from "uuid";
 import { environment } from "../config/environment.js";
-import ApiError from "../errors/apiErrors.js";
+import ApiError, { NotFoundError } from "../errors/apiErrors.js";
 import { MAX_FILE_SIZE } from "../constants.js";
 import unwrapSupabaseStorageError from "../utils/unwrapSupabaseStorageError.util.js";
 import type { UploadBufferParams, UploadedImage } from "../types/index.js";
@@ -61,6 +61,38 @@ class ImageUploadService {
     }
 
     return data;
+  }
+
+  async createSignedUrls(paths: string[], expires = 60 * 10) {
+    const results = await Promise.all(
+      paths.map((p) =>
+        supabaseAdmin.storage.from(BUCKET).createSignedUrl(p, expires),
+      ),
+    );
+
+    return results.map((r) => r.data?.signedUrl ?? null);
+  }
+
+  async existImage(path: string) {
+    const { data } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .exists(path);
+
+    return data;
+  }
+
+  async existImageOrThrow(path: string) {
+    const exist = await this.existImage(path);
+    if (!exist) throw new NotFoundError(`Image not found by path ${path}`);
+  }
+
+  async deleteImages(paths: string[]) {
+    const { error } = await supabaseAdmin.storage.from(BUCKET).remove(paths);
+
+    if (error) {
+      const { message, status } = await unwrapSupabaseStorageError(error);
+      throw new ApiError(message, status);
+    }
   }
 
   // =======================

@@ -20,6 +20,13 @@ projectsRouter.post(
 );
 
 projectsRouter.get(
+  "/projects",
+  requireAuth,
+  sessionUser,
+  projectsController.getAll,
+);
+
+projectsRouter.get(
   "/projects/:id",
   requireAuth,
   sessionUser,

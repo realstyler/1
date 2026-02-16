@@ -45,9 +45,9 @@ model ProjectImage {
   id        String @id @default(uuid())
   projectId String @map("project_id")
 
-  originalUrl String  @map("original_url")
-  restyledUrl String? @map("restyled_url")
-  orderIndex  Int     @map("order_index")
+  originalPath String @map("original_url")
+  restyledPath String @map("restyled_url")
+  orderIndex   Int    @map("order_index")
 
   createdAt DateTime @default(now()) @map("created_at")
 
