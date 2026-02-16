@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { SubscriptionStatus } from "../lib/prisma/generated/client/index.js";
+import { SubscriptionStatus } from "@prisma/client";
 import { MAP_STRIPE_STATUS } from "../billing/billing.schemas.js";
 
 export function mapStripeStatus(

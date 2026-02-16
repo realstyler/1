@@ -6,7 +6,7 @@ import { mockGenProvider } from "../ai-providers/mockGenProvider.js";
 import { openaiProvider } from "../ai-providers/openaiProvider.js";
 import { stableDiffusionProvider } from "../ai-providers/stableDiffusionProvider.js";
 import { jobService } from "../job-pooling/job.service.js";
-import type { StylePreset } from "../lib/prisma/generated/client/index.js";
+import type { StylePreset } from "@prisma/client";
 import { promptCacheService } from "../prompts/prompts.service.js";
 import { RestyleSchema } from "./ai.schemas.js";
 import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";

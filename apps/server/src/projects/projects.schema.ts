@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { StylePreset } from "../lib/prisma/generated/client/index.js";
+import { StylePreset } from "@prisma/client";
 
 export const CreateProjectSchema = z.object({
   name: z.string({ message: "Project name is required" }),

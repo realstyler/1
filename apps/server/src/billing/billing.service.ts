@@ -1,6 +1,6 @@
 import { environment } from "../config/environment.js";
 import ApiError from "../errors/apiErrors.js";
-import { PlanTier } from "../lib/prisma/generated/client/index.js";
+import { PlanTier } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { stripe } from "../lib/stripe.js";
 import type { UserDTO } from "../user/user.dto.js";

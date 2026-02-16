@@ -3,7 +3,7 @@ import { environment } from "../config/environment.js";
 import {
   PlanTier,
   SubscriptionStatus,
-} from "../lib/prisma/generated/client/index.js";
+} from "@prisma/client";
 import type Stripe from "stripe";
 
 export const CreateCustomerSchema = z.object({

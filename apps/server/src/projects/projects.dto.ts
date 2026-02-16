@@ -1,6 +1,6 @@
 import type z from "zod";
 import type { CreateProjectSchema } from "./projects.schema.js";
-import type { StylePreset } from "../lib/prisma/generated/client/index.js";
+import type { StylePreset } from "@prisma/client";
 
 export type ProjectDTO = {
   images: {

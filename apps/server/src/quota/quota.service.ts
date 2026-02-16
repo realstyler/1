@@ -6,7 +6,7 @@ import ApiError, {
   NotFoundError,
   BadRequestError,
 } from "../errors/apiErrors.js";
-import type { PlanTier } from "../lib/prisma/generated/client/index.js";
+import type { PlanTier } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
 import type { QuotaPeriodCreateDTO } from "./quota.dto.js";

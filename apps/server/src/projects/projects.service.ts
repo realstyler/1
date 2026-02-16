@@ -1,5 +1,5 @@
 import { ForbiddenError, NotFoundError } from "../errors/apiErrors.js";
-import type { Prisma } from "../lib/prisma/generated/client/index.js";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { imageUploadService } from "../upload/image-upload.service.js";
 import type { UserDTO } from "../user/user.dto.js";
