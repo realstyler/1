@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { ImageGenerationProviderI } from "../interfaces/imageGenerationProvider.js";
-import { delay } from "../utils/delay.util.js";
+import { delay } from "shared";
 
 class MockGeminiProvider implements ImageGenerationProviderI {
   async generateImage({}: {

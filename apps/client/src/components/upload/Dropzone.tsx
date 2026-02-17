@@ -66,7 +66,7 @@ export default function Dropzone({ onImageSelect }: DropzoneProps) {
         <div
             className={`relative w-full max-w-2xl mx-auto aspect-video rounded-2xl border-2 border-dashed transition-all duration-300 ${isDragging
                 ? 'border-violet-500 bg-violet-500/10 scale-[1.02]'
-                : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
+                : 'border-black/20 bg-black/5 hover:border-black/40 hover:bg-black/10'
                 }`}
             onDragEnter={handleDragIn}
             onDragLeave={handleDragOut}
@@ -83,7 +83,7 @@ export default function Dropzone({ onImageSelect }: DropzoneProps) {
 
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
                 {/* Upload Icon */}
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center mb-6 transition-transform duration-300 ${isDragging ? 'scale-110' : ''}`}>
+                <div className={`w-16 h-16 rounded-2xl bg-linear-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center mb-6 transition-transform duration-300 ${isDragging ? 'scale-110' : ''}`}>
                     <svg
                         className="w-8 h-8 text-violet-400"
                         fill="none"
@@ -99,13 +99,13 @@ export default function Dropzone({ onImageSelect }: DropzoneProps) {
                     </svg>
                 </div>
 
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <h3 className="text-xl font-semibold text-black mb-2">
                     Drop your room photos here
                 </h3>
-                <p className="text-white/50 text-center mb-4">
+                <p className="text-black/50 text-center mb-4">
                     or click to browse from your device
                 </p>
-                <div className="flex flex-col items-center text-sm text-white/30 space-y-1">
+                <div className="flex flex-col items-center text-sm text-black/30 space-y-1">
                     <p>Supports JPG, PNG, WebP • Max 10MB each</p>
                     <p>Up to 5 images</p>
                 </div>
@@ -114,7 +114,7 @@ export default function Dropzone({ onImageSelect }: DropzoneProps) {
             {/* Animated border gradient */}
             {isDragging && (
                 <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-                    <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-violet-500/20 animate-pulse" />
+                    <div className="absolute inset-0 bg-linear-to-r from-violet-500/20 via-fuchsia-500/20 to-violet-500/20 animate-pulse" />
                 </div>
             )}
         </div>

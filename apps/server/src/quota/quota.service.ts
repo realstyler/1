@@ -2,7 +2,8 @@ import ms from "ms";
 import { PRICE_TO_TIER } from "../billing/billing.schemas.js";
 import { billingService } from "../billing/billing.service.js";
 import { environment } from "../config/environment.js";
-import ApiError, {
+import {
+  ForbiddenError,
   NotFoundError,
   BadRequestError,
 } from "../errors/apiErrors.js";
@@ -56,9 +57,8 @@ class QuotaService {
     if (!usage) usage = await this.createFreePeriod(userId);
 
     if (usage.imagesUsed + count > usage.imagesLimit)
-      throw new ApiError(
+      throw new ForbiddenError(
         `Quota exceeded. Available ${usage.imagesLimit - usage.imagesUsed}`,
-        403,
       );
 
     return usage;

@@ -1,8 +1,8 @@
 import z from "zod";
 import { BadRequestError } from "../errors/apiErrors.js";
 import { projectsService } from "./projects.service.js";
-import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import { ParamsGetAll } from "./projects.schema.js";
+import { zodParseOrThrow } from "shared";
 
 class ProjectsController {
   async create(req: any, res: any) {

@@ -116,7 +116,7 @@ export default function UploadPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {uploadedImages.map((img) => (
                                 <div key={img.id} className="relative group">
-                                    <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-sm relative">
+                                    <div className="aspect-4/3 rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-sm relative">
                                         <ImagePreview
                                             src={img.preview}
                                             name={img.name}

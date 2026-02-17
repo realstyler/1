@@ -1,5 +1,6 @@
 import express from "express";
 import session from "express-session";
+import cors from "cors";
 import urlScraperRouter from "./url-scraper/url-scraper.router.js";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import billingRouter from "./billing/billing.router.js";
@@ -23,6 +24,13 @@ import quotaRouter from "./quota/quota.router.js";
   app.use("/webhooks", webhooksRouter);
 
   app.use(express.json());
+
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+    }),
+  );
 
   app.use(
     session({

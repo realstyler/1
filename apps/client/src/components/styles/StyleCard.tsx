@@ -13,7 +13,7 @@ export default function StyleCard({ style, isSelected, onSelect }: StyleCardProp
     return (
         <button
             onClick={() => onSelect(style)}
-            className={`group relative aspect-[4/3] rounded-2xl overflow-hidden transition-all duration-300 ${isSelected
+            className={`group relative aspect-4/3 rounded-2xl overflow-hidden transition-all duration-300 ${isSelected
                 ? 'ring-4 ring-zinc-900 ring-offset-2 ring-offset-white scale-[1.02]'
                 : 'hover:scale-[1.02] hover:shadow-xl'
                 }`}
@@ -28,7 +28,7 @@ export default function StyleCard({ style, isSelected, onSelect }: StyleCardProp
             />
 
             {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
             {/* Selected indicator */}
             {isSelected && (

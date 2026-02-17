@@ -1,6 +1,6 @@
 import multer from "multer";
 import { ALLOWED_MIME_PREFIX, MAX_FILE_SIZE } from "../constants.js";
-import ApiError from "../errors/apiErrors.js";
+import { BadRequestError } from "../errors/apiErrors.js";
 
 export const uploadImagesMulter = multer({
   storage: multer.memoryStorage(),
@@ -10,7 +10,7 @@ export const uploadImagesMulter = multer({
   },
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype.startsWith(ALLOWED_MIME_PREFIX)) {
-      cb(new ApiError("Only image files are allowed", 400));
+      cb(new BadRequestError("Only image files are allowed"));
       return;
     }
     cb(null, true);
