@@ -2,8 +2,11 @@ import ms from "ms";
 import { PRICE_TO_TIER } from "../billing/billing.schemas.js";
 import { billingService } from "../billing/billing.service.js";
 import { environment } from "../config/environment.js";
-import ApiError from "../errors/apiError.js";
-import type { PlanTier } from "../lib/prisma/generated/client/index.js";
+import ApiError, {
+  NotFoundError,
+  BadRequestError,
+} from "../errors/apiErrors.js";
+import type { PlanTier } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
 import type { QuotaPeriodCreateDTO } from "./quota.dto.js";
@@ -96,12 +99,13 @@ class QuotaService {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
-    if (!user || !user.stripeCustomerId) return;
+    if (!user) throw new NotFoundError("User not found");
+    if (!user.stripeCustomerId)
+      throw new BadRequestError("User haven't stripe customer id");
 
     const subscription = await billingService.getActiveSubscription(
       user.stripeCustomerId,
     );
-    console.log(user, subscription);
     if (!subscription) throw new Error("Subscription not found");
 
     const item = subscription.items.data[0];
@@ -133,25 +137,10 @@ class QuotaService {
 
     const imagesLimit = quotaService.getImagesLimitByPlan(planTier);
 
-    await prisma.usageTracking.upsert({
-      where: {
-        userId_periodStart_periodEnd: {
-          userId,
-          periodStart,
-          periodEnd,
-        },
-      },
-      create: {
-        userId,
-        periodStart,
-        periodEnd,
-        imagesUsed: 0,
-        imagesLimit,
-      },
-      update: {
-        periodStart,
-        periodEnd,
-      },
+    const usage = await this.upsertPeriod(userId, {
+      periodStart,
+      periodEnd,
+      imagesLimit,
     });
 
     console.log("Quota repaired from Stripe", {
@@ -159,6 +148,8 @@ class QuotaService {
       periodStart,
       periodEnd,
     });
+
+    return usage;
   }
 
   getImagesLimitByPlan(plan: PlanTier | "FREE") {

@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "./generated/client/index.js";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 

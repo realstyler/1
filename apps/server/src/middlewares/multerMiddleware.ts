@@ -1,6 +1,6 @@
 import multer from "multer";
 import { ALLOWED_MIME_PREFIX, MAX_FILE_SIZE } from "../constants.js";
-import ApiError from "../errors/apiError.js";
+import ApiError from "../errors/apiErrors.js";
 
 export const uploadImagesMulter = multer({
   storage: multer.memoryStorage(),

@@ -1,4 +1,4 @@
-import type { StylePreset } from "../lib/prisma/generated/client/index.js";
+import type { StylePreset } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 
 class PromptCacheService {

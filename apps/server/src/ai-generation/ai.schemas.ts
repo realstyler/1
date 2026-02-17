@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MODELS } from "../constants.js";
-import { StylePreset } from "../lib/prisma/generated/client/index.js";
+import { StylePreset } from "@prisma/client";
 
 export const RestyleSchema = z.object({
   model: z.enum(MODELS, `Invalid selected model. Expected ${MODELS}`),

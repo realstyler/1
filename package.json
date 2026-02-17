@@ -6,7 +6,13 @@
     "bootstrap": "pnpm install",
     "dev:all": "pnpm -r run dev",
     "build:all": "pnpm -r run build",
-    "start:all": "pnpm -r run start"
+    "start:all": "pnpm -r run start",
+    "dev:server": "pnpm --filter server run dev",
+    "build:server": "pnpm --filter server run build",
+    "start:server": "pnpm --filter server run start",
+    "dev:client": "pnpm --filter client run dev",
+    "build:client": "pnpm --filter client run build",
+    "start:client": "pnpm --filter client run start"
   },
   "keywords": [],
   "author": "",

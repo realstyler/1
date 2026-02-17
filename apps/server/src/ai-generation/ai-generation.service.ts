@@ -1,4 +1,3 @@
-import ApiError from "../errors/apiError.js";
 import { environment } from "../config/environment.js";
 import { imageUploadService } from "../upload/image-upload.service.js";
 import type { Model } from "../types/index.js";
@@ -7,11 +6,12 @@ import { mockGenProvider } from "../ai-providers/mockGenProvider.js";
 import { openaiProvider } from "../ai-providers/openaiProvider.js";
 import { stableDiffusionProvider } from "../ai-providers/stableDiffusionProvider.js";
 import { jobService } from "../job-pooling/job.service.js";
-import type { StylePreset } from "../lib/prisma/generated/client/index.js";
+import type { StylePreset } from "@prisma/client";
 import { promptCacheService } from "../prompts/prompts.service.js";
 import { RestyleSchema } from "./ai.schemas.js";
 import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import { quotaService } from "../quota/quota.service.js";
+import { BadRequestError } from "../errors/apiErrors.js";
 
 class AIGenerationService {
   // every user has the opportunity to restyle
@@ -118,7 +118,7 @@ class AIGenerationService {
       case "stable-diffusion":
         return stableDiffusionProvider;
       default:
-        throw new ApiError(`Unsupported model: ${model}`, 400);
+        throw new BadRequestError(`Unsupported model: ${model}`);
     }
   }
 

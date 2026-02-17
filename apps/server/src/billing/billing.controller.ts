@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { billingService } from "./billing.service.js";
-import ApiError from "../errors/apiError.js";
+import ApiError from "../errors/apiErrors.js";
 import { billingWebhooks } from "./billing.webhooks.js";
 
 class BillingController {

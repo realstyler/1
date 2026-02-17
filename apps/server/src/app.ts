@@ -11,6 +11,8 @@ import authRouter from "./auth/auth.router.js";
 import initRedisStore from "./lib/redis.js";
 import { promptCacheService } from "./prompts/prompts.service.js";
 import promptsRouter from "./prompts/prompts.router.js";
+import projectsRouter from "./projects/projects.router.js";
+import quotaRouter from "./quota/quota.router.js";
 
 (async () => {
   const PORT = environment.PORT;
@@ -45,7 +47,9 @@ import promptsRouter from "./prompts/prompts.router.js";
   app.use("/api", imageUploadRouter);
   app.use("/api", urlScraperRouter);
   app.use("/api", aiGenerationRouter);
+  app.use("/api", projectsRouter);
   app.use("/api", billingRouter);
+  app.use("/api", quotaRouter);
   app.use("/api", promptsRouter);
 
   app.use(errorMiddleware);

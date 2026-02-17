@@ -1,6 +1,6 @@
 import { load } from "cheerio";
 import { isImageUrl } from "../utils/isImageUrl.util.js";
-import ApiError from "../errors/apiError.js";
+import ApiError from "../errors/apiErrors.js";
 
 class URLScraperService {
   async scrapeUrl(url: string) {

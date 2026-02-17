@@ -1,4 +1,4 @@
-import ApiError from "../errors/apiError.js";
+import { BadRequestError } from "../errors/apiErrors.js";
 import { prisma } from "../lib/prisma/index.js";
 import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import type { LoginDTO, RegisterDTO } from "./auth.dto.js";
@@ -12,7 +12,7 @@ class AuthService {
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email },
     });
-    if (existingUser) throw new ApiError("User already exists", 400);
+    if (existingUser) throw new BadRequestError("User already exists");
 
     const passwordHash = await bcrypt.hash(data.password, 10);
 
@@ -31,10 +31,10 @@ class AuthService {
     const user = await prisma.user.findUnique({
       where: { email: data.email },
     });
-    if (!user) throw new ApiError("Invalid credentials", 400);
+    if (!user) throw new BadRequestError("Invalid credentials");
 
     const valid = await bcrypt.compare(data.password, user.passwordHash);
-    if (!valid) throw new ApiError("Invalid credentials", 400);
+    if (!valid) throw new BadRequestError("Invalid credentials");
 
     return user;
   }
