@@ -1,8 +1,12 @@
-import { zodParseOrThrow } from "shared";
+import {
+  LoginSchema,
+  RegisterSchema,
+  zodParseOrThrow,
+  type LoginDTO,
+  type RegisterDTO,
+} from "shared";
 import { BadRequestError } from "../errors/apiErrors.js";
 import { prisma } from "../lib/prisma/index.js";
-import type { LoginDTO, RegisterDTO } from "./auth.dto.js";
-import { LoginSchema, RegisterSchema } from "./auth.schemas.js";
 import bcrypt from "bcrypt";
 
 class AuthService {
