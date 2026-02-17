@@ -3,7 +3,7 @@ import { UserDTO } from "./auth.dto";
 
 type State = {
   user: UserDTO | null;
-  setUser: (user: UserDTO) => void;
+  setUser: (user: UserDTO | null) => void;
 };
 
 export const useAuthStore = create<State>((set) => ({
