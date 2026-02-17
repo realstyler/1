@@ -1,12 +1,11 @@
 import { environment } from "../config/environment.js";
-import ApiError from "../errors/apiErrors.js";
 import { PlanTier } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { stripe } from "../lib/stripe.js";
 import type { UserDTO } from "../user/user.dto.js";
-import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import type { CreateCustomerDTO } from "./billing.dto.js";
 import { CreateCustomerSchema, TIER_TO_PRICE_ID } from "./billing.schemas.js";
+import { ApiError, zodParseOrThrow } from "shared";
 
 class BillingService {
   async createCustomer(input: CreateCustomerDTO) {

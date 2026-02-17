@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import ApiError from "../errors/apiErrors.js";
+import { ApiError } from "shared";
 
 export function errorMiddleware(
   err: Error,
@@ -8,9 +8,11 @@ export function errorMiddleware(
   _next: NextFunction,
 ) {
   console.error(err);
-  
+
   if (err instanceof ApiError) {
-    return res.status(err.status || 500).json({ message: err.message });
+    return res
+      .status(err.status || 500)
+      .json({ message: err.message, code: err.code });
   }
 
   res.status(500).json({ message: err.message || "Internal server error" });

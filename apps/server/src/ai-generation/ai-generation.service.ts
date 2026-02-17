@@ -9,9 +9,9 @@ import { jobService } from "../job-pooling/job.service.js";
 import type { StylePreset } from "@prisma/client";
 import { promptCacheService } from "../prompts/prompts.service.js";
 import { RestyleSchema } from "./ai.schemas.js";
-import { zodParseOrThrow } from "../utils/zodParseOrThrow.util.js";
 import { quotaService } from "../quota/quota.service.js";
 import { BadRequestError } from "../errors/apiErrors.js";
+import { zodParseOrThrow } from "shared";
 
 class AIGenerationService {
   // every user has the opportunity to restyle

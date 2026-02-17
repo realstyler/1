@@ -1,10 +1,11 @@
 import { supabaseAdmin } from "../lib/supabase.js";
 import { v4 as uuidv4 } from "uuid";
 import { environment } from "../config/environment.js";
-import ApiError, { NotFoundError } from "../errors/apiErrors.js";
+import { NotFoundError } from "../errors/apiErrors.js";
 import { MAX_FILE_SIZE } from "../constants.js";
 import unwrapSupabaseStorageError from "../utils/unwrapSupabaseStorageError.util.js";
 import type { UploadBufferParams, UploadedImage } from "../types/index.js";
+import { ApiError } from "shared";
 
 const BUCKET = environment.SUPABASE_BUCKET_NAME;
 
@@ -74,9 +75,7 @@ class ImageUploadService {
   }
 
   async existImage(path: string) {
-    const { data } = await supabaseAdmin.storage
-      .from(BUCKET)
-      .exists(path);
+    const { data } = await supabaseAdmin.storage.from(BUCKET).exists(path);
 
     return data;
   }

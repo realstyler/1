@@ -1,16 +1,9 @@
-export default class ApiError extends Error {
-  status?: number;
-
-  constructor(message: string, status?: number) {
-    super(message);
-    this.status = status;
-  }
-}
+import { ApiError } from "shared";
 
 // 400 Bad Request
 export class BadRequestError extends ApiError {
-  constructor(message?: string) {
-    super(message ?? "Bad request", 400);
+  constructor(message?: string, code?: string) {
+    super(message ?? "Bad request", 400, code);
   }
 }
 
