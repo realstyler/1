@@ -3,6 +3,9 @@ import { Inter, Playfair_Display } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import "./globals.css";
 import QCProvider from "@/components/providers/QueryClient";
+import { UserDTO } from "@/auth/auth.dto";
+import createApiSSR from "@/lib/api.ssr";
+import InitUserState from "@/components/providers/InitUserState";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,15 +29,25 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let user: UserDTO | null | undefined = undefined;
+
+  try {
+    const api = await createApiSSR();
+    const res = await api.get("/api/auth/me");
+    user = res.data;
+  } catch {}
+
   return (
     <html lang="en">
       <body
         className={`${inter.variable} ${playfairDisplay.variable} font-sans antialiased bg-white text-neutral-900`}
       >
-        <QCProvider>
-          <Navbar />
-          {children}
-        </QCProvider>
+        <InitUserState user={user ?? null}>
+          <QCProvider>
+            <Navbar />
+            {children}
+          </QCProvider>
+        </InitUserState>
       </body>
     </html>
   );

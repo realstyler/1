@@ -1,22 +1,17 @@
-import { UserDTO } from "@/auth/auth.dto";
-import InitUser from "@/components/providers/InitUser";
-import createSSRApi from "@/lib/api.ssr";
+"use client";
+
+import { useAuthStore } from "@/auth/auth.store";
 import { redirect } from "next/navigation";
 
-export default async function ProtectedLayout({
+export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  let user: UserDTO;
+  const userState = useAuthStore((s) => s.user);
 
-  try {
-    const api = await createSSRApi();
-    const res = await api.get("/api/auth/me");
-    user = res.data;
-  } catch {
-    redirect("/login");
-  }
+  if (userState === undefined) return;
+  if (userState === null) redirect("/login");
 
-  return <InitUser user={user}>{children}</InitUser>;
+  return children;
 }
