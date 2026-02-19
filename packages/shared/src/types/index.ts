@@ -1,3 +1,8 @@
+import { MODELS, StylePresetEnum } from "../constants/index.js";
+
+export type Model = (typeof MODELS)[number];
+export type StylePreset = (typeof StylePresetEnum)[number];
+
 export type JobStatus =
   | "pending"
   | "completed"

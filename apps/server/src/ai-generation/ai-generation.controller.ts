@@ -24,10 +24,13 @@ class AIGenerationController {
 
   getJobs = async (req: Request, res: Response) => {
     const jobIds = req.body as string[];
-    if (!jobIds) throw new BadRequestError("Jobs Ids is required");
+    const ids = req.query.ids as string;
+    if (!jobIds && !ids) throw new BadRequestError("Jobs Ids is required");
+
+    const normalizedIds = ids ? ids.split(",") : jobIds;
 
     const results = await Promise.all(
-      jobIds.map((job) => jobService.getJob(job)),
+      normalizedIds.map((job) => jobService.getJob(job)),
     );
 
     res.json(results);

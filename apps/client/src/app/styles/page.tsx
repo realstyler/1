@@ -7,14 +7,18 @@ import Image from "next/image";
 import { StyleGrid } from "@/components/styles";
 import ModelSelector from "@/components/styles/ModelSelector";
 import { mockStyles } from "@/data/mock";
-import { Style, Model, StoredPath } from "@/types";
+import { Style, StoredPath } from "@/types";
 import { createImageSignedUrlsApi } from "@/upload/image-upload.api";
+import { Model, RestyleInput } from "shared";
+import { useStartRestyle } from "@/restyle/restyle.hooks";
 
 export default function StylesPage() {
   const router = useRouter();
   const [selectedStyle, setSelectedStyle] = useState<Style | null>(null);
   const [selectedModel, setSelectedModel] = useState<Model>("openai");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [restyleError, setRestyleError] = useState<string | null>(null);
+  const { mutate: startRestyle, error } = useStartRestyle();
 
   const handleSelectStyle = (style: Style) => {
     setSelectedStyle(style);
@@ -25,11 +29,36 @@ export default function StylesPage() {
     sessionStorage.setItem("selectedModel", model);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    setRestyleError(null);
+    let err: string | undefined;
+
     if (selectedStyle) {
       sessionStorage.setItem("selectedStyle", JSON.stringify(selectedStyle));
-      router.push("/processing");
-    }
+
+      const raw = sessionStorage.getItem("uploadedImages");
+      if (raw) {
+        const stored = JSON.parse(raw) as StoredPath[];
+        if (stored) {
+          const input: RestyleInput = {
+            model: selectedModel,
+            style: selectedStyle.category,
+            paths: stored.map((s) => s.path),
+          };
+
+          startRestyle(input, {
+            onSuccess: (data) => {
+              localStorage.setItem("jobs", data.join(","));
+              router.push("/processing");
+            },
+          });
+
+          return;
+        } else err = "Uploaded images not found";
+      } else err = "Uploaded images not found";
+    } else err = "Style preset is required";
+
+    if (err) setRestyleError(err);
   };
 
   useEffect(() => {

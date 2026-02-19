@@ -1,20 +1,14 @@
 // Types for RealStyler UI
 
+import { StylePreset } from "shared";
+
 export interface Style {
   id: string;
   name: string;
   description: string;
   thumbnail: string;
-  category:
-    | "modern"
-    | "classic"
-    | "minimalist"
-    | "bold"
-    | "luxury"
-    | "lighting";
+  category: StylePreset;
 }
-
-export type Model = "openai" | "gemini" | "stable-diffusion";
 
 export type UploadedImageApi = {
   tmpId: string;
@@ -23,7 +17,7 @@ export type UploadedImageApi = {
   url: string;
 };
 
-export type StoredPath = { id: string; name: string, path: string };
+export type StoredPath = { id: string; name: string; path: string };
 
 export interface UploadedImage {
   id: string;

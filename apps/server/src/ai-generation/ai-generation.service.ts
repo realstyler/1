@@ -1,6 +1,5 @@
 import { environment } from "../config/environment.js";
 import { imageUploadService } from "../upload/image-upload.service.js";
-import type { Model } from "../types/index.js";
 import { geminiProvider } from "../ai-providers/geminiProvider.js";
 import { mockGenProvider } from "../ai-providers/mockGenProvider.js";
 import { openaiProvider } from "../ai-providers/openaiProvider.js";
@@ -8,36 +7,35 @@ import { stableDiffusionProvider } from "../ai-providers/stableDiffusionProvider
 import { jobService } from "../job-pooling/job.service.js";
 import type { StylePreset } from "@prisma/client";
 import { promptCacheService } from "../prompts/prompts.service.js";
-import { RestyleSchema } from "./ai.schemas.js";
 import { quotaService } from "../quota/quota.service.js";
 import { BadRequestError } from "../errors/apiErrors.js";
-import { zodParseOrThrow } from "shared";
+import { RestyleSchema, zodParseOrThrow, type Model } from "shared";
 
 class AIGenerationService {
   // every user has the opportunity to restyle
   async restyle(
     userId: string,
     input: {
-      images: { path: string; mimeType: string }[];
+      paths: string[];
       model: Model;
       style: StylePreset;
     },
   ) {
-    const { model, style, images } = zodParseOrThrow(RestyleSchema, input);
+    const { model, style, paths } = zodParseOrThrow(RestyleSchema, input);
     const jobIds: string[] = [];
 
     const reservedQuota = await quotaService.reserveQuotaAtomic(
       userId,
-      images.length,
+      paths.length,
     );
 
-    for (const img of images) {
-      const jobId = await jobService.createJob({ img, model, style });
+    for (const path of paths) {
+      const jobId = await jobService.createJob({ path, model, style });
       jobIds.push(jobId);
 
       setImmediate(async () => {
         const startRestyle = async () => {
-          const result = await this.restyleByProvider(img, model, style); // generate or throw error
+          const result = await this.restyleByProvider(path, model, style); // generate or throw error
           await jobService.completeJob(jobId, result);
         };
 
@@ -45,7 +43,7 @@ class AIGenerationService {
           await startRestyle();
         } catch (err: any) {
           console.error(
-            `Failed to generate restyle for image ${img.path}, model: ${model}, style: ${style}, jobId: ${jobId}`,
+            `Failed to generate restyle for image ${path}, model: ${model}, style: ${style}, jobId: ${jobId}`,
           );
           console.error(err);
 
@@ -60,7 +58,7 @@ class AIGenerationService {
             await startRestyle();
           } catch (err: any) {
             console.error(
-              `Failed to generate restyle for image ${img.path}, model: ${model}, style: ${style}, jobId: ${jobId}`,
+              `Failed to generate restyle for image ${path}, model: ${model}, style: ${style}, jobId: ${jobId}`,
             );
             console.error(err);
 
@@ -78,14 +76,15 @@ class AIGenerationService {
   }
 
   private async restyleByProvider(
-    image: { path: string; mimeType: string },
+    image: string,
     model: Model,
     style: StylePreset,
   ) {
-    const blob = await imageUploadService.downloadImage(image.path);
+    const blob = await imageUploadService.downloadImage(image);
     const arrayBuffer = await blob.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const base64Image = buffer.toString("base64");
+    const mime = blob.type || "application/octet-stream";
 
     const prompt = promptCacheService.get(style);
 
@@ -93,7 +92,7 @@ class AIGenerationService {
       base64Image,
       blob,
       buffer,
-      mimeType: image.mimeType,
+      mimeType: mime,
       prompt,
     });
 
