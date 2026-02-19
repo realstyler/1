@@ -23,6 +23,8 @@ export type UploadedImageApi = {
   url: string;
 };
 
+export type StoredPath = { id: string; name: string, path: string };
+
 export interface UploadedImage {
   id: string;
   file: File | null;

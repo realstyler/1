@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ProgressBar, ProcessingSpinner } from '@/components/processing';
-import { processingStages } from '../../data/mock';
+import { ProcessingSpinner } from '@/components/processing';
 
 // Helper to get initial style name from sessionStorage
 function getInitialStyleName(): string {
@@ -139,7 +138,7 @@ export default function ProcessingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {images.map((img, idx) => (
                         <div key={idx} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center gap-4">
-                            <div className="w-20 h-20 relative rounded-lg overflow-hidden flex-shrink-0 bg-black/20">
+                            <div className="w-20 h-20 relative rounded-lg overflow-hidden shrink-0 bg-black/20">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={img.preview} alt={`Room ${idx + 1}`} className="w-full h-full object-cover opacity-60" />
                                 {img.status === 'completed' && (
@@ -157,7 +156,7 @@ export default function ProcessingPage() {
                                 </div>
                                 <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                                     <div
-                                        className={`h-full transition-all duration-300 ${img.status === 'completed' ? 'bg-green-500' : 'bg-gradient-to-r from-violet-500 to-fuchsia-500'
+                                        className={`h-full transition-all duration-300 ${img.status === 'completed' ? 'bg-green-500' : 'bg-linear-to-r from-violet-500 to-fuchsia-500'
                                             }`}
                                         style={{ width: `${img.progress}%` }}
                                     />

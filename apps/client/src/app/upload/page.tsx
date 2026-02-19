@@ -10,10 +10,9 @@ import {
   createImageSignedUrlsApi,
   deleteUploadedImageApi,
 } from "@/upload/image-upload.api";
+import { StoredPath } from "@/types";
 
 type UploadingStatus = "uploading" | "ready" | "error";
-
-type StoredPath = { id: string; path: string };
 
 interface UploadedFile {
   id: string;
@@ -81,23 +80,25 @@ export default function UploadPage() {
             return img;
           });
 
-          const raw = sessionStorage.getItem("tmpImages");
+          const raw = sessionStorage.getItem("uploadedImages");
           const stored: StoredPath[] = raw ? JSON.parse(raw) : [];
 
           // Map for quick updates
-          const storedMap = new Map(stored.map((s) => [s.id, s.path]));
+          const storedMap = new Map(
+            stored.map((s) => [s.id, [s.name, s.path]]),
+          );
 
           updated.forEach((u) => {
             if (u.status === "ready" && u.path) {
-              storedMap.set(u.id, u.path);
+              storedMap.set(u.id, [u.name, u.path]);
             }
           });
 
           const newStored: StoredPath[] = Array.from(storedMap.entries()).map(
-            ([id, path]) => ({ id, path }),
+            ([id, [name, path]]) => ({ id, name, path }),
           );
 
-          sessionStorage.setItem("tmpImages", JSON.stringify(newStored));
+          sessionStorage.setItem("uploadedImages", JSON.stringify(newStored));
 
           return updated;
         });
@@ -122,14 +123,14 @@ export default function UploadPage() {
   const handleRemove = async (id: string) => {
     setUploadedImages((prev) => prev.filter((img) => img.id !== id));
 
-    const raw = sessionStorage.getItem("tmpImages");
+    const raw = sessionStorage.getItem("uploadedImages");
     if (raw) {
       const stored: StoredPath[] = JSON.parse(raw);
       const paths = stored.filter((s) => s.id !== id);
-      sessionStorage.setItem("tmpImages", JSON.stringify(paths));
+      sessionStorage.setItem("uploadedImages", JSON.stringify(paths));
 
       const path = stored.find((s) => s.id === id);
-      if(path) await deleteUploadedImageApi(path.path);
+      if (path) await deleteUploadedImageApi(path.path);
     }
   };
 
@@ -149,29 +150,11 @@ export default function UploadPage() {
   };
 
   const handleContinue = () => {
-    if (uploadedImages.length > 0 && !isGlobalUploading) {
-      const readyImages = uploadedImages.filter(
-        (img) => img.status === "ready",
-      );
-      if (readyImages.length > 0) {
-        sessionStorage.setItem(
-          "uploadedImages",
-          JSON.stringify(
-            readyImages.map((img) => ({
-              id: img.id,
-              preview: img.preview,
-              name: img.name,
-            })),
-          ),
-        );
-        // Keep legacy single image support
-        sessionStorage.setItem(
-          "uploadedImage",
-          JSON.stringify({
-            preview: readyImages[0].preview,
-            name: readyImages[0].name,
-          }),
-        );
+    const raw = sessionStorage.getItem("uploadedImages");
+    if (raw) {
+      const stored: StoredPath[] = JSON.parse(raw);
+      if (stored.length > 0) {
+        sessionStorage.setItem("uploadedImage", JSON.stringify(stored[0]));
         router.push("/styles");
       }
     }
@@ -179,7 +162,7 @@ export default function UploadPage() {
 
   useEffect(() => {
     const restoreImages = async () => {
-      const raw = sessionStorage.getItem("tmpImages");
+      const raw = sessionStorage.getItem("uploadedImages");
       if (!raw) return;
 
       const stored: StoredPath[] = JSON.parse(raw);
@@ -192,7 +175,7 @@ export default function UploadPage() {
         id: s.id,
         file: null,
         preview: urls[index],
-        name: "Uploaded image", //s.path.split("/").pop()
+        name: s.name,
         status: "ready" as const,
       }));
 
