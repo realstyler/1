@@ -20,7 +20,7 @@ export default function ImagePreview({ src, name, onRemove }: ImagePreviewProps)
             />
 
             {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
             {/* Remove button */}
             <button

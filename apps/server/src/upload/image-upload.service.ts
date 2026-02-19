@@ -12,25 +12,34 @@ const BUCKET = environment.SUPABASE_BUCKET_NAME;
 class ImageUploadService {
   async uploadTemporaryImages(
     files: Express.Multer.File[],
+    tmpIds: string[],
   ): Promise<UploadedImage[]> {
     this.validateFiles(files);
 
-    return Promise.all(
-      files.map(async (file) => {
-        const id = uuidv4();
-        const filePath = this.generateFilePath("tmp", id, file.mimetype);
+    const results: UploadedImage[] = [];
 
-        await this.uploadBuffer({
-          buffer: file.buffer,
-          mimeType: file.mimetype,
-          filePath,
-        });
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!;
+      const tmpId = tmpIds[i]!;
+      const id = uuidv4();
+      const filePath = this.generateFilePath("tmp", id, file.mimetype);
 
-        const url = await this.createSignedUrl(filePath, 300);
+      await this.uploadBuffer({
+        buffer: file.buffer,
+        mimeType: file.mimetype,
+        filePath,
+      });
 
-        return { id, path: filePath, url };
-      }),
-    );
+      const url = await this.createSignedUrl(filePath, 300);
+      results.push({
+        tmpId,
+        id,
+        path: filePath,
+        url,
+      });
+    }
+
+    return results;
   }
 
   async uploadGeneratedImage(params: {
@@ -48,7 +57,7 @@ class ImageUploadService {
 
     const url = await this.createSignedUrl(filePath, 300);
 
-    return { id, path: filePath, url };
+    return { tmpId: "", id, path: filePath, url };
   }
 
   async downloadImage(filePath: string): Promise<Blob> {
@@ -71,7 +80,24 @@ class ImageUploadService {
       ),
     );
 
-    return results.map((r) => r.data?.signedUrl ?? null);
+    return results.map((r, i) => {
+      if (!r.data?.signedUrl)
+        throw new ApiError(`Signed URL failed for ${paths[i]}`, 500);
+      return r.data.signedUrl;
+    });
+  }
+
+  async createSignedUrl(filePath: string, expires = 60 * 10): Promise<string> {
+    const { data, error } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .createSignedUrl(filePath, expires);
+
+    if (error || !data?.signedUrl) {
+      const { message, status } = await unwrapSupabaseStorageError(error);
+      throw new ApiError(message, status);
+    }
+
+    return data.signedUrl;
   }
 
   async existImage(path: string) {
@@ -145,22 +171,6 @@ class ImageUploadService {
       const { message, status } = await unwrapSupabaseStorageError(error);
       throw new ApiError(message, status);
     }
-  }
-
-  private async createSignedUrl(
-    filePath: string,
-    expiresInSeconds: number,
-  ): Promise<string> {
-    const { data, error } = await supabaseAdmin.storage
-      .from(BUCKET)
-      .createSignedUrl(filePath, expiresInSeconds);
-
-    if (error || !data?.signedUrl) {
-      const { message, status } = await unwrapSupabaseStorageError(error);
-      throw new ApiError(message, status);
-    }
-
-    return data.signedUrl;
   }
 
   private getPublicUrl(filePath: string): string {

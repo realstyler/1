@@ -1,31 +1,44 @@
 // Types for RealStyler UI
 
 export interface Style {
-    id: string;
-    name: string;
-    description: string;
-    thumbnail: string;
-    category: 'modern' | 'classic' | 'minimalist' | 'bold' | 'luxury' | 'lighting';
+  id: string;
+  name: string;
+  description: string;
+  thumbnail: string;
+  category:
+    | "modern"
+    | "classic"
+    | "minimalist"
+    | "bold"
+    | "luxury"
+    | "lighting";
 }
 
-export type Model = 'openai' | 'gemini' | 'stable-diffusion';
+export type Model = "openai" | "gemini" | "stable-diffusion";
+
+export type UploadedImageApi = {
+  tmpId: string;
+  id: string;
+  path: string;
+  url: string;
+};
 
 export interface UploadedImage {
-    id: string;
-    file: File | null;
-    preview: string;
-    name: string;
+  id: string;
+  file: File | null;
+  preview: string;
+  name: string;
 }
 
 export interface ProcessingStatus {
-    stage: 'uploading' | 'analyzing' | 'styling' | 'finalizing' | 'complete';
-    progress: number;
-    message: string;
+  stage: "uploading" | "analyzing" | "styling" | "finalizing" | "complete";
+  progress: number;
+  message: string;
 }
 
 export interface AppState {
-    uploadedImage: UploadedImage | null;
-    selectedStyle: Style | null;
-    processingStatus: ProcessingStatus | null;
-    resultImage: string | null;
+  uploadedImage: UploadedImage | null;
+  selectedStyle: Style | null;
+  processingStatus: ProcessingStatus | null;
+  resultImage: string | null;
 }

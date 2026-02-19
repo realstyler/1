@@ -10,4 +10,7 @@ imageUploadRouter.post(
   imageUploadController.uploadImages,
 );
 
+imageUploadRouter.get("/signed", imageUploadController.getSignedImageUrls)
+imageUploadRouter.delete("/uploaded-tmp", imageUploadController.deleteUploadedTmpImage)
+
 export default imageUploadRouter;

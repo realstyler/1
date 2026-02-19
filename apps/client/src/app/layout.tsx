@@ -4,8 +4,8 @@ import Navbar from "@/components/layout/Navbar";
 import "./globals.css";
 import QCProvider from "@/components/providers/QueryClient";
 import { UserDTO } from "@/auth/auth.dto";
-import createApiSSR from "@/lib/api.ssr";
 import InitUserState from "@/components/providers/InitUserState";
+import { meServer } from "./actions/auth";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -32,9 +32,7 @@ export default async function RootLayout({
   let user: UserDTO | null | undefined = undefined;
 
   try {
-    const api = await createApiSSR();
-    const res = await api.get("/api/auth/me");
-    user = res.data;
+    user = await meServer();
   } catch {}
 
   return (
