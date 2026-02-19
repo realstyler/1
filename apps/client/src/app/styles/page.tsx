@@ -76,6 +76,8 @@ export default function StylesPage() {
     restoreImage();
   }, []);
 
+  const err = restyleError ?? error?.message;
+
   return (
     <div className="min-h-screen py-32 bg-[#fafafa]">
       <div className="max-w-7xl mx-auto px-6">
@@ -121,6 +123,14 @@ export default function StylesPage() {
             selectedStyle={selectedStyle}
             onSelectStyle={handleSelectStyle}
           />
+        </div>
+
+        <div className="my-4 flex h-12">
+          {err && (
+            <div className="mx-auto text-center flex items-center text-red-400 border border-red-400 bg-red-100 px-3 rounded-2xl">
+              {err}
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
