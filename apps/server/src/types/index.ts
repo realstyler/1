@@ -5,8 +5,13 @@ export type UploadedImage = {
   url: string;
 };
 
+export type GeneratedImage = {
+  id: string;
+  path: string;
+};
+
 export type UploadBufferParams = {
   buffer: Buffer;
   mimeType: string;
-  filePath: string;
+  path: string;
 };

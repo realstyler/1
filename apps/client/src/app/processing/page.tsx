@@ -48,9 +48,10 @@ export default function ProcessingPage() {
       const data = await getJobsResultsApi(jobsIds);
       if (!data || !active) return;
 
-      setJobs(data);
+      const jobs = data.filter((j) => j !== null);
+      setJobs(jobs);
 
-      const hasPending = data.some((j) => j.status === "pending");
+      const hasPending = jobs.some((j) => j.status === "pending");
       if (hasPending) setTimeout(polling, 1000);
     };
 
@@ -106,7 +107,7 @@ export default function ProcessingPage() {
     if (!isComplete) return;
 
     const tm = setTimeout(() => {
-        router.push("/viewer");
+      router.push("/viewer");
     }, 1000);
 
     return () => clearTimeout(tm);

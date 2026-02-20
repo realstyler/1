@@ -47,7 +47,6 @@ class JobService {
       updatedAt: new Date().toISOString(),
     };
 
-    // TTL не змінюємо → зберігаємо існуючий
     const ttl = await redisClient.ttl(key);
 
     await redisClient.set(key, JSON.stringify(updated), {
