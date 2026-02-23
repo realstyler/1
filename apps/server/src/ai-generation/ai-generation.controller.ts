@@ -37,10 +37,14 @@ class AIGenerationController {
 
     if (createSignedUrls) {
       const originalPaths = results.map((j) =>
-        j ? (j.input.path as string) : null,
+        j && j.input && j.status === "completed"
+          ? (j.input.path as string)
+          : null,
       );
       const restyledPaths = results.map((j) =>
-        j ? (j.result.path as string) : null,
+        j && j.result && j.status === "completed"
+          ? (j.result.path as string)
+          : null,
       );
       const originalUrls = await imageUploadService.createSignedUrls(
         originalPaths as string[],
@@ -52,7 +56,7 @@ class AIGenerationController {
       results.forEach((j, i) => {
         if (j) {
           j.input.url = originalUrls[i];
-          j.result.url = restyledUrls[i];
+          if (j.result) j.result.url = restyledUrls[i];
         }
       });
     }

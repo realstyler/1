@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Dropzone, ImagePreview } from "@/components/upload";
 import { sampleRoomImage } from "@/data/mock";
-import { useUploadImages } from "@/upload/image-upload.hooks";
 import {
-  createImageSignedUrlsApi,
-  deleteUploadedImageApi,
-} from "@/upload/image-upload.api";
+  useDeleteUploadedImages,
+  useUploadImages,
+} from "@/upload/image-upload.hooks";
+import { createImageSignedUrlsApi } from "@/upload/image-upload.api";
 import { StoredPath } from "@/types";
 
 type UploadingStatus = "uploading" | "ready" | "error";
@@ -30,6 +30,7 @@ export default function UploadPage() {
   const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
   const [isGlobalUploading, setIsGlobalUploading] = useState(false);
   const { mutateAsync: uploadImages } = useUploadImages();
+  const { mutateAsync: deleteUploadedImages } = useDeleteUploadedImages();
 
   const handleImageSelect = async (files: File[]) => {
     if (files.length === 0) return;
@@ -64,6 +65,7 @@ export default function UploadPage() {
             const uploaded = images.find((i) => i.tmpId === img.id);
 
             if (uploaded) {
+              URL.revokeObjectURL(img.preview);
               return {
                 ...img,
                 status: "ready" as UploadingStatus,
@@ -130,7 +132,7 @@ export default function UploadPage() {
       sessionStorage.setItem("uploadedImages", JSON.stringify(paths));
 
       const path = stored.find((s) => s.id === id);
-      if (path) await deleteUploadedImageApi(path.path);
+      if (path) await deleteUploadedImages(path.path);
     }
   };
 

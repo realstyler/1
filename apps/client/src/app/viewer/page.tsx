@@ -18,7 +18,7 @@ export default function ViewerPage() {
 
     return data
       .filter((j): j is Job => j !== null)
-      .filter((j) => j.input.url && j.result.url)
+      .filter((j) => j.status === "completed" && j.input.url && j.result.url)
       .map((j) => ({
         before: j.input.url! as string,
         after: j.result.url! as string,

@@ -5,12 +5,34 @@ import Link from "next/link";
 import BeforeAfterSlider from "@/components/viewer/BeforeAfterSlider";
 import Footer from "@/components/layout/Footer";
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { StoredPath } from "@/types";
+import ScrapedImages from "@/components/main/ScrapedImages";
+import useScrapeUrl from "@/hooks/useScrapeImages";
+import { useUploadImages } from "@/upload/image-upload.hooks";
 
 export default function Home() {
   const [imageUrl, setImageUrl] = useState("");
+  const [loadedImage, setLoadedImage] = useState<File | null>(null);
   const [selectedStyle, setSelectedStyle] = useState("Nordic");
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const {
+    isScraping,
+    isUploading,
+    scrapedImages,
+    toggleSelect,
+    resetScrapedImages,
+    scrapeUrl,
+    handleUploadScrapedImages,
+  } = useScrapeUrl();
+  const { mutateAsync: uploadImages, isPending: isPendingUploading } =
+    useUploadImages();
+
+  const [inputError, setInputError] = useState(false);
+  const router = useRouter();
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -31,14 +53,63 @@ export default function Home() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      URL.revokeObjectURL(imageUrl);
       const url = URL.createObjectURL(file);
       setImageUrl(url);
+      setLoadedImage(file);
+      setInputError(false);
     }
+  };
+
+  const handleGenerateRender = async () => {
+    setInputError(false);
+
+    if (!imageUrl) {
+      setInputError(true);
+      return;
+    }
+
+    try {
+      if (loadedImage) {
+        const fd = new FormData();
+        fd.append("images", loadedImage);
+
+        const res = await uploadImages(fd);
+        const storage: StoredPath[] = res.map((r) => ({
+          id: r.id,
+          name: "image",
+          path: r.path,
+        }));
+
+        sessionStorage.setItem("uploadedImages", JSON.stringify(storage));
+        router.push("/upload");
+      } else if (imageUrl) {
+        await scrapeUrl(imageUrl);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleContinue = async () => {
+    const selectedScrapedImages = scrapedImages.filter((i) => i.selected);
+    if (selectedScrapedImages.length === 0) return;
+
+    await handleUploadScrapedImages();
+    router.push("/upload");
   };
 
   return (
     <div className="min-h-screen bg-[#f8f8f7]">
       {/* Navigation */}
+
+      {/* Modal with scraped images */}
+      <ScrapedImages
+        scrapedImages={scrapedImages}
+        onSelectImg={toggleSelect}
+        onCancel={resetScrapedImages}
+        onSubmit={handleContinue}
+      />
 
       {/* Hero Section */}
       <section className="container mx-auto px-6 py-16 md:py-24">
@@ -77,11 +148,18 @@ export default function Home() {
               />
 
               {/* Upload area with icon button and URL input */}
-              <div className="flex items-center gap-3 border-2 border-dashed border-neutral-300 rounded-lg p-4 hover:border-neutral-400 transition">
+              <div
+                className={`flex items-center gap-3 border-2 border-dashed rounded-lg p-4 transition
+                  ${
+                    inputError
+                      ? "border-red-500"
+                      : "border-neutral-300 hover:border-neutral-400"
+                  }`}
+              >
                 <button
                   type="button"
                   onClick={handleFileClick}
-                  className="shrink-0 text-neutral-400 hover:text-neutral-600 transition"
+                  className="shrink-0 cursor-pointer text-neutral-400 hover:text-neutral-600 transition"
                   aria-label="Upload image file"
                 >
                   <svg
@@ -101,9 +179,15 @@ export default function Home() {
                 <input
                   type="text"
                   value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
+                  onChange={(e) => {
+                    setImageUrl(e.target.value);
+                    setInputError(false);
+                    setLoadedImage(null);
+                  }}
                   placeholder="Paste image URL or upload..."
-                  className="flex-1 bg-transparent text-sm text-neutral-600 placeholder:text-neutral-400 outline-none"
+                  className={`flex-1 bg-transparent text-sm text-neutral-600 placeholder:text-neutral-400 outline-none
+                    ${inputError ? "outline-1 outline-red-500" : ""}
+                  `}
                 />
               </div>
 
@@ -122,7 +206,7 @@ export default function Home() {
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setSelectedStyle("Modern")}
-                    className={`px-4 py-2.5 text-sm rounded-lg transition ${
+                    className={`px-4 py-2.5 cursor-pointer text-sm rounded-lg transition ${
                       selectedStyle === "Modern"
                         ? "bg-black text-white"
                         : "border border-neutral-200 hover:border-neutral-300 bg-white text-neutral-700"
@@ -132,7 +216,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => setSelectedStyle("Nordic")}
-                    className={`px-4 py-2.5 text-sm rounded-lg transition ${
+                    className={`px-4 py-2.5 cursor-pointer text-sm rounded-lg transition ${
                       selectedStyle === "Nordic"
                         ? "bg-black text-white"
                         : "border border-neutral-200 hover:border-neutral-300 bg-white text-neutral-700"
@@ -142,7 +226,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => setSelectedStyle("Luxe")}
-                    className={`px-4 py-2.5 text-sm rounded-lg transition ${
+                    className={`px-4 py-2.5 cursor-pointer text-sm rounded-lg transition ${
                       selectedStyle === "Luxe"
                         ? "bg-black text-white"
                         : "border border-neutral-200 hover:border-neutral-300 bg-white text-neutral-700"
@@ -153,21 +237,54 @@ export default function Home() {
                 </div>
               </div>
 
-              <button className="w-full bg-black text-white py-3.5 rounded-lg font-medium hover:bg-neutral-800 transition flex items-center justify-center gap-2">
-                Generate Render
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
+              <button
+                disabled={isScraping || isUploading || isPendingUploading}
+                className="w-full cursor-pointer bg-black text-white py-3.5 rounded-lg font-medium hover:bg-neutral-800 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                onClick={handleGenerateRender}
+              >
+                {isScraping || isUploading || isPendingUploading ? (
+                  <>
+                    <svg
+                      className="w-5 h-5 animate-spin"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8H4z"
+                      />
+                    </svg>
+                    {isUploading || isPendingUploading
+                      ? "Uploading..."
+                      : "Scraping..."}
+                  </>
+                ) : (
+                  <>
+                    Generate Render
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </>
+                )}
               </button>
             </div>
 
@@ -185,7 +302,7 @@ export default function Home() {
           </div>
 
           {/* Right Column - Before/After Comparison */}
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white lg:mt-0">
+          <div className="relative rounded-sm overflow-hidden shadow-2xl bg-white p-1.5 border border-gray-200 lg:mt-0">
             <BeforeAfterSlider
               beforeImage="/modern_living_room_1766406771698.png"
               afterImage="/yellow_chair_interior_1766406787652.png"
@@ -543,4 +660,7 @@ export default function Home() {
       <Footer />
     </div>
   );
+}
+function uploadImages(fd: FormData) {
+  throw new Error("Function not implemented.");
 }

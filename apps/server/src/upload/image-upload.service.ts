@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "../lib/supabase.js";
 import { v4 as uuidv4 } from "uuid";
 import { environment } from "../config/environment.js";
-import { NotFoundError } from "../errors/apiErrors.js";
+import { BadRequestError, NotFoundError } from "../errors/apiErrors.js";
 import { MAX_FILE_SIZE } from "../constants.js";
 import type {
   GeneratedImage,
@@ -39,6 +39,51 @@ class ImageUploadService {
         id,
         path,
         url,
+      });
+    }
+
+    return results;
+  }
+
+  async uploadImagesByUrls(urls: string[]): Promise<UploadedImage[]> {
+    const results: UploadedImage[] = [];
+
+    for (const url of urls) {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new BadRequestError(`Failed to fetch image: ${url}`);
+      }
+
+      const contentType = response.headers.get("content-type");
+
+      if (!contentType || !contentType.startsWith("image/")) {
+        throw new BadRequestError("Invalid image content-type");
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      if (buffer.length > MAX_FILE_SIZE) {
+        throw new BadRequestError("File exceeds maximum size");
+      }
+
+      const id = uuidv4();
+      const path = this.generateFilePath("tmp", id, contentType);
+
+      await this.uploadBuffer({
+        buffer,
+        mimeType: contentType,
+        path,
+      });
+
+      const signedUrl = await this.createSignedUrl(path, 300);
+
+      results.push({
+        id,
+        tmpId: "",
+        path,
+        url: signedUrl,
       });
     }
 

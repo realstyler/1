@@ -5,18 +5,25 @@ import { UploadedImageApi } from "@/types";
 export const uploadImagesApi = async (fd: FormData) =>
   fetcher<UploadedImageApi[]>(api.post("/api/upload", fd));
 
-export const createImageSignedUrlsApi = async (paths: string[]) =>
-  fetcher<string[]>(
-    api.get("/api/signed", {
-      params: { paths: paths.join("&&&") },
+export const uploadImagesByUrlsApi = async (urls: string[]) =>
+  fetcher<UploadedImageApi[]>(
+    api.post("/api/upload-by-urls", {
+      urls,
     }),
   );
 
-export const deleteUploadedImageApi = async (path: string) =>
+export const createImageSignedUrlsApi = async (paths: string[]) =>
+  fetcher<string[]>(
+    api.get("/api/signed", {
+      params: { paths: paths.join(",") },
+    }),
+  );
+
+export const deleteUploadedImagesApi = async (paths: string[] | string) =>
   fetcher<void>(
     api.delete("/api/uploaded-tmp", {
       params: {
-        path,
+        paths: (Array.isArray(paths) ? paths : [paths]).join(","),
       },
     }),
   );

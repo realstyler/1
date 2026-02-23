@@ -10,6 +10,11 @@ imageUploadRouter.post(
   imageUploadController.uploadImages,
 );
 
+imageUploadRouter.post(
+  "/upload-by-urls",
+  imageUploadController.uploadImagesByUrls,
+);
+
 imageUploadRouter.get("/signed", imageUploadController.getSignedImageUrls)
 imageUploadRouter.delete("/uploaded-tmp", imageUploadController.deleteUploadedTmpImage)
 
