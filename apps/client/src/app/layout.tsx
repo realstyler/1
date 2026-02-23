@@ -6,6 +6,7 @@ import QCProvider from "@/components/providers/QueryClient";
 import { UserDTO } from "@/auth/auth.dto";
 import InitUserState from "@/components/providers/InitUserState";
 import { meServer } from "./actions/auth";
+import ErrorToast from "@/components/ui/ErrorToast";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -46,6 +47,7 @@ export default async function RootLayout({
             {children}
           </QCProvider>
         </InitUserState>
+        <ErrorToast />
       </body>
     </html>
   );

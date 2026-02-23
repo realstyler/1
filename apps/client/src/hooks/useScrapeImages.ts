@@ -1,5 +1,6 @@
 import { ScrapedImage } from "@/components/main/ScrapedImages";
 import { scrapeUrlApi } from "@/scrape-url/scrape-url.api";
+import { useErrorToastStore } from "@/stores/useErrorToastStore";
 import { StoredPath } from "@/types";
 import {
   useDeleteUploadedImages,
@@ -11,7 +12,7 @@ import { useState } from "react";
 export default function useScrapeUrl() {
   const [scrapedImages, setScrapedImages] = useState<ScrapedImage[]>([]);
   const {
-    mutateAsync: scrape,
+    mutate: scrape,
     isPending: isPendingScraping,
     isError: isErrorScraping,
   } = useMutation({
@@ -19,12 +20,13 @@ export default function useScrapeUrl() {
   });
 
   const {
-    mutateAsync: uploadImagesByUrls,
+    mutate: uploadImagesByUrls,
     isPending: isPendingUploadingByUrls,
     isError: isErrorUploading,
   } = useUploadImagesByUrls();
 
   const { mutateAsync: deleteUploadedImages } = useDeleteUploadedImages();
+  const { show: showError } = useErrorToastStore();
 
   const toggleSelect = (img: ScrapedImage) => {
     setScrapedImages((prev) =>
@@ -39,14 +41,17 @@ export default function useScrapeUrl() {
   };
 
   const scrapeUrl = async (url: string) => {
-    const res = await scrape(url);
+    scrape(url, {
+      onSuccess: (data) => {
+        const images = data.images.map((img: string) => ({
+          url: img,
+          selected: false,
+        }));
 
-    const images = res.images.map((img: string) => ({
-      url: img,
-      selected: false,
-    }));
-
-    setScrapedImages(images);
+        setScrapedImages(images);
+      },
+      onError: (error) => showError(error.message),
+    });
   };
 
   const handleUploadScrapedImages = async () => {
@@ -55,16 +60,21 @@ export default function useScrapeUrl() {
 
     await removeStoredImages();
     const urls = selectedScrapedImages.map((i) => i.url);
-    const uploadRes = await uploadImagesByUrls(urls);
-    const storage: StoredPath[] = uploadRes.map((r) => ({
-      id: r.id,
-      name: "image",
-      path: r.path,
-    }));
 
-    sessionStorage.setItem("uploadedImages", JSON.stringify(storage));
+    uploadImagesByUrls(urls, {
+      onSuccess: (data) => {
+        const storage: StoredPath[] = data.map((r) => ({
+          id: r.id,
+          name: "image",
+          path: r.path,
+        }));
 
-    setScrapedImages([]);
+        sessionStorage.setItem("uploadedImages", JSON.stringify(storage));
+
+        setScrapedImages([]);
+      },
+      onError: (error) => showError(error.message),
+    });
   };
 
   const removeStoredImages = async () => {
@@ -73,8 +83,12 @@ export default function useScrapeUrl() {
       const stored: StoredPath[] = JSON.parse(raw);
       sessionStorage.removeItem("uploadedImages");
 
-      const paths = stored.map((p) => p.path);
-      if (paths.length > 0) await deleteUploadedImages(paths);
+      try {
+        const paths = stored.map((p) => p.path);
+        if (paths.length > 0) await deleteUploadedImages(paths);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 

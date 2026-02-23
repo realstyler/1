@@ -10,6 +10,7 @@ import { StoredPath } from "@/types";
 import ScrapedImages from "@/components/main/ScrapedImages";
 import useScrapeUrl from "@/hooks/useScrapeImages";
 import { useUploadImages } from "@/upload/image-upload.hooks";
+import { useErrorToastStore } from "@/stores/useErrorToastStore";
 
 export default function Home() {
   const [imageUrl, setImageUrl] = useState("");
@@ -28,11 +29,12 @@ export default function Home() {
     scrapeUrl,
     handleUploadScrapedImages,
   } = useScrapeUrl();
-  const { mutateAsync: uploadImages, isPending: isPendingUploading } =
+  const { mutate: uploadImages, isPending: isPendingUploading } =
     useUploadImages();
 
   const [inputError, setInputError] = useState(false);
   const router = useRouter();
+  const { show: showError } = useErrorToastStore();
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -74,15 +76,19 @@ export default function Home() {
         const fd = new FormData();
         fd.append("images", loadedImage);
 
-        const res = await uploadImages(fd);
-        const storage: StoredPath[] = res.map((r) => ({
-          id: r.id,
-          name: "image",
-          path: r.path,
-        }));
+        uploadImages(fd, {
+          onSuccess: (data) => {
+            const storage: StoredPath[] = data.map((r) => ({
+              id: r.id,
+              name: "image",
+              path: r.path,
+            }));
 
-        sessionStorage.setItem("uploadedImages", JSON.stringify(storage));
-        router.push("/upload");
+            sessionStorage.setItem("uploadedImages", JSON.stringify(storage));
+            router.push("/upload");
+          },
+          onError: (error) => showError(error.message),
+        });
       } else if (imageUrl) {
         await scrapeUrl(imageUrl);
       }
