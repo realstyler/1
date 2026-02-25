@@ -6,14 +6,14 @@ export const mockStyles: Style[] = [
         name: 'Modern Living Room',
         description: 'Sleek contemporary design with clean lines and comfort',
         thumbnail: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=400&h=300&fit=crop',
-        category: 'modern',
+        category: 'MODERN_COASTAL',
     },
     {
         id: 'minimalist',
         name: 'Minimalist Interior',
         description: 'Clutter-free aesthetic focusing on simplicity and functionality',
         thumbnail: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=300&fit=crop',
-        category: 'minimalist',
+        category: 'MINIMAL_LUXE',
     },
     {
         id: 'luxury',

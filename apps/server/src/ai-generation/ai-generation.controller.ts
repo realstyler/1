@@ -3,6 +3,7 @@ import { aiGenerationService } from "./ai-generation.service.js";
 import { jobService } from "../job-pooling/job.service.js";
 import type { UserDTO } from "../user/user.dto.js";
 import { BadRequestError } from "../errors/apiErrors.js";
+import { imageUploadService } from "../upload/image-upload.service.js";
 
 class AIGenerationController {
   restyle = async (req: any, res: Response) => {
@@ -24,11 +25,41 @@ class AIGenerationController {
 
   getJobs = async (req: Request, res: Response) => {
     const jobIds = req.body as string[];
-    if (!jobIds) throw new BadRequestError("Jobs Ids is required");
+    const ids = req.query.ids as string;
+    const createSignedUrls = req.query.signed_urls === "true";
+    if (!jobIds && !ids) throw new BadRequestError("Jobs Ids is required");
+
+    const normalizedIds = ids ? ids.split(",") : jobIds;
 
     const results = await Promise.all(
-      jobIds.map((job) => jobService.getJob(job)),
+      normalizedIds.map((job) => jobService.getJob(job)),
     );
+
+    if (createSignedUrls) {
+      const originalPaths = results.map((j) =>
+        j && j.input && j.status === "completed"
+          ? (j.input.path as string)
+          : null,
+      );
+      const restyledPaths = results.map((j) =>
+        j && j.result && j.status === "completed"
+          ? (j.result.path as string)
+          : null,
+      );
+      const originalUrls = await imageUploadService.createSignedUrls(
+        originalPaths as string[],
+      );
+      const restyledUrls = await imageUploadService.createSignedUrls(
+        restyledPaths as string[],
+      );
+
+      results.forEach((j, i) => {
+        if (j) {
+          j.input.url = originalUrls[i];
+          if (j.result) j.result.url = restyledUrls[i];
+        }
+      });
+    }
 
     res.json(results);
   };

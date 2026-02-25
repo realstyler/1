@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { redisClient } from "../lib/redis.js";
-import type { Job, UpdateJob } from "./job.dto.js";
+import type { Job, UpdateJob } from "shared";
 
 const JOB_TTL_SECONDS = 60 * 60 * 24; // 24h
 
@@ -47,7 +47,6 @@ class JobService {
       updatedAt: new Date().toISOString(),
     };
 
-    // TTL не змінюємо → зберігаємо існуючий
     const ttl = await redisClient.ttl(key);
 
     await redisClient.set(key, JSON.stringify(updated), {

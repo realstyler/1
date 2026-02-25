@@ -1,10 +1,13 @@
 import { supabaseAdmin } from "../lib/supabase.js";
 import { v4 as uuidv4 } from "uuid";
 import { environment } from "../config/environment.js";
-import { NotFoundError } from "../errors/apiErrors.js";
+import { BadRequestError, NotFoundError } from "../errors/apiErrors.js";
 import { MAX_FILE_SIZE } from "../constants.js";
-import unwrapSupabaseStorageError from "../utils/unwrapSupabaseStorageError.util.js";
-import type { UploadBufferParams, UploadedImage } from "../types/index.js";
+import type {
+  GeneratedImage,
+  UploadBufferParams,
+  UploadedImage,
+} from "../types/index.js";
 import { ApiError } from "shared";
 
 const BUCKET = environment.SUPABASE_BUCKET_NAME;
@@ -12,71 +15,140 @@ const BUCKET = environment.SUPABASE_BUCKET_NAME;
 class ImageUploadService {
   async uploadTemporaryImages(
     files: Express.Multer.File[],
+    tmpIds: string[],
   ): Promise<UploadedImage[]> {
     this.validateFiles(files);
 
-    return Promise.all(
-      files.map(async (file) => {
-        const id = uuidv4();
-        const filePath = this.generateFilePath("tmp", id, file.mimetype);
+    const results: UploadedImage[] = [];
 
-        await this.uploadBuffer({
-          buffer: file.buffer,
-          mimeType: file.mimetype,
-          filePath,
-        });
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!;
+      const tmpId = tmpIds[i]!;
+      const id = uuidv4();
+      const path = this.generateFilePath("tmp", id, file.mimetype);
 
-        const url = await this.createSignedUrl(filePath, 300);
+      await this.uploadBuffer({
+        buffer: file.buffer,
+        mimeType: file.mimetype,
+        path,
+      });
 
-        return { id, path: filePath, url };
-      }),
-    );
+      const url = await this.createSignedUrl(path, 300);
+      results.push({
+        tmpId,
+        id,
+        path,
+        url,
+      });
+    }
+
+    return results;
+  }
+
+  async uploadImagesByUrls(urls: string[]): Promise<UploadedImage[]> {
+    const results: UploadedImage[] = [];
+
+    for (const url of urls) {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new BadRequestError(`Failed to fetch image: ${url}`);
+      }
+
+      const contentType = response.headers.get("content-type");
+
+      if (!contentType || !contentType.startsWith("image/")) {
+        throw new BadRequestError("Invalid image content-type");
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      if (buffer.length > MAX_FILE_SIZE) {
+        throw new BadRequestError("File exceeds maximum size");
+      }
+
+      const id = uuidv4();
+      const path = this.generateFilePath("tmp", id, contentType);
+
+      await this.uploadBuffer({
+        buffer,
+        mimeType: contentType,
+        path,
+      });
+
+      const signedUrl = await this.createSignedUrl(path, 300);
+
+      results.push({
+        id,
+        tmpId: "",
+        path,
+        url: signedUrl,
+      });
+    }
+
+    return results;
   }
 
   async uploadGeneratedImage(params: {
     buffer: Buffer;
     mimeType: string;
-  }): Promise<UploadedImage> {
+  }): Promise<GeneratedImage> {
     const id = uuidv4();
-    const filePath = this.generateFilePath("generated", id, params.mimeType);
+    const path = this.generateFilePath("generated", id, params.mimeType);
 
     await this.uploadBuffer({
       buffer: params.buffer,
       mimeType: params.mimeType,
-      filePath,
+      path,
     });
 
-    const url = await this.createSignedUrl(filePath, 300);
-
-    return { id, path: filePath, url };
+    return { id, path };
   }
 
-  async downloadImage(filePath: string): Promise<Blob> {
+  async downloadImage(path: string): Promise<Blob> {
     const { data, error } = await supabaseAdmin.storage
       .from(BUCKET)
-      .download(filePath);
+      .download(path);
 
     if (error) {
-      const { message, status } = await unwrapSupabaseStorageError(error);
-      throw new ApiError(message, status);
+      console.error(error);
+      throw new ApiError("Failed to download image", 500);
     }
 
     return data;
   }
 
   async createSignedUrls(paths: string[], expires = 60 * 10) {
-    const results = await Promise.all(
-      paths.map((p) =>
-        supabaseAdmin.storage.from(BUCKET).createSignedUrl(p, expires),
-      ),
-    );
+    const { data, error } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .createSignedUrls(paths, expires);
 
-    return results.map((r) => r.data?.signedUrl ?? null);
+    if (error || !data) {
+      console.error(error);
+      throw new ApiError("Failed to create signed urls", 500);
+    }
+
+    return data.map((item) => {
+      return item.signedUrl ?? null;
+    });
+  }
+
+  async createSignedUrl(path: string, expires = 60 * 10): Promise<string> {
+    const { data, error } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .createSignedUrl(path, expires);
+
+    if (error || !data?.signedUrl) {
+      console.error(error);
+      throw new ApiError(`Failed to create signed url for path ${path}`, 500);
+    }
+
+    return data.signedUrl;
   }
 
   async existImage(path: string) {
     const { data } = await supabaseAdmin.storage.from(BUCKET).exists(path);
-
     return data;
   }
 
@@ -89,8 +161,8 @@ class ImageUploadService {
     const { error } = await supabaseAdmin.storage.from(BUCKET).remove(paths);
 
     if (error) {
-      const { message, status } = await unwrapSupabaseStorageError(error);
-      throw new ApiError(message, status);
+      console.error(error);
+      throw new ApiError(`Failed to delete images for paths ${paths}`, 500);
     }
   }
 
@@ -132,35 +204,19 @@ class ImageUploadService {
   private async uploadBuffer({
     buffer,
     mimeType,
-    filePath,
+    path,
   }: UploadBufferParams): Promise<void> {
     const { error } = await supabaseAdmin.storage
       .from(BUCKET)
-      .upload(filePath, buffer, {
+      .upload(path, buffer, {
         contentType: mimeType,
         upsert: false,
       });
 
     if (error) {
-      const { message, status } = await unwrapSupabaseStorageError(error);
-      throw new ApiError(message, status);
+      console.error(error);
+      throw new ApiError(`Failed to upload image for path ${path}`, 500);
     }
-  }
-
-  private async createSignedUrl(
-    filePath: string,
-    expiresInSeconds: number,
-  ): Promise<string> {
-    const { data, error } = await supabaseAdmin.storage
-      .from(BUCKET)
-      .createSignedUrl(filePath, expiresInSeconds);
-
-    if (error || !data?.signedUrl) {
-      const { message, status } = await unwrapSupabaseStorageError(error);
-      throw new ApiError(message, status);
-    }
-
-    return data.signedUrl;
   }
 
   private getPublicUrl(filePath: string): string {

@@ -10,7 +10,7 @@ class MockGeminiProvider implements ImageGenerationProviderI {
     mimeType: string;
     prompt: string;
   }) {
-    await delay(4000);
+    await delay(Math.random() > 0.5 ? 4000 : 7000);
     return fs.readFileSync(path.resolve("./src/__mocks__/mock-generated.png"));
   }
 }

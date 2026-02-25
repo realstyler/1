@@ -50,7 +50,7 @@ export default function BeforeAfterSlider({
     return (
         <div
             ref={containerRef}
-            className="relative w-full aspect-[4/3] cursor-ew-resize select-none"
+            className="relative w-full aspect-4/3 cursor-ew-resize select-none rounded-sm overflow-hidden"
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
@@ -92,10 +92,10 @@ export default function BeforeAfterSlider({
 
             {/* Slider handle */}
             <div
-                className="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-ew-resize"
+                className="absolute top-0 bottom-0 w-0.5 bg-white/50 shadow-lg cursor-ew-resize"
                 style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
             >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4.5 h-10 rounded-full bg-white/50 border border-white shadow-lg flex items-center justify-center">
                     <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                     </svg>

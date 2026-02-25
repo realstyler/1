@@ -1,4 +1,4 @@
-import api from "@/lib/axios";
+import api from "@/lib/api";
 import { fetcher } from "@/lib/fetcher";
 import { UserDTO } from "./auth.dto";
 import { LoginDTO, RegisterDTO } from "shared";
@@ -9,6 +9,7 @@ export const loginApi = async (data: LoginDTO) =>
 export const registerApi = async (data: RegisterDTO) =>
   fetcher<UserDTO>(api.post("/api/auth/register", data));
 
-export const logoutApi = async () => fetcher(api.post("/api/auth/logout"));
+export const logoutApi = async () =>
+  fetcher<null>(api.post("/api/auth/logout"));
 
 export const meApi = async () => fetcher<UserDTO>(api.get("/api/auth/me"));
