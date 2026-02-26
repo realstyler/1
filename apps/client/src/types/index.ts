@@ -38,3 +38,13 @@ export interface AppState {
   processingStatus: ProcessingStatus | null;
   resultImage: string | null;
 }
+
+export interface Project {
+  id: string;
+  title: string;
+  address: string;
+  imagesCount: number;
+  updatedAt: string;
+  status: "Processing" | "Draft" | "Completed";
+  imageUrl: string;
+}
