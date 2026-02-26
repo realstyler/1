@@ -1,24 +1,65 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { mockProjects } from '@/data/mock';
 import { type Project } from '@/types';
+import CreateProjectModal from '@/components/projects/CreateProjectModal';
+import { useCreateProject } from '@/projects/projects.hooks';
+import { useErrorToastStore } from "@/stores/useErrorToastStore";
+import { AxiosError } from "axios";
 
 export default function ProjectsPage() {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const { mutate: createProject } = useCreateProject();
+  
   const itemsPerPage = 12;
-
   const currentItems = mockProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(mockProjects.length / itemsPerPage);
 
+  const { show } = useErrorToastStore();
+
+  const handleCreateProject = (data: { name: string; address: string }) => {
+    createProject(
+      { 
+        name: data.name, 
+        address: data.address || undefined 
+      },
+      {
+        onSuccess: (newProject) => {
+          setIsModalOpen(false);
+          router.push(`/projects/${newProject.id}/upload?new=true`);
+        },
+        onError: (error) => {
+          const err = error as AxiosError<{ message: string }>;
+          const errorMessage = err.response?.data?.message || err.message || "Something went wrong";
+          show(errorMessage)
+          console.error("Failed to create project:", error);
+        }
+      }
+    );
+  };
+
   return (
-    <div className="bg-white min-h-screen px-4 md:px-12 py-10 text-[#1a1a1a]">
+    <div className="bg-[#f8f8f7] min-h-screen px-4 md:px-12 py-10 text-[#1a1a1a]">
+      <CreateProjectModal 
+        isOpen={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onSubmit={handleCreateProject}
+      />
+
       <div className="text-center mt-10 mb-16">
         <h1 className="text-[72px] font-luxury-serif mb-6 tracking-tight leading-none">
           Projects
         </h1>
         
-        <button className="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-full flex items-center gap-2 mx-auto hover:bg-[#3d3d3d] transition-all active:scale-95 shadow-md group">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-full flex items-center gap-2 mx-auto hover:bg-[#3d3d3d] transition-all active:scale-95 shadow-md group"
+        >
             <div className="w-5 h-5 rounded-full border border-white/100 flex items-center justify-center">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>

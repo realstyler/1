@@ -18,6 +18,7 @@ class ProjectsController {
     res.json(result);
   }
 
+  
   async getById(req: any, res: any) {
     const { id } = req.params;
     if (!id) throw new BadRequestError("Project ID is required");

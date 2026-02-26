@@ -39,6 +39,29 @@ export interface AppState {
   resultImage: string | null;
 }
 
+export interface ProjectImageDTO {
+  id: string;
+  createdAt: string;
+  projectId: string;
+  originalPath: string;
+  restyledPath: string;
+  orderIndex: number;
+  originalUrl?: string; 
+  restyledUrl?: string;
+}
+
+export interface ProjectDTO {
+  id: string;
+  shareId: string | null;
+  userId: string;
+  name: string;
+  address: string | null;
+  stylePreset: StylePreset | null;
+  createdAt: string;
+  updatedAt: string;
+  images: ProjectImageDTO[];
+}
+
 export interface Project {
   id: string;
   title: string;

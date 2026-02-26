@@ -9,36 +9,38 @@ import { zodParseOrThrow } from "shared";
 
 class ProjectsService {
   async create(user: UserDTO, input: CreateProjectDTO) {
-    const { name, stylePreset, images } = zodParseOrThrow(
-      CreateProjectSchema,
-      input,
+  const { name, address, stylePreset, images } = zodParseOrThrow(
+    CreateProjectSchema,
+    input,
+  );
+
+  if (images && images.length > 0) {
+    await Promise.all(
+      images.flatMap((img) => [
+        imageUploadService.existImageOrThrow(img.originalPath),
+        imageUploadService.existImageOrThrow(img.restyledPath),
+      ]),
     );
-
-    if (images)
-      await Promise.all(
-        images.flatMap((img) => [
-          imageUploadService.existImageOrThrow(img.originalPath),
-          imageUploadService.existImageOrThrow(img.restyledPath),
-        ]),
-      );
-
-    return prisma.project.create({
-      data: {
-        name,
-        stylePreset,
-        ...(images && {
-          images: {
-            create: images.map((img) => ({
-              originalPath: img.originalPath,
-              restyledPath: img.restyledPath,
-              orderIndex: img.orderIndex,
-            })),
-          },
-        }),
-        user: { connect: { id: user.id } },
-      },
-    });
   }
+
+  return prisma.project.create({
+    data: {
+      name,
+      address,
+      stylePreset: stylePreset ?? null,
+      user: { connect: { id: user.id } },
+      ...(images && images.length > 0 && {
+        images: {
+          create: images.map((img) => ({
+            originalPath: img.originalPath,
+            restyledPath: img.restyledPath,
+            orderIndex: img.orderIndex,
+          })),
+        },
+      }),
+    },
+  });
+}
 
   async getAll(
     user: UserDTO,
@@ -78,16 +80,19 @@ class ProjectsService {
     const project = await prisma.project.findUnique({
       where: { id, userId: user.id },
       include: {
-        ...(options.loadSignedImages && { images: true }),
+        images: true,
       },
     });
 
     if (!project) throw new NotFoundError("Project not found");
 
-    if (project.images)
-      (project as any).images = await this.loadSignedUrls(project);
+    const projectDto: ProjectDTO = project;
 
-    return project;
+    if (options.loadSignedImages && projectDto.images.length > 0) {
+      projectDto.images = await this.loadSignedUrls(projectDto);
+    }
+
+    return projectDto;
   }
 
   async delete(user: UserDTO, id: string) {
@@ -143,6 +148,8 @@ class ProjectsService {
   }
 
   private async loadSignedUrls(project: ProjectDTO) {
+    if (!project.images || project.images.length === 0) return [];
+
     const originalPaths = project.images.map((i) => i.originalPath);
     const restyledPaths = project.images.map((i) => i.restyledPath);
 
@@ -152,7 +159,7 @@ class ProjectsService {
     ]);
 
     return project.images.map((img, i) => ({
-      id: img.id,
+      ...img,
       originalUrl: originalUrls[i],
       restyledUrl: restyledUrls[i],
     }));
