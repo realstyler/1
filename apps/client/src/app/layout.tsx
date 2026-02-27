@@ -11,12 +11,14 @@ import ErrorToast from "@/components/ui/ErrorToast";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair-display",
   subsets: ["latin"],
   style: ["normal", "italic"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -37,10 +39,8 @@ export default async function RootLayout({
   } catch {}
 
   return (
-    <html lang="en">
-      <body
-        className={`${inter.variable} ${playfairDisplay.variable} font-sans antialiased bg-white text-neutral-900`}
-      >
+    <html lang="en" className={`${inter.variable} ${playfairDisplay.variable}`}>
+      <body className="font-sans antialiased bg-background text-foreground">
         <InitUserState user={user ?? null}>
           <QCProvider>
             <Navbar />

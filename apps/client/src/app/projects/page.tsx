@@ -8,6 +8,14 @@ import CreateProjectModal from '@/components/projects/CreateProjectModal';
 import { useCreateProject } from '@/projects/projects.hooks';
 import { useErrorToastStore } from "@/stores/useErrorToastStore";
 import { AxiosError } from "axios";
+import { 
+  Plus, 
+  Filter, 
+  ArrowUpDown, 
+  Pencil, 
+  Image as LucideImage, 
+  Clock 
+} from 'lucide-react';
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -60,29 +68,22 @@ export default function ProjectsPage() {
           onClick={() => setIsModalOpen(true)}
           className="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-full flex items-center gap-2 mx-auto hover:bg-[#3d3d3d] transition-all active:scale-95 shadow-md group"
         >
-            <div className="w-5 h-5 rounded-full border border-white/100 flex items-center justify-center">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
+            <div className="w-5 h-5 rounded-full border border-white flex items-center justify-center">
+                <Plus size={12} strokeWidth={3} color="white" />
             </div>
             <span className="text-[14px] font-[500]">New Project</span>
         </button>
       </div>
 
       <div className="flex justify-between items-end mb-10">
-        <h2 className="text-[26px] tracking-tighter">Recent Projects</h2>
+        <h2 className="text-[26px] font-serif tracking-tighter">Recent Projects</h2>
         <div className="flex gap-3">
             <button className="border border-gray-100 px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium text-slate-600 bg-white shadow-sm hover:bg-gray-50 transition-all">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
-                </svg>
+                <Filter size={18} strokeWidth={1.5} />
                 Filter
             </button>
             <button className="border border-gray-100 px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium text-slate-600 bg-white shadow-sm hover:bg-gray-50 transition-all">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M7 4v16M7 4l3 3M7 4L4 7m13-3v16m0 0l3-3m-3 3l-3-3"/>
-                </svg>
+                <ArrowUpDown size={18} strokeWidth={1.5} />
                 Sort by: Date
             </button>
         </div>
@@ -107,10 +108,7 @@ export default function ProjectsPage() {
               </div>
 
               <button className="absolute bottom-2 right-3 bg-white/90 backdrop-blur-xl p-2 rounded-full text-gray-400 hover:bg-[#f5f5f5] hover:text-gray-600 transition-all opacity-0 group-hover:opacity-100 border border-white/50 shadow-xl">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
+                <Pencil size={20} strokeWidth={2} />
               </button>
             </div>
 
@@ -125,15 +123,11 @@ export default function ProjectsPage() {
             
             <div className="flex items-center gap-6 text-[#9ea4b0] font-normal text-[14px] tracking-tight">
               <span className="flex items-center gap-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#949ba6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
-                </svg>
+                <LucideImage size={18} strokeWidth={1.5} color="#949ba6" />
                 {project.imagesCount} images
               </span>
               <span className="flex items-center gap-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#949ba6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                </svg>
+                <Clock size={18} strokeWidth={1.5} color="#949ba6" />
                 Edited {project.updatedAt}
               </span>
             </div>

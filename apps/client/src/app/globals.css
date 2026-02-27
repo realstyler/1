@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-inter);
-  --font-serif: var(--font-playfair-display);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -46,7 +46,6 @@ html {
 }
 
 @layer base {
-
   *,
   ::after,
   ::before,
@@ -117,27 +116,16 @@ html {
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: var(--font-playfair-display), serif !important;
+    @apply font-sans;
   }
 }
 
-@layer utilities {
-  .serif-italic {
-    font-family: var(--font-playfair-display);
-    font-style: italic;
-  }
+@utility serif-italic {
+  font-family: var(--font-playfair-display), ui-serif, Georgia, serif;
+  font-style: italic;
+}
 
-  .font-luxury-serif {
-    font-family: var(--font-playfair-display), serif;
-    font-weight: 500;
-  }
+@utility font-luxury-serif {
+  font-family: var(--font-playfair-display), ui-serif, Georgia, serif;
+  font-weight: 500;
 }
