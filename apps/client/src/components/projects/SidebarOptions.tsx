@@ -40,7 +40,7 @@ export default function SidebarOptions({ selectedCount }: Props) {
         <h2 className="text-[22px] font-luxury-serif mb-5 tracking-tight mt-2">Style Options</h2>
 
         {/* Tabs */}
-        <div className="flex bg-[#f8f9fa] p-1 rounded-xl mb-8">
+        <div className="flex bg-[#f8f9fa] p-1 rounded-xl mb-7">
           {(['Presets', 'Custom Prompt'] as const).map((tab) => (
             <button
               key={tab}
@@ -54,12 +54,13 @@ export default function SidebarOptions({ selectedCount }: Props) {
           ))}
         </div>
 
-        <div className="space-y-8">
+        {/* Зменшено загальний відступ між секціями з space-y-8 до space-y-6 */}
+        <div className="space-y-6">
           {activeTab === 'Presets' ? (
             <>
               {/* Intent Section */}
               <div>
-                <label className="text-[11px] font-[800] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3.5">Intent</label>
+                <label className="text-[12px] font-[700] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Intent</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { id: 'Enhance', label: 'Enhance', desc: 'Improve quality', icon: Wand2 },
@@ -92,7 +93,7 @@ export default function SidebarOptions({ selectedCount }: Props) {
 
               {/* Lighting Section */}
               <div>
-                <label className="text-[11px] font-[800] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3.5">Lighting</label>
+                <label className="text-[12px] font-[700] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Lighting</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { id: 'Natural', icon: Sun },
@@ -106,7 +107,7 @@ export default function SidebarOptions({ selectedCount }: Props) {
                         lighting === opt.id ? 'border-[#8ea28d] bg-[#fdfefd]' : 'border-gray-50'
                       }`}
                     >
-                      <div className={`mb-1 transition-colors ${lighting === opt.id ? 'text-[#1a1a1a]' : 'text-[#b1b5bd]'}`}>
+                      <div className={`mb-1 transition-colors ${lighting === opt.id ? 'text-[#8ea28d]' : 'text-[#b1b5bd]'}`}>
                         <opt.icon size={22} strokeWidth={1.5} />
                       </div>
                       <span className={`text-[12px] font-bold ${lighting === opt.id ? 'text-[#1a1a1a]' : 'text-[#1a1a1a]'}`}>{opt.id}</span>
@@ -117,8 +118,8 @@ export default function SidebarOptions({ selectedCount }: Props) {
 
               {/* Creativity Section */}
               <div>
-                <div className="flex justify-between items-center mb-3.5">
-                  <label className="text-[11px] font-[800] uppercase tracking-[0.15em] text-[#a1a5ad]">Creativity</label>
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-[12px] font-[700] uppercase tracking-[0.15em] text-[#a1a5ad]">Creativity</label>
                   <span className="text-[10px] font-semibold text-[#8ea28d] px-2 py-0.5 rounded bg-[#8ea28d]/10 transition-all">
                     {creativity}
                   </span>
@@ -140,7 +141,7 @@ export default function SidebarOptions({ selectedCount }: Props) {
 
               {/* Aesthetic Section */}
               <div>
-                <label className="text-[11px] font-[800] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3.5">Aesthetic</label>
+                <label className="text-[12px] font-[700] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Aesthetic</label>
                 <div className="grid grid-cols-3 gap-4">
                   {aesthetics.map((style, index) => {
                     const isSelected = selectedAesthetic === style;
@@ -180,7 +181,7 @@ export default function SidebarOptions({ selectedCount }: Props) {
           ) : (
             /* Custom Prompt Section */
             <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-              <label className="text-[11px] font-[800] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3.5">
+              <label className="text-[11px] font-[800] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">
                 Describe your vision
               </label>
               <textarea

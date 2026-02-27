@@ -71,3 +71,14 @@ export interface Project {
   status: "Processing" | "Draft" | "Completed";
   imageUrl: string;
 }
+
+export interface UploadedFile {
+  id: string;
+  file: File | null;
+  preview: string;
+  name: string;
+  status: UploadingStatus;
+  path?: string;
+}
+
+export type UploadingStatus = "uploading" | "ready" | "error";

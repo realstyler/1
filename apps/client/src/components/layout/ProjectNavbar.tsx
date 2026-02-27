@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Bell, Plus } from 'lucide-react';
 import { AxiosError } from 'axios';
-
 import CreateProjectModal from '@/components/projects/CreateProjectModal';
 import { useCreateProject } from '@/projects/projects.hooks';
 import { useErrorToastStore } from "@/stores/useErrorToastStore";
@@ -51,7 +50,7 @@ export default function ProjectNavbar() {
         onSubmit={handleCreateProject}
       />
 
-      <header className="h-[80px] w-full bg-white flex items-center justify-between px-6 md:px-12 border-b border-gray-100 shrink-0 z-50 relative">
+      <header className="h-[80px] w-full bg-white flex items-center justify-between px-3 md:px-6 border-b border-gray-100 shrink-0 z-50 relative">
         <Link href="/" className="font-luxury-serif text-[22px] font-bold tracking-tight text-[#1a1a1a]">
           RealStyler
         </Link>
@@ -59,7 +58,7 @@ export default function ProjectNavbar() {
         <div className="flex items-center gap-5">
 
           {isDetailsPage && (
-            <div className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-full bg-white shadow-sm">
+            <div className="flex items-center gap-2 px-3 md:px-6 py-1.5 border border-gray-200 rounded-full bg-white shadow-sm">
               <div className="w-2 h-2 rounded-full bg-[#d68a73]"></div>
               <span className="text-[12px] font-semibold text-[#5a5a5a]">34 Credits Remaining</span>
             </div>

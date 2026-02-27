@@ -51,7 +51,7 @@ export default function CreateProjectModal({
       onClick={onCancel}
     >
       <div 
-        className="bg-white w-full max-w-lg rounded-[24px] shadow-2xl flex flex-col overflow-hidden relative"
+        className="bg-white w-full max-w-[460px] rounded-[24px] shadow-2xl flex flex-col overflow-hidden relative"
         onClick={(e) => e.stopPropagation()}
       >
         
@@ -85,7 +85,7 @@ export default function CreateProjectModal({
           {/* Data Input Form */}
           <form onSubmit={handleSubmit} className="w-full text-left space-y-6">
             <div className="flex flex-col">
-              <label className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#b1b5bd] mb-2">
+              <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#b1b5bd] mb-2">
                 Project Name
               </label>
               <input
@@ -94,12 +94,12 @@ export default function CreateProjectModal({
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 autoFocus
-                className="w-full border-b border-gray-200 py-2 text-base placeholder:text-gray-200 placeholder:font-serif outline-none focus:border-black transition-colors font-medium bg-transparent"
+                className="w-full border-b border-gray-200 py-2 text-lg placeholder:text-gray-200 placeholder:font-serif outline-none focus:border-black transition-colors font-medium bg-transparent"
               />
             </div>
 
             <div className="flex flex-col">
-              <label className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#b1b5bd] mb-2">
+              <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#b1b5bd] mb-2">
                 Property Address <span className="text-[#d1d3d8] normal-case font-medium tracking-normal ml-1">Optional</span>
               </label>
               <input
@@ -107,7 +107,7 @@ export default function CreateProjectModal({
                 placeholder="e.g. 1284 Highland Ave"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full border-b border-gray-200 py-2 text-base placeholder:text-gray-200 placeholder:font-serif outline-none focus:border-black transition-colors font-medium bg-transparent"
+                className="w-full border-b border-gray-200 py-2 text-lg placeholder:text-gray-200 placeholder:font-serif outline-none focus:border-black transition-colors font-medium bg-transparent"
               />
             </div>
 

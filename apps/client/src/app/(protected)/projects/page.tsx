@@ -90,15 +90,19 @@ export default function ProjectsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16">
         {currentItems.map((project: Project) => (
-          <div key={project.id} className="group cursor-pointer">
-            <div className="relative aspect-[1.38/1] mb-6 overflow-hidden rounded-[12px] bg-gray-100 shadow-sm border border-gray-50">
+          <div 
+            key={project.id} 
+            className="group cursor-pointer"
+            onClick={() => router.push(`/projects/${project.id}`)}
+          >
+            <div className="relative aspect-[1.38/1] mb-5 overflow-hidden rounded-[12px] bg-gray-100 shadow-sm border border-gray-50">
               <img 
                 src={project.imageUrl} 
                 alt={project.title}
                 className="object-cover w-full h-full transition-transform duration-1000 ease-[cubic-bezier(0.2,1,0.3,1)] group-hover:scale-105"
               />
               
-              <div className={`absolute top-2.5 right-3 px-3 py-1.5 font-semibold rounded-full text-[8px] uppercase tracking-wider shadow-sm ${
+              <div className={`absolute top-2.5 right-3 px-3 py-1.5 font-semibold rounded-full text-[10px] tracking-wider shadow-sm ${
                 project.status === 'Processing' ? 'bg-[#e17a5f] text-white' : 
                 project.status === 'Draft' ? 'bg-white/95 text-[#666]' : 
                 'bg-white/95 backdrop-blur-md text-[#aeaeae]'
@@ -106,8 +110,14 @@ export default function ProjectsPage() {
                 {project.status}
               </div>
 
-              <button className="absolute bottom-2 right-3 bg-white/90 backdrop-blur-xl p-2 rounded-full text-gray-500 hover:bg-white hover:text-[#1a1a1a] transition-all opacity-0 group-hover:opacity-100 border border-white/50 shadow-md hover:scale-105">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <button 
+                className="absolute bottom-2.5 right-3 bg-white/90 backdrop-blur-xl p-2.5 rounded-full text-gray-400 hover:text-[#1a1a1a] transition-all opacity-0 group-hover:opacity-100 border border-white/50 shadow-md hover:scale-105 animate-in fade-in"
+                onClick={(e) => {
+                  e.stopPropagation(); // Зупиняємо спливання події, якщо пізніше ви захочете додати інший функціонал для кнопки Edit
+                  router.push(`/projects/${project.id}`);
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                   <path d="m15 5 4 4"/>
@@ -115,22 +125,22 @@ export default function ProjectsPage() {
               </button>
             </div>
 
-            <h3 className="text-[20px] font-luxury-serif font-bold mb-1 tracking-tight group-hover:text-black/70 transition-colors leading-tight">
+            <h3 className="text-[18px] font-luxury-serif font-bold mb-1 tracking-tight group-hover:text-black/70 transition-colors leading-tight">
               {project.title}
             </h3>
-            <p className="text-[#8e94a0] text-[16px] mb-6 font-normal tracking-tight">
+            <p className="text-[#8e94a0] text-[14px] mb-4 font-normal tracking-tight">
               {project.address}
             </p>
             
-            <div className="w-full border-t border-[#f1f2f4] mb-4"></div>
+            <div className="w-full border-t border-[#f1f2f4] mb-3.5"></div>
             
-            <div className="flex items-center gap-6 text-[#9ea4b0] font-normal text-[14px] tracking-tight">
-              <span className="flex items-center gap-2">
-                <LucideImage size={18} strokeWidth={1.5} color="#949ba6" />
+            <div className="flex items-center gap-5 text-[#9ea4b0] font-normal text-[12px] tracking-tight">
+              <span className="flex items-center gap-1.5">
+                <LucideImage size={15} strokeWidth={1.5} color="#949ba6" />
                 {project.imagesCount} images
               </span>
-              <span className="flex items-center gap-2">
-                <Clock size={18} strokeWidth={1.5} color="#949ba6" />
+              <span className="flex items-center gap-1.5">
+                <Clock size={15} strokeWidth={1.5} color="#949ba6" />
                 Edited {project.updatedAt}
               </span>
             </div>

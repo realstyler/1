@@ -10,18 +10,7 @@ import {
   useUploadImages,
 } from "@/upload/image-upload.hooks";
 import { createImageSignedUrlsApi } from "@/upload/image-upload.api";
-import { StoredPath } from "@/types";
-
-type UploadingStatus = "uploading" | "ready" | "error";
-
-interface UploadedFile {
-  id: string;
-  file: File | null;
-  preview: string;
-  name: string;
-  status: UploadingStatus;
-  path?: string;
-}
+import { StoredPath, UploadedFile, UploadingStatus } from "@/types";
 
 const MAX_FILES = 5;
 
