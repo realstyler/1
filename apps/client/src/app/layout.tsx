@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
-import Navbar from "@/components/layout/Navbar";
 import "./globals.css";
 import QCProvider from "@/components/providers/QueryClient";
 import { UserDTO } from "@/auth/auth.dto";
@@ -23,17 +22,11 @@ const playfairDisplay = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "RealStyler - AI Interior Design",
-  description:
-    "Transform your space with AI-powered interior design. Upload a photo and watch the magic happen.",
+  description: "Transform your space with AI-powered interior design.",
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let user: UserDTO | null | undefined = undefined;
-
   try {
     user = await meServer();
   } catch {}
@@ -43,7 +36,6 @@ export default async function RootLayout({
       <body className="font-sans antialiased bg-background text-foreground">
         <InitUserState user={user ?? null}>
           <QCProvider>
-            <Navbar />
             {children}
           </QCProvider>
         </InitUserState>

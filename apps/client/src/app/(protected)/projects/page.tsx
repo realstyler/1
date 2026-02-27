@@ -12,7 +12,6 @@ import {
   Plus, 
   Filter, 
   ArrowUpDown, 
-  Pencil, 
   Image as LucideImage, 
   Clock 
 } from 'lucide-react';
@@ -107,8 +106,12 @@ export default function ProjectsPage() {
                 {project.status}
               </div>
 
-              <button className="absolute bottom-2 right-3 bg-white/90 backdrop-blur-xl p-2 rounded-full text-gray-400 hover:bg-[#f5f5f5] hover:text-gray-600 transition-all opacity-0 group-hover:opacity-100 border border-white/50 shadow-xl">
-                <Pencil size={20} strokeWidth={2} />
+              <button className="absolute bottom-2 right-3 bg-white/90 backdrop-blur-xl p-2 rounded-full text-gray-500 hover:bg-white hover:text-[#1a1a1a] transition-all opacity-0 group-hover:opacity-100 border border-white/50 shadow-md hover:scale-105">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  <path d="m15 5 4 4"/>
+                </svg>
               </button>
             </div>
 

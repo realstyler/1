@@ -46,7 +46,10 @@ export default function CreateProjectModal({
   };
 
   return (
-    <section className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <section 
+      className="fixed inset-0 z-40 bg-white/60 backdrop-blur-md flex items-center justify-center p-4 pt-[80px]"
+      onClick={onCancel}
+    >
       <div 
         className="bg-white w-full max-w-lg rounded-[24px] shadow-2xl flex flex-col overflow-hidden relative"
         onClick={(e) => e.stopPropagation()}
@@ -91,7 +94,7 @@ export default function CreateProjectModal({
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 autoFocus
-                className="w-full border-b border-gray-200 py-2 text-base placeholder:text-gray-200 outline-none focus:border-black transition-colors font-medium"
+                className="w-full border-b border-gray-200 py-2 text-base placeholder:text-gray-200 placeholder:font-serif outline-none focus:border-black transition-colors font-medium bg-transparent"
               />
             </div>
 
@@ -104,7 +107,7 @@ export default function CreateProjectModal({
                 placeholder="e.g. 1284 Highland Ave"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full border-b border-gray-200 py-2 text-base placeholder:text-gray-200 outline-none focus:border-black transition-colors font-medium"
+                className="w-full border-b border-gray-200 py-2 text-base placeholder:text-gray-200 placeholder:font-serif outline-none focus:border-black transition-colors font-medium bg-transparent"
               />
             </div>
 
