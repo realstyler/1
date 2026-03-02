@@ -1,43 +1,52 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useUploadImages, useDeleteUploadedImages } from "@/upload/image-upload.hooks";
 import { createImageSignedUrlsApi } from "@/upload/image-upload.api";
 import { 
   ArrowLeft, 
   MoreHorizontal, 
-  UploadCloud, 
   Trash2, 
   ChevronRight,
-  Upload,
   AlertCircle
 } from 'lucide-react';
 import { UploadedFile, UploadingStatus, StoredPath } from '@/types';
-import { useGetProject } from '@/projects/projects.hooks';
+import { useGetProject, useAddProjectImages } from '@/projects/projects.hooks';
+import ProjectDropzone from '@/components/projects/ProjectDropzone';
+import { useErrorToastStore } from "@/stores/useErrorToastStore";
+import { AxiosError } from "axios";
 
 const MAX_FILES = 10;
-
 const getStorageKey = (projectId: string) => `uploadedImages_project_${projectId}`;
 
 export default function ProjectUploadPage() {
   const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const projectId = params.id as string;
-  const isNewProject = searchParams.get('new') === 'true';
   const storageKey = getStorageKey(projectId);
 
+  const [isNewProject, setIsNewProject] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
   const [isRestoring, setIsRestoring] = useState(true);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { show: showError } = useErrorToastStore();
 
   const { mutateAsync: uploadImages } = useUploadImages();
   const { mutateAsync: deleteUploadedImages } = useDeleteUploadedImages();
+  const { mutateAsync: addProjectImages, isPending: isAddingImages } = useAddProjectImages();
 
   const { data: project, isLoading: isProjectLoading } = useGetProject(projectId);
+
+  useEffect(() => {
+    const newProjectKey = `isNewProject_${projectId}`;
+    const isNew = sessionStorage.getItem(newProjectKey);
+    
+    if (isNew === 'true') {
+      setIsNewProject(true);
+      sessionStorage.removeItem(newProjectKey);
+    }
+  }, [projectId]);
 
   useEffect(() => {
     const restoreImages = async () => {
@@ -165,31 +174,6 @@ export default function ProjectUploadPage() {
     });
   }, [uploadedImages.length, uploadImages, storageKey]);
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      processFiles(Array.from(e.dataTransfer.files));
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      processFiles(Array.from(e.target.files));
-    }
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
   const handleDelete = async (id: string, path?: string) => {
     setUploadedImages(prev => {
       const imgToDelete = prev.find(img => img.id === id);
@@ -211,9 +195,26 @@ export default function ProjectUploadPage() {
     }
   };
 
-  const handleDone = () => {
-    sessionStorage.removeItem(storageKey);
-    router.push(`/projects/${projectId}`);
+  const handleDone = async () => {
+    const pathsToSave = uploadedImages
+      .filter(img => img.status === "ready" && img.path)
+      .map(img => img.path as string);
+
+    if (pathsToSave.length > 0) {
+      try {
+        await addProjectImages({ projectId, paths: pathsToSave });
+        sessionStorage.removeItem(storageKey);
+        router.push(`/projects/${projectId}`);
+      } catch (error) {
+        console.error("Failed to save images to project:", error);
+        const err = error as AxiosError<{ message: string }>;
+        const errorMessage = err.response?.data?.message || err.message || "Failed to save project images. Please try again.";
+        showError(errorMessage);
+      }
+    } else {
+      sessionStorage.removeItem(storageKey);
+      router.push(`/projects/${projectId}`);
+    }
   };
 
   if (isProjectLoading || isRestoring) {
@@ -259,59 +260,11 @@ export default function ProjectUploadPage() {
             </button>
           </div>
 
-          {/* Hidden Input */}
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            hidden 
-            multiple 
-            accept="image/jpeg, image/png" 
-            onChange={handleFileSelect} 
+          <ProjectDropzone 
+            onFilesSelect={processFiles} 
+            uploadedCount={uploadedImages.length} 
+            maxFiles={MAX_FILES} 
           />
-
-          {/* Upload Area */}
-          <div 
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`flex-1 min-h-[320px] border-2 border-dashed rounded-[32px] flex flex-col items-center justify-center bg-white transition-all cursor-pointer group mb-6 relative shadow-sm ${
-              isDragging ? 'border-[#8ea28d] bg-[#fdfefd] scale-[1.01]' : 'border-[#d1d7cb] hover:border-[#b5bcaf]'
-            }`}
-          >
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-transform duration-500 ${
-              isDragging ? 'bg-[#8ea28d]/10 scale-110' : 'bg-[#f8f8f7] group-hover:scale-110'
-            }`}>
-              <UploadCloud size={22} className={isDragging ? 'text-[#8ea28d]' : 'text-[#949ba6]'} strokeWidth={1.5} />
-            </div>
-
-            <h2 className="text-[22px] md:text-[24px] font-luxury-serif mb-2 tracking-tight text-center">
-              Drop your photos here
-            </h2>
-            
-            <div className="flex items-center gap-2.5 mb-5">
-              <span className="text-[#8e94a0] text-xs font-serif italic">or</span>
-              <button 
-                type="button"
-                className="bg-[#2d2d2d] text-white px-5 py-2 rounded-full font-bold text-[12px] hover:bg-black transition-all active:scale-95 shadow-md flex items-center gap-2"
-              >
-                <Upload size={13} />
-                Browse to upload
-              </button>
-            </div>
-
-            <p className="text-[#b1b5bd] text-[9px] font-black uppercase tracking-[0.2em]">
-              JPEG, PNG • UP TO {MAX_FILES} IMAGES
-            </p>
-
-            {uploadedImages.length >= MAX_FILES && (
-              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-[32px] flex flex-col items-center justify-center z-10 cursor-not-allowed">
-                 <AlertCircle size={32} className="text-[#e17a5f] mb-3" strokeWidth={1.5} />
-                 <h3 className="font-luxury-serif text-xl tracking-tight text-[#1a1a1a]">Maximum limit reached</h3>
-                 <p className="text-sm text-[#8e94a0] mt-1">You can upload up to {MAX_FILES} images</p>
-              </div>
-            )}
-          </div>
 
           {/* Image Preview List */}
           <div className="shrink-0 px-1 mb-4">
@@ -370,7 +323,7 @@ export default function ProjectUploadPage() {
 
         {/* Navigation Actions */}
         <div className="mt-auto pt-2 flex justify-end shrink-0 max-w-[1000px] mx-auto w-full">
-          {isNewProject ? (
+          {isNewProject && uploadedImages.length === 0 ? (
             <button 
               onClick={() => router.push(`/projects/${projectId}`)}
               className="text-[#8e94a0] font-bold text-xs hover:text-black transition-colors flex items-center gap-1.5 group pr-1"
@@ -381,10 +334,10 @@ export default function ProjectUploadPage() {
           ) : (
             <button 
               onClick={handleDone}
-              disabled={uploadedImages.some(img => img.status === "uploading")}
+              disabled={uploadedImages.some(img => img.status === "uploading") || isAddingImages}
               className="bg-black text-white px-10 py-3 rounded-full font-bold text-sm hover:bg-zinc-800 transition-all active:scale-95 shadow-lg shadow-black/20 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
             >
-              Done
+              {isAddingImages ? "Saving..." : "Done"}
             </button>
           )}
         </div>

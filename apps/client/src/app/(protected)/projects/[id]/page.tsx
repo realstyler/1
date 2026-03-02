@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import SidebarOptions from "@/components/projects/SidebarOptions";
-import { mockProjects } from "@/data/mock";
 import { ArrowLeft, MapPin, Upload, Download, Plus } from "lucide-react";
 import { useGetProject } from "@/projects/projects.hooks";
 
@@ -13,7 +12,7 @@ export default function ProjectDetailsPage() {
   const projectId = params.id as string;
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
-  const { data: project, isLoading } = useGetProject(projectId);
+  const { data: project, isLoading } = useGetProject(projectId, true); 
 
   if (isLoading) {
     return (
@@ -33,15 +32,11 @@ export default function ProjectDetailsPage() {
       </div>
     );
 
-  const hasRealImages = project.images && project.images.length > 0;
-
-  const displayImages = hasRealImages
-    ? project.images
-    : mockProjects.slice(0, 9).map((p, index) => ({
-        id: p.id,
-        originalUrl: `${p.imageUrl.split("?")[0]}?w=800&h=${[500, 900, 600, 1100][index % 4]}&fit=max`,
-        restyledUrl: p.id === "1" || p.id === "8" ? p.imageUrl : null,
-      }));
+  const displayImages = (project.images || []).map((img) => ({
+    id: img.id,
+    originalUrl: img.originalUrl || "",
+    restyledUrl: img.restyledUrl || null,
+  }));
 
   const toggleImageSelection = (id: string) => {
     setSelectedImages((prev) =>

@@ -9,7 +9,8 @@
     "start": "node dist/app.js",
     "prestart": "npm run build",
     "seed": "tsx src/lib/prisma/seed.ts",
-    "seed-prompts": "tsx src/lib/prisma/seed-prompts.ts"
+    "seed-prompts": "tsx src/lib/prisma/seed-prompts.ts",
+    "seed-projects": "tsx src/lib/prisma/seed-projects.ts"
   },
   "keywords": [],
   "author": "",

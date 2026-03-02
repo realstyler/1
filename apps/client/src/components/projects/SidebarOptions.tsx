@@ -54,7 +54,6 @@ export default function SidebarOptions({ selectedCount }: Props) {
           ))}
         </div>
 
-        {/* Зменшено загальний відступ між секціями з space-y-8 до space-y-6 */}
         <div className="space-y-6">
           {activeTab === 'Presets' ? (
             <>

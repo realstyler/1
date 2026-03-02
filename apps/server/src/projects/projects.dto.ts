@@ -16,10 +16,10 @@ export type ProjectDTO = {
     createdAt: Date;
     projectId: string;
     originalPath: string;
-    restyledPath: string;
+    restyledPath: string | null;
     orderIndex: number;
     originalUrl?: string;
-    restyledUrl?: string;
+    restyledUrl?: string | null; 
   }[];
 };
 

@@ -30,7 +30,8 @@ export default function ProjectNavbar() {
       {
         onSuccess: (newProject) => {
           setIsModalOpen(false);
-          router.push(`/projects/${newProject.id}/upload?new=true`);
+          sessionStorage.setItem(`isNewProject_${newProject.id}`, 'true');
+          router.push(`/projects/${newProject.id}/upload`);
         },
         onError: (error) => {
           const err = error as AxiosError<{ message: string }>;

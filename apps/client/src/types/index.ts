@@ -81,4 +81,14 @@ export interface UploadedFile {
   path?: string;
 }
 
+export interface ProjectListItem {
+  id: string;
+  name: string;
+  address: string | null;
+  status: string;
+  updatedAt: string;
+  coverUrl: string | null;
+  imagesCount: number;
+}
+
 export type UploadingStatus = "uploading" | "ready" | "error";

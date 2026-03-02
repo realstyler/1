@@ -45,4 +45,11 @@ projectsRouter.get(
   projectsController.getByShareId,
 );
 
+projectsRouter.post(
+  "/projects/:id/images",
+  requireAuth,
+  sessionUser,
+  projectsController.addImages,
+);
+
 export default projectsRouter;
