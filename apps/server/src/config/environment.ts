@@ -12,7 +12,11 @@ const envSchema = z.object({
     .default("development"),
 
   PORT: z.coerce.number().default(4000),
-  USE_MOCK_AI: z.coerce.boolean().default(false),
+  USE_MOCK_AI: z
+    .string()
+    .optional()
+    .default("false")
+    .transform((val) => val.toLowerCase() === "true"),
   SESSION_SECRET: z.string().default("secret_key"),
   DATABASE_URL: z.string(),
   CLIENT_URL: z.url(),
