@@ -3,10 +3,11 @@ import { StylePreset } from "@prisma/client";
 
 export const CreateProjectSchema = z.object({
   name: z.string({ message: "Project name is required" }),
+  address: z.string().optional(),
   stylePreset: z.enum(
     Object.values(StylePreset),
     `Invalid selected style preset. Expected ${Object.values(StylePreset)}`,
-  ),
+  ).optional(),
   images: z.optional(
     z.array(
       z.object({

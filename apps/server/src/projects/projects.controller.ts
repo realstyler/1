@@ -18,6 +18,7 @@ class ProjectsController {
     res.json(result);
   }
 
+  
   async getById(req: any, res: any) {
     const { id } = req.params;
     if (!id) throw new BadRequestError("Project ID is required");
@@ -58,6 +59,21 @@ class ProjectsController {
     if (!shareId) throw new BadRequestError("Project ID is required");
 
     const project = await projectsService.getByShareId(shareId);
+    res.json(project);
+  }
+
+  async addImages(req: any, res: any) {
+    const { id } = req.params;
+    if (!id) throw new BadRequestError("Project ID is required");
+    
+    const { paths } = req.body; 
+    if (!paths || !Array.isArray(paths)) {
+      throw new BadRequestError("Paths array is required");
+    }
+
+    const user = req.user;
+    const project = await projectsService.addImages(user, id, paths);
+    
     res.json(project);
   }
 }

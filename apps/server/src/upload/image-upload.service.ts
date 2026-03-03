@@ -166,6 +166,26 @@ class ImageUploadService {
     }
   }
 
+  async moveTmpToOriginal(tmpPath: string, projectId: string) {
+    if (!tmpPath.startsWith("tmp/")) {
+      throw new BadRequestError("Image is not in the tmp directory");
+    }
+    
+    const fileName = tmpPath.split("/").pop();
+    const newPath = `original/${projectId}/${fileName}`;
+
+    const { error } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .move(tmpPath, newPath);
+
+    if (error) {
+      console.error(error);
+      throw new ApiError(`Failed to move image to original folder: ${tmpPath}`, 500);
+    }
+
+    return newPath;
+  }
+
   // =======================
   // Private helpers
   // =======================

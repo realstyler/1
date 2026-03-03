@@ -27,7 +27,8 @@ model Project {
   id          String      @id @default(uuid())
   userId      String      @map("user_id")
   name        String
-  stylePreset StylePreset @map("style_preset")
+  address      String?
+  stylePreset StylePreset? @map("style_preset")
   shareId     String?     @unique @map("share_id")
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -45,7 +46,7 @@ model ProjectImage {
   projectId String @map("project_id")
 
   originalPath String @map("original_url")
-  restyledPath String @map("restyled_url")
+  restyledPath String? @map("restyled_url")
   orderIndex   Int    @map("order_index")
 
   createdAt DateTime @default(now()) @map("created_at")
