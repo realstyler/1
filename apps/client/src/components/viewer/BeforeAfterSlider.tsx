@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface BeforeAfterSliderProps {
     beforeImage: string;
@@ -33,29 +33,46 @@ export default function BeforeAfterSlider({
         isDragging.current = true;
     }, []);
 
-    const handleMouseUp = useCallback(() => {
-        isDragging.current = false;
+    const handleTouchStart = useCallback(() => {
+        isDragging.current = true;
     }, []);
 
-    const handleMouseMove = useCallback((e: React.MouseEvent) => {
-        if (isDragging.current) {
-            handleMove(e.clientX);
-        }
-    }, [handleMove]);
+    useEffect(() => {
+        const handleGlobalMouseMove = (e: MouseEvent) => {
+            if (isDragging.current) {
+                handleMove(e.clientX);
+            }
+        };
 
-    const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        handleMove(e.touches[0].clientX);
+        const handleGlobalTouchMove = (e: TouchEvent) => {
+            if (isDragging.current) {
+                handleMove(e.touches[0].clientX);
+            }
+        };
+
+        const handleGlobalMouseUp = () => {
+            isDragging.current = false;
+        };
+
+        window.addEventListener('mousemove', handleGlobalMouseMove);
+        window.addEventListener('mouseup', handleGlobalMouseUp);
+        window.addEventListener('touchmove', handleGlobalTouchMove);
+        window.addEventListener('touchend', handleGlobalMouseUp);
+
+        return () => {
+            window.removeEventListener('mousemove', handleGlobalMouseMove);
+            window.removeEventListener('mouseup', handleGlobalMouseUp);
+            window.removeEventListener('touchmove', handleGlobalTouchMove);
+            window.removeEventListener('touchend', handleGlobalMouseUp);
+        };
     }, [handleMove]);
 
     return (
         <div
             ref={containerRef}
-            className="relative w-full aspect-4/3 cursor-ew-resize select-none rounded-sm overflow-hidden"
+            className="relative w-full aspect-[4/3] cursor-ew-resize select-none rounded-sm overflow-hidden"
             onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onMouseMove={handleMouseMove}
-            onTouchMove={handleTouchMove}
+            onTouchStart={handleTouchStart}
         >
             {/* After image (background) */}
             <div className="absolute inset-0">
@@ -65,8 +82,9 @@ export default function BeforeAfterSlider({
                     fill
                     className="object-cover"
                     unoptimized
+                    draggable={false}
                 />
-                <div className="absolute bottom-4 right-4 bg-white text-black px-3 py-1.5 rounded-full text-xs font-medium">
+                <div className="absolute bottom-5 right-5 bg-white text-[#1a1a1a] px-4 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase shadow-md">
                     {afterLabel}
                 </div>
             </div>
@@ -76,26 +94,27 @@ export default function BeforeAfterSlider({
                 className="absolute inset-0 overflow-hidden"
                 style={{ width: `${sliderPosition}%` }}
             >
-                <div className="relative w-full h-full" style={{ width: `${100 / (sliderPosition / 100)}%` }}>
+                <div className="relative w-full h-full" style={{ width: `${100 / (Math.max(0.01, sliderPosition) / 100)}%` }}>
                     <Image
                         src={beforeImage}
                         alt="Before styling"
                         fill
                         className="object-cover"
                         unoptimized
+                        draggable={false}
                     />
-                </div>
-                <div className="absolute bottom-4 left-4 bg-black/80 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm">
-                    {beforeLabel}
+                    <div className="absolute bottom-5 left-5 bg-[#1a1a1a] text-white px-4 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase shadow-md">
+                        {beforeLabel}
+                    </div>
                 </div>
             </div>
 
             {/* Slider handle */}
             <div
-                className="absolute top-0 bottom-0 w-0.5 bg-white/50 shadow-lg cursor-ew-resize"
+                className="absolute top-0 bottom-0 w-0.5 bg-white/50 shadow-lg cursor-ew-resize z-10"
                 style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
             >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4.5 h-10 rounded-full bg-white/50 border border-white shadow-lg flex items-center justify-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4.5 h-10 rounded-full bg-white/80 border border-white shadow-lg flex items-center justify-center backdrop-blur-sm">
                     <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                     </svg>
