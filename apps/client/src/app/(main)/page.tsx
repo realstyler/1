@@ -91,49 +91,51 @@ export default function Home() {
   };
 
   const featuresList = [
-    {
-      title: "Spatial Geometry",
-      desc: "Our model identifies walls, floors, and ceilings to ensure furniture placement is physically accurate within the 3D volume.",
-      wrapperClass: "w-12 h-12 border-2 border-dashed border-neutral-300 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:bg-black group-hover:text-white group-hover:border-transparent",
-      svgClass: "w-6 h-6 text-neutral-600 group-hover:text-white transition-colors duration-300",
-      svgPath: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"
-        />
-      ),
-    },
-    {
-      title: "Adaptive Lighting",
-      desc: "Shadows and reflections are calculated based on the existing HDRI environment map extracted from your photograph.",
-      wrapperClass: "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
-      svgClass: "w-8 h-8 text-neutral-600 group-hover:text-white transition-colors duration-300",
-      svgPath: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-        />
-      ),
-    },
-    {
-      title: "Material Fidelity",
-      desc: "Retain specific elements like hardwood floors or window frames while changing only the soft furnishings.",
-      wrapperClass: "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
-      svgClass: "w-8 h-8 text-neutral-600 group-hover:text-white transition-colors duration-300",
-      svgPath: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-        />
-      ),
-    },
-  ];
+  {
+    title: "Spatial Geometry",
+    desc: "Our model identifies walls, floors, and ceilings to ensure furniture placement is physically accurate within the 3D volume.",
+    wrapperClass: "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
+    svgClass: "w-7 h-7 text-neutral-600 group-hover:text-white transition-colors duration-300",
+    svgPath: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        fill="none"
+        d="M4,6 A2,2 0 0,1 6,4 M9,4 H10.5 M13.5,4 H15 M18,4 A2,2 0 0,1 20,6 M20,9 V10.5 M20,13.5 V15 M20,18 A2,2 0 0,1 18,20 M15,20 H13.5 M10.5,20 H9 M6,20 A2,2 0 0,1 4,18 M4,15 V13.5 M4,10.5 V9"
+      />
+    ),
+  },
+  {
+    title: "Adaptive Lighting",
+    desc: "Shadows and reflections are calculated based on the existing HDRI environment map extracted from your photograph.",
+    wrapperClass: "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
+    svgClass: "w-7 h-7 text-neutral-600 group-hover:text-white transition-colors duration-300",
+    svgPath: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+      />
+    ),
+  },
+  {
+    title: "Material Fidelity",
+    desc: "Retain specific elements like hardwood floors or window frames while changing only the soft furnishings.",
+    wrapperClass: "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
+    svgClass: "w-7 h-7 text-neutral-600 group-hover:text-white transition-colors duration-300",
+    svgPath: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        fill="none"
+        d="M12 3l-8 4 8 4 8-4-8-4z M4 11l8 4 8-4 M4 15l8 4 8-4"
+      />
+    ),
+  },
+];
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
@@ -144,6 +146,7 @@ export default function Home() {
         onSubmit={handleContinue}
       />
 
+      {/* Hero Section */}
       <section className="container mx-auto px-6 py-16 md:py-24">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 xl:gap-[110px] items-start">
           
@@ -208,6 +211,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Social Proof - Magazine Logos */}
       <section className="px-6 py-13 border-y border-neutral-200 bg-white">
         <p className="text-center text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-8">
           Powering the next generation of design
@@ -229,6 +233,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Precision Section */}
       <section className="container mx-auto px-6 py-24 border-b border-neutral-200">
         <div className="grid lg:grid-cols-2 gap-16 items-start max-w-6xl mx-auto">
           <div className="space-y-6">
@@ -247,6 +252,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Features Section */}
       <section id="features" className="container mx-auto px-6 py-16 mb-10">
         <div className="text-center mb-12">
           <p className="text-xs text-neutral-400 uppercase tracking-widest mb-4">
@@ -255,7 +261,7 @@ export default function Home() {
           <h2 className="text-4xl md:text-5xl font-serif">Core Capabilities</h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
           {featuresList.map((feature, index) => (
             <div key={index} className="space-y-4 group cursor-pointer">
               <div className={feature.wrapperClass}>
@@ -279,6 +285,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Curated Aesthetics Carousel */}
       <section className="bg-[#18181b] text-white py-24 relative overflow-hidden">
         <div className="container mx-auto px-6 mb-10 flex items-center justify-between">
           <div>
@@ -389,6 +396,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Portfolio Section */}
       <section
         id="portfolio"
         className="bg-white py-16 border-t border-neutral-200"
@@ -453,6 +461,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* CTA Section */}
       <section className="container mx-auto px-6 py-54">
         <div className="bg-[#19191c] text-white rounded-4xl px-12 py-20 md:px-16 md:py-28 text-center max-w-5xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-serif mb-8">
