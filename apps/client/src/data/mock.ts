@@ -187,3 +187,108 @@ export const mockProjects: Project[] = [
     imageUrl: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?q=80&w=800&h=600&fit=crop',
   },
 ];
+
+export const libraryProjects = [
+  {
+    id: 1,
+    title: "47 Ocean Drive",
+    subtitle: "Living Room • 4 Variations",
+    images: [
+      { 
+        id: '1-1', 
+        type: 'original', 
+        label: 'ORIGINAL', 
+        src: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80' 
+      },
+      { 
+        id: '1-2', 
+        type: 'variation', 
+        label: 'Modern', 
+        src: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80' 
+      },
+      { 
+        id: '1-3', 
+        type: 'variation', 
+        label: 'Coastal', 
+        src: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?w=600&q=80' 
+      },
+      { 
+        id: '1-4', 
+        type: 'variation', 
+        label: 'Minimal', 
+        src: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&q=80' 
+      },
+    ],
+  },
+  {
+    id: 2,
+    title: "47 Ocean Drive",
+    subtitle: "Kitchen • 2 Variations",
+    images: [
+      { 
+        id: '2-1', 
+        type: 'original', 
+        label: 'ORIGINAL', 
+        src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80' 
+      },
+      { 
+        id: '2-2', 
+        type: 'variation', 
+        label: 'Industrial', 
+        src: 'https://plus.unsplash.com/premium_photo-1661915661139-5b6a4e4a6fcc?w=600&q=80' 
+      },
+      { 
+        id: '2-3', 
+        type: 'variation', 
+        label: 'Scandi', 
+        src: 'https://images.unsplash.com/photo-1556909212-d5b604d0c90d?w=600&q=80' 
+      },
+    ],
+  },
+  {
+    id: 3,
+    title: "47 Ocean Drive",
+    subtitle: "Bedroom • 5 Variations",
+    images: [
+      { 
+        id: '3-1', 
+        type: 'original', 
+        label: 'ORIGINAL', 
+        src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80' 
+      },
+      { 
+        id: '3-2', 
+        type: 'variation', 
+        label: 'Abstract', 
+        src: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&q=80' 
+      },
+      { 
+        id: '3-3', 
+        type: 'variation', 
+        label: 'Dining', 
+        src: 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=600&q=80' 
+      },
+      { 
+        id: '3-4', 
+        type: 'more', 
+        label: '+1 More', 
+        src: '' 
+      },
+    ],
+  },
+];
+
+export const mockSelectedImages = [
+  {
+    id: '1',
+    src: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=100&h=100&fit=crop',
+    title: '47 Ocean Drive - Living',
+    subtitle: 'Original + 4 Styles'
+  },
+  {
+    id: '2',
+    src: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=100&h=100&fit=crop',
+    title: '47 Ocean Drive - Kitchen',
+    subtitle: 'Original + 2 Styles'
+  }
+];
