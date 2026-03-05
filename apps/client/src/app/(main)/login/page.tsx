@@ -3,20 +3,23 @@
 import Link from "next/link";
 import Footer from "@/components/layout/Footer";
 import { useLogin } from "@/auth/auth.hooks";
-import { redirect } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { SubmitEvent } from "react";
 import { ApiError } from "shared";
 
 export default function LoginPage() {
   const { mutateAsync, error } = useLogin();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const redirectPath = searchParams.get("redirect") || "/dashboard";
 
   async function onSubmit(e: SubmitEvent) {
     e.preventDefault();
-    const fd = new FormData(e.target);
+    const fd = new FormData(e.target as HTMLFormElement);
     const email = fd.get("email") as string;
     const password = fd.get("password") as string;
     await mutateAsync({ email, password });
-    redirect("/dashboard");
+    router.push(redirectPath);
   }
 
   const err = error instanceof ApiError && {
@@ -95,7 +98,7 @@ export default function LoginPage() {
           <div className="mt-8 text-center text-sm text-neutral-500">
             Don&apos;t have an account?{" "}
             <Link
-              href="/signup"
+              href={`/signup${searchParams.has("redirect") ? `?redirect=${searchParams.get("redirect")}` : ""}`}
               className="text-neutral-900 font-medium hover:underline"
             >
               Sign up

@@ -75,8 +75,9 @@ model Subscription {
 }
 
 model UsageTracking {
-  id     String @id @default(uuid())
-  userId String @map("user_id")
+  id      String  @id @default(uuid())
+  userId  String? @map("user_id")
+  guestId String? @map("guest_id")
 
   periodStart DateTime @map("period_start")
   periodEnd   DateTime @map("period_end")
@@ -84,10 +85,10 @@ model UsageTracking {
   imagesUsed  Int @default(0) @map("images_used")
   imagesLimit Int @map("images_limit")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, periodStart, periodEnd])
   @@index([userId])
+  @@index([guestId])
   @@map("usage_tracking")
 }
 

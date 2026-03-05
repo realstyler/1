@@ -4,12 +4,24 @@ import { jobService } from "../job-pooling/job.service.js";
 import type { UserDTO } from "../user/user.dto.js";
 import { BadRequestError } from "../errors/apiErrors.js";
 import { imageUploadService } from "../upload/image-upload.service.js";
+import type { RequestIdentity } from "../types/index.js";
 
 class AIGenerationController {
-  restyle = async (req: any, res: Response) => {
-    const user = req.user as UserDTO;
+  restyle = async (req: Request, res: Response) => {
+    const user = (req as any).user as UserDTO | undefined;
+    const forwardedFor = req.headers["x-forwarded-for"];
+    
+    const ipString = Array.isArray(forwardedFor) 
+      ? forwardedFor[0] 
+      : forwardedFor?.split(",")[0];
 
-    const result = await aiGenerationService.restyle(user.id, req.body);
+    const ip: string = ipString || req.socket.remoteAddress || "unknown_ip";
+
+    const identity: RequestIdentity = user
+      ? { type: "user", id: user.id }
+      : { type: "guest", id: ip };
+
+    const result = await aiGenerationService.restyle(identity, req.body);
     res.json(result);
   };
 
