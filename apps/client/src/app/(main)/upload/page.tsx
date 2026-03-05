@@ -159,18 +159,42 @@ export default function UploadPage() {
       const stored: StoredPath[] = JSON.parse(raw);
       if (stored.length === 0) return;
 
-      const paths = stored.map((s) => s.path);
-      const urls = await createImageSignedUrlsApi(paths);
+      const tmpStored = stored.filter(s => s.path && s.path.startsWith('tmp/'));
 
-      const restored = stored.map((s, index) => ({
-        id: s.id,
-        file: null,
-        preview: urls[index],
-        name: s.name,
-        status: "ready" as const,
-      }));
+      if (tmpStored.length === 0) {
+        sessionStorage.removeItem("uploadedImages");
+        return;
+      }
 
-      setUploadedImages(restored);
+      const paths = tmpStored.map((s) => s.path);
+      
+      try {
+        const urls = await createImageSignedUrlsApi(paths);
+        const restored: UploadedFile[] = [];
+        const validStored: StoredPath[] = [];
+
+        tmpStored.forEach((s, index) => {
+          const url = urls[index];
+          if (url) {
+            restored.push({
+              id: s.id,
+              file: null,
+              preview: url,
+              name: s.name,
+              status: "ready" as const,
+            });
+            validStored.push(s);
+          }
+        });
+
+        setUploadedImages(restored);
+
+        if (validStored.length !== stored.length) {
+          sessionStorage.setItem("uploadedImages", JSON.stringify(validStored));
+        }
+      } catch (error) {
+        console.error("Error restoring images:", error);
+      }
     };
 
     restoreImages();
