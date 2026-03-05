@@ -71,14 +71,14 @@ export default function ViewerPage() {
         return parts.length > 1 ? parts[1] : baseUrl;
       };
 
-      const allPaths = images.flatMap((img) => [
-        getFilePath(img.before),
-        getFilePath(img.after),
-      ]);
+      const imagePairs = images.map((img) => ({
+        tmp: getFilePath(img.before),
+        gen: getFilePath(img.after),
+      }));
 
       await addProjectImagesMutation.mutateAsync({ 
         projectId: projectId, 
-        paths: allPaths 
+        imagePairs: imagePairs 
       });
       
       router.push(`/projects/${projectId}`);

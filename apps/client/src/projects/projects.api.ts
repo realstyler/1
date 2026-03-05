@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import { fetcher } from "@/lib/fetcher";
 import { ProjectDTO, ProjectListItem } from "@/types";
+import { ImagePair } from "@/types";
 
 export const createProjectApi = async (data: { name: string; address?: string }) =>
   fetcher<ProjectDTO>(api.post("/api/projects", data));
@@ -17,5 +18,5 @@ export const getProjectByIdApi = async (id: string, loadSignedImages: boolean = 
   return fetcher<ProjectDTO>(api.get(`/api/projects/${id}${query}`));
 }
 
-export const addProjectImagesApi = async (projectId: string, paths: string[]) =>
-  fetcher(api.post(`/api/projects/${projectId}/images`, { paths }));
+export const addProjectImagesApi = async (projectId: string, imagePairs: ImagePair[]) =>
+  fetcher(api.post(`/api/projects/${projectId}/images`, { imagePairs }));

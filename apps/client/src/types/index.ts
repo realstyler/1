@@ -92,3 +92,8 @@ export interface ProjectListItem {
 }
 
 export type UploadingStatus = "uploading" | "ready" | "error";
+
+export type ImagePair = {
+  tmp: string;
+  gen: string;
+};

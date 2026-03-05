@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import SidebarOptions from "@/components/projects/SidebarOptions";
 import { ArrowLeft, MapPin, Upload, Download, Plus } from "lucide-react";
@@ -12,7 +12,39 @@ export default function ProjectDetailsPage() {
   const projectId = params.id as string;
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
-  const { data: project, isLoading } = useGetProject(projectId, true); 
+  const { data: project, isLoading } = useGetProject(projectId, true);
+
+  const displayImages = useMemo(() => {
+    return (project?.images || []).flatMap((img) => {
+      const items = [];
+      
+      if (img.originalUrl) {
+        items.push({
+          id: `${img.id}-original`,
+          url: img.originalUrl,
+          isRestyled: false,
+        });
+      }
+
+      if (img.restyledUrl) {
+        items.push({
+          id: `${img.id}-restyled`,
+          url: img.restyledUrl,
+          isRestyled: true,
+        });
+      }
+
+      return items;
+    });
+  }, [project?.images]);
+
+  const selectedImagesSet = useMemo(() => new Set(selectedImages), [selectedImages]);
+
+  const toggleImageSelection = useCallback((id: string) => {
+    setSelectedImages((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  }, []);
 
   if (isLoading) {
     return (
@@ -31,18 +63,6 @@ export default function ProjectDetailsPage() {
         Project not found
       </div>
     );
-
-  const displayImages = (project.images || []).map((img) => ({
-    id: img.id,
-    originalUrl: img.originalUrl || "",
-    restyledUrl: img.restyledUrl || null,
-  }));
-
-  const toggleImageSelection = (id: string) => {
-    setSelectedImages((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
 
   return (
     <div className="bg-[#f8f8f7] min-h-[calc(100vh-80px)] text-[#1a1a1a]">
@@ -128,25 +148,25 @@ export default function ProjectDetailsPage() {
                     key={img.id}
                     onClick={() => toggleImageSelection(img.id)}
                     className={`relative break-inside-avoid mb-6 rounded-[24px] overflow-hidden cursor-pointer transition-all duration-300 border-2 ${
-                      selectedImages.includes(img.id)
+                      selectedImagesSet.has(img.id)
                         ? "border-[#8ea28d] shadow-md"
                         : "border-transparent shadow-sm hover:border-gray-200"
                     } group bg-white`}
                   >
                     <img
-                      src={img.restyledUrl || img.originalUrl}
+                      src={img.url}
                       alt="Project view"
                       className="w-full h-auto block transition-transform duration-700 group-hover:scale-105"
                     />
 
                     <div
                       className={`absolute top-4 left-4 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selectedImages.includes(img.id)
+                        selectedImagesSet.has(img.id)
                           ? "bg-[#8ea28d] border-[#8ea28d]"
                           : "bg-white/80 backdrop-blur-sm border-white shadow-sm"
                       }`}
                     >
-                      {selectedImages.includes(img.id) && (
+                      {selectedImagesSet.has(img.id) && (
                         <svg
                           width="14"
                           height="14"
@@ -160,7 +180,7 @@ export default function ProjectDetailsPage() {
                       )}
                     </div>
 
-                    {img.restyledUrl && (
+                    {img.isRestyled && (
                       <div className="absolute top-4 right-4 bg-[#8ea28d]/90 backdrop-blur-md text-white text-[10px] font-semibold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full">
                         Styled
                       </div>
