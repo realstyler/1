@@ -166,21 +166,27 @@ class ImageUploadService {
     }
   }
 
-  async moveTmpToOriginal(tmpPath: string, projectId: string) {
-    if (!tmpPath.startsWith("tmp/")) {
-      throw new BadRequestError("Image is not in the tmp directory");
+  async moveImageToProject(sourcePath: string, projectId: string) {
+    let targetDirectory = "";
+
+    if (sourcePath.startsWith("tmp/")) {
+      targetDirectory = "original";
+    } else if (sourcePath.startsWith("generated/")) {
+      targetDirectory = "generated";
+    } else {
+      throw new BadRequestError("Image must be in either 'tmp' or 'generated' directory");
     }
-    
-    const fileName = tmpPath.split("/").pop();
-    const newPath = `original/${projectId}/${fileName}`;
+
+    const fileName = sourcePath.split("/").pop();
+    const newPath = `${targetDirectory}/${projectId}/${fileName}`;
 
     const { error } = await supabaseAdmin.storage
       .from(BUCKET)
-      .move(tmpPath, newPath);
+      .move(sourcePath, newPath);
 
     if (error) {
       console.error(error);
-      throw new ApiError(`Failed to move image to original folder: ${tmpPath}`, 500);
+      throw new ApiError(`Failed to move image to ${targetDirectory} project folder: ${sourcePath}`, 500);
     }
 
     return newPath;

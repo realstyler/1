@@ -2,16 +2,25 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BeforeAfterSlider, DownloadButton } from "@/components/viewer";
 import { Style } from "@/types";
 import { useGetJobsResultsApi } from "@/restyle/restyle.hooks";
 import { Job } from "shared";
+import SaveToProjectModal from "@/components/viewer/SaveToProject";
+import { useCreateProject, useAddProjectImages } from "@/projects/projects.hooks";
 
 export default function ViewerPage() {
+  const router = useRouter();
   const [jobIds, setJobIds] = useState<string[]>([]);
   const { data } = useGetJobsResultsApi(jobIds, true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedStyle, setSelectedStyle] = useState<Style | null>(null);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const createProjectMutation = useCreateProject();
+  const addProjectImagesMutation = useAddProjectImages();
 
   const images = useMemo(() => {
     if (!data) return [];
@@ -43,6 +52,43 @@ export default function ViewerPage() {
   }, []);
 
   const currentImage = images[selectedImageIndex];
+
+  const handleSaveProject = async (projectData: { name: string; address: string }) => {
+    if (!currentImage) return;
+    setIsSaving(true);
+
+    try {
+      const newProject = await createProjectMutation.mutateAsync(projectData);
+      const projectId = newProject?.id || (newProject as any)?.data?.id;
+
+      if (!projectId) {
+        throw new Error("Failed to retrieve project ID");
+      }
+
+      const getFilePath = (url: string) => {
+        const baseUrl = url.split("?")[0];
+        const parts = baseUrl.split("/real-styler/");
+        return parts.length > 1 ? parts[1] : baseUrl;
+      };
+
+      const allPaths = images.flatMap((img) => [
+        getFilePath(img.before),
+        getFilePath(img.after),
+      ]);
+
+      await addProjectImagesMutation.mutateAsync({ 
+        projectId: projectId, 
+        paths: allPaths 
+      });
+      
+      router.push(`/projects/${projectId}`);
+    } catch (error) {
+      console.error("Failed to save project:", error);
+    } finally {
+      setIsSaving(false);
+      setIsSaveModalOpen(false);
+    }
+  };
 
   return (
     <div className="min-h-screen py-20">
@@ -112,7 +158,22 @@ export default function ViewerPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          {currentImage && <DownloadButton imageUrl={currentImage.after} />}
+          {currentImage && (
+            <>
+              <button
+                onClick={() => setIsSaveModalOpen(true)}
+                className="px-6 py-3 text-white bg-[#2d2d2d] hover:bg-[#3d3d3d] rounded-full transition-all duration-300 font-semibold shadow-md flex items-center gap-2 active:scale-95 group"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                Save to Project
+              </button>
+              <DownloadButton imageUrl={currentImage.after} />
+            </>
+          )}
 
           <Link
             href="/styles"
@@ -178,6 +239,17 @@ export default function ViewerPage() {
           </div>
         </div>
       </div>
+
+      {currentImage && (
+        <SaveToProjectModal
+          isOpen={isSaveModalOpen}
+          onCancel={() => setIsSaveModalOpen(false)}
+          onSubmit={handleSaveProject}
+          beforeImage={currentImage.before}
+          afterImage={currentImage.after}
+          isSubmitting={isSaving}
+        />
+      )}
     </div>
   );
 }

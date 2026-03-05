@@ -200,7 +200,7 @@ class ProjectsService {
       const tmpPath = tmpPaths[i];
       
       await imageUploadService.existImageOrThrow(tmpPath as string);
-      const originalPath = await imageUploadService.moveTmpToOriginal(tmpPath as string, projectId);
+      const originalPath = await imageUploadService.moveImageToProject(tmpPath as string, projectId);
 
       projectImagesData.push({
         originalPath,
