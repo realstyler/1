@@ -7,54 +7,65 @@ import {
   NotFoundError,
   BadRequestError,
 } from "../errors/apiErrors.js";
-import type { PlanTier } from "@prisma/client";
+import { type PlanTier, Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { mapStripeStatus } from "../utils/mapStripeStatus.util.js";
 import type { QuotaPeriodCreateDTO } from "./quota.dto.js";
+import type { RequestIdentity } from "../types/index.js";
 
 class QuotaService {
-  async upsertPeriod(userId: string, input: QuotaPeriodCreateDTO) {
-    const usage = await this.getLastUsagePeriod(userId);
+  async upsertPeriod(identity: RequestIdentity, input: QuotaPeriodCreateDTO) {
+    const usage = await this.getLastUsagePeriod(identity);
 
-    if (!usage)
+    const dataToSave: Prisma.UsageTrackingUncheckedCreateInput = {
+      periodStart: input.periodStart,
+      periodEnd: input.periodEnd,
+      imagesLimit: input.imagesLimit,
+      userId: identity.type === "user" ? identity.id : null,
+      guestId: identity.type === "guest" ? identity.id : null,
+    };
+
+    if (!usage) {
       return prisma.usageTracking.create({
-        data: { ...input, userId },
+        data: dataToSave,
       });
-    else
-      return prisma.usageTracking.update({
-        where: { id: usage.id },
-        data: input,
-      });
+    }
+
+    return prisma.usageTracking.update({
+      where: { id: usage.id },
+      data: input,
+    });
   }
 
-  async createFreePeriod(userId: string) {
+  async createFreePeriod(identity: RequestIdentity) {
     const freeTime = ms(environment.FREE_PERIOD);
     const periodStart = new Date();
     const periodEnd = new Date(periodStart.getTime() + freeTime);
 
-    console.log(`CREATE FREE PERIOD FOR USER ${userId}`);
+    console.log(`CREATE FREE PERIOD FOR ${identity.type.toUpperCase()}: ${identity.id}`);
 
-    return this.upsertPeriod(userId, {
+    return this.upsertPeriod(identity, {
       periodStart,
       periodEnd,
       imagesLimit: this.getImagesLimitByPlan("FREE"),
     });
   }
 
-  async assertQuotaAvailable(userId: string, count: number) {
-    let usage = await this.getLastUsagePeriod(userId);
+  async assertQuotaAvailable(identity: RequestIdentity, count: number) {
+    let usage = await this.getLastUsagePeriod(identity);
 
-    // ===== SELF HEAL FROM STRIPE =====
-    if (!usage) {
-      console.log("Quota missing → repairing from Stripe...");
+    if (!usage && identity.type === "user") {
+      console.log("Quota missing for user → repairing from Stripe...");
       try {
-        await this.repairQuotaFromStripe(userId);
-        usage = await this.getLastUsagePeriod(userId);
-      } catch {}
+        await this.repairQuotaFromStripe(identity.id);
+        usage = await this.getLastUsagePeriod(identity);
+      } catch (err) {
+        console.error("Failed to repair quota from Stripe:", err);
+      }
     }
 
     // ===== FALLBACK FREE PERIOD =====
-    if (!usage) usage = await this.createFreePeriod(userId);
+    if (!usage) usage = await this.createFreePeriod(identity);
 
     if (usage.imagesUsed + count > usage.imagesLimit)
       throw new ForbiddenError(
@@ -64,13 +75,13 @@ class QuotaService {
     return usage;
   }
 
-  async reserveQuotaAtomic(userId: string, count: number) {
-    const usage = await this.assertQuotaAvailable(userId, count);
+  async reserveQuotaAtomic(identity: RequestIdentity, count: number) {
+    const usage = await this.assertQuotaAvailable(identity, count);
 
     return prisma.usageTracking.update({
       where: { id: usage.id },
       data: {
-        imagesUsed: usage.imagesUsed + count,
+        imagesUsed: { increment: count }, 
       },
     });
   }
@@ -84,14 +95,23 @@ class QuotaService {
     });
   }
 
-  async getLastUsagePeriod(userId: string) {
+  async getLastUsagePeriod(identity: RequestIdentity) {
     const now = new Date();
+    
+    const targetField =
+      identity.type === "user"
+        ? { userId: identity.id }
+        : { guestId: identity.id };
+
     return prisma.usageTracking.findFirst({
       where: {
-        userId,
+        ...targetField,
         periodStart: { lte: now },
         periodEnd: { gte: now },
       },
+      orderBy: {
+        periodEnd: 'desc'
+      }
     });
   }
 
@@ -135,9 +155,9 @@ class QuotaService {
       },
     });
 
-    const imagesLimit = quotaService.getImagesLimitByPlan(planTier);
+    const imagesLimit = this.getImagesLimitByPlan(planTier);
 
-    const usage = await this.upsertPeriod(userId, {
+    const usage = await this.upsertPeriod({ type: "user", id: userId }, {
       periodStart,
       periodEnd,
       imagesLimit,

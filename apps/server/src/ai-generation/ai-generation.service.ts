@@ -10,11 +10,11 @@ import { promptCacheService } from "../prompts/prompts.service.js";
 import { quotaService } from "../quota/quota.service.js";
 import { BadRequestError } from "../errors/apiErrors.js";
 import { RestyleSchema, zodParseOrThrow, type Model } from "shared";
+import type { RequestIdentity } from "../types/index.js";
 
 class AIGenerationService {
-  // every user has the opportunity to restyle
   async restyle(
-    userId: string,
+    identity: RequestIdentity,
     input: {
       paths: string[];
       model: Model;
@@ -25,7 +25,7 @@ class AIGenerationService {
     const jobIds: string[] = [];
 
     const reservedQuota = await quotaService.reserveQuotaAtomic(
-      userId,
+      identity,
       paths.length,
     );
 
@@ -35,7 +35,7 @@ class AIGenerationService {
 
       setImmediate(async () => {
         const startRestyle = async () => {
-          const result = await this.restyleByProvider(path, model, style); // generate or throw error
+          const result = await this.restyleByProvider(path, model, style);
           await jobService.completeJob(jobId, result);
         };
 
@@ -100,7 +100,7 @@ class AIGenerationService {
 
     return await imageUploadService.uploadGeneratedImage({
       buffer: generatedBuffer,
-      mimeType: "image/png", // Models always return png
+      mimeType: "image/png",
     });
   }
 

@@ -9,10 +9,17 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     try {
-      if (error.response?.status === 401 && typeof window !== "undefined") {
+      const ignore401 = error.config?.ignore401;
+
+      if (
+        error.response?.status === 401 && 
+        typeof window !== "undefined" && 
+        !ignore401
+      ) {
         window.location.href = "/login";
       }
     } catch {}
+    
     return Promise.reject(error);
   },
 );

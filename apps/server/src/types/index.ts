@@ -15,3 +15,8 @@ export type UploadBufferParams = {
   mimeType: string;
   path: string;
 };
+
+export type RequestIdentity = {
+  type: "user" | "guest";
+  id: string;
+};

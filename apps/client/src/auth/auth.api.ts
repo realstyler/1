@@ -12,4 +12,10 @@ export const registerApi = async (data: RegisterDTO) =>
 export const logoutApi = async () =>
   fetcher<null>(api.post("/api/auth/logout"));
 
-export const meApi = async () => fetcher<UserDTO>(api.get("/api/auth/me"));
+export const meApi = async () => {
+  const response = await api.get("/api/auth/me", {
+    ignore401: true,
+  } as any);
+  
+  return response.data;
+};

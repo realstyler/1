@@ -8,15 +8,20 @@ import { Style } from "@/types";
 import { useGetJobsResultsApi } from "@/restyle/restyle.hooks";
 import { Job } from "shared";
 import SaveToProjectModal from "@/components/viewer/SaveToProject";
+import AuthPromptModal from "@/components/viewer/AuthPromptModal";
 import { useCreateProject, useAddProjectImages } from "@/projects/projects.hooks";
+import { useMe } from "@/auth/auth.hooks";
 
 export default function ViewerPage() {
   const router = useRouter();
+  const { user } = useMe();
   const [jobIds, setJobIds] = useState<string[]>([]);
   const { data } = useGetJobsResultsApi(jobIds, true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedStyle, setSelectedStyle] = useState<Style | null>(null);
+  
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const createProjectMutation = useCreateProject();
@@ -52,6 +57,14 @@ export default function ViewerPage() {
   }, []);
 
   const currentImage = images[selectedImageIndex];
+
+  const handleSaveClick = () => {
+    if (user) {
+      setIsSaveModalOpen(true);
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
 
   const handleSaveProject = async (projectData: { name: string; address: string }) => {
     if (!currentImage) return;
@@ -161,8 +174,8 @@ export default function ViewerPage() {
           {currentImage && (
             <>
               <button
-                onClick={() => setIsSaveModalOpen(true)}
-                className="px-6 py-3 text-white bg-[#2d2d2d] hover:bg-[#3d3d3d] rounded-full transition-all duration-300 font-semibold shadow-md flex items-center gap-2 active:scale-95 group"
+                onClick={handleSaveClick}
+                className="px-6 py-3 text-white bg-[#2d2d2d] hover:bg-[#3d3d3d] rounded-full transition-all duration-300 font-medium shadow-md flex items-center gap-2 active:scale-95 group"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
@@ -250,6 +263,11 @@ export default function ViewerPage() {
           isSubmitting={isSaving}
         />
       )}
+
+      <AuthPromptModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </div>
   );
 }
