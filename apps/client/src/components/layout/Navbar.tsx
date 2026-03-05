@@ -11,7 +11,7 @@ export default function Navbar() {
   return (
     <nav className="border-b border-neutral-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between relative">
-        <Link href="/" className="font-serif text-xl italic z-10">
+        <Link href="/" className="font-serif text-2xl font-[500] italic z-10">
           RealStyler.
         </Link>
 
