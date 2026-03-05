@@ -89,7 +89,7 @@ const getRandomElements = <T>(arr: T[], count: number): T[] => {
         const tmpImage = uploadedTmpImages[j];
         
         if (tmpImage && tmpImage.path) {
-          const origPath = await imageUploadService.moveTmpToOriginal(tmpImage.path, project.id);
+          const origPath = await imageUploadService.moveImageToProject(tmpImage.path, project.id);
           projectImagesData.push({
             projectId: project.id,
             originalPath: origPath,
