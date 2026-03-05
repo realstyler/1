@@ -185,7 +185,7 @@ class ProjectsService {
     return project;
   }
 
-  async addImages(user: UserDTO, projectId: string, tmpPaths: string[]) {
+  async addImages(user: UserDTO, projectId: string, imagePairs: { tmp: string; gen: string }[]) {
     const project = await prisma.project.findUnique({
       where: { id: projectId, userId: user.id },
       include: { images: true },
@@ -196,15 +196,18 @@ class ProjectsService {
     const startingOrderIndex = project.images.length;
     const projectImagesData = [];
 
-    for (let i = 0; i < tmpPaths.length; i++) {
-      const tmpPath = tmpPaths[i];
+    for (let i = 0; i < imagePairs.length; i++) {
+      const { tmp, gen } = imagePairs[i]!;
       
-      await imageUploadService.existImageOrThrow(tmpPath as string);
-      const originalPath = await imageUploadService.moveImageToProject(tmpPath as string, projectId);
+      await imageUploadService.existImageOrThrow(tmp);
+      await imageUploadService.existImageOrThrow(gen);
+
+      const originalPath = await imageUploadService.moveImageToProject(tmp, projectId);
+      const restyledPath = await imageUploadService.moveImageToProject(gen, projectId);
 
       projectImagesData.push({
         originalPath,
-        restyledPath: null, 
+        restyledPath,
         orderIndex: startingOrderIndex + i,
       });
     }
