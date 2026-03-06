@@ -22,12 +22,10 @@ export default function Home() {
 
   const {
     isScraping,
-    isUploading,
     scrapedImages,
     toggleSelect,
     resetScrapedImages,
     scrapeUrl,
-    handleUploadScrapedImages,
   } = useScrapeUrl();
   const { mutate: uploadImages, isPending: isPendingUploading } =
     useUploadImages();
@@ -82,60 +80,65 @@ export default function Home() {
     }
   };
 
-  const handleContinue = async () => {
-    const selectedScrapedImages = scrapedImages.filter((i) => i.selected);
-    if (selectedScrapedImages.length === 0) return;
-
-    await handleUploadScrapedImages();
+  const handleContinue = () => {
+    // Картинки вже завантажені на сервер модалкою, 
+    // тому просто закриваємо її і переходимо далі
+    resetScrapedImages();
     router.push("/upload");
   };
 
   const featuresList = [
-  {
-    title: "Spatial Geometry",
-    desc: "Our model identifies walls, floors, and ceilings to ensure furniture placement is physically accurate within the 3D volume.",
-    wrapperClass: "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
-    svgClass: "w-7 h-7 text-neutral-600 group-hover:text-white transition-colors duration-300",
-    svgPath: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        fill="none"
-        d="M4,6 A2,2 0 0,1 6,4 M9,4 H10.5 M13.5,4 H15 M18,4 A2,2 0 0,1 20,6 M20,9 V10.5 M20,13.5 V15 M20,18 A2,2 0 0,1 18,20 M15,20 H13.5 M10.5,20 H9 M6,20 A2,2 0 0,1 4,18 M4,15 V13.5 M4,10.5 V9"
-      />
-    ),
-  },
-  {
-    title: "Adaptive Lighting",
-    desc: "Shadows and reflections are calculated based on the existing HDRI environment map extracted from your photograph.",
-    wrapperClass: "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
-    svgClass: "w-7 h-7 text-neutral-600 group-hover:text-white transition-colors duration-300",
-    svgPath: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-      />
-    ),
-  },
-  {
-    title: "Material Fidelity",
-    desc: "Retain specific elements like hardwood floors or window frames while changing only the soft furnishings.",
-    wrapperClass: "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
-    svgClass: "w-7 h-7 text-neutral-600 group-hover:text-white transition-colors duration-300",
-    svgPath: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        fill="none"
-        d="M12 3l-8 4 8 4 8-4-8-4z M4 11l8 4 8-4 M4 15l8 4 8-4"
-      />
-    ),
-  },
-];
+    {
+      title: "Spatial Geometry",
+      desc: "Our model identifies walls, floors, and ceilings to ensure furniture placement is physically accurate within the 3D volume.",
+      wrapperClass:
+        "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
+      svgClass:
+        "w-7 h-7 text-neutral-600 group-hover:text-white transition-colors duration-300",
+      svgPath: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          fill="none"
+          d="M4,6 A2,2 0 0,1 6,4 M9,4 H10.5 M13.5,4 H15 M18,4 A2,2 0 0,1 20,6 M20,9 V10.5 M20,13.5 V15 M20,18 A2,2 0 0,1 18,20 M15,20 H13.5 M10.5,20 H9 M6,20 A2,2 0 0,1 4,18 M4,15 V13.5 M4,10.5 V9"
+        />
+      ),
+    },
+    {
+      title: "Adaptive Lighting",
+      desc: "Shadows and reflections are calculated based on the existing HDRI environment map extracted from your photograph.",
+      wrapperClass:
+        "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
+      svgClass:
+        "w-7 h-7 text-neutral-600 group-hover:text-white transition-colors duration-300",
+      svgPath: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+        />
+      ),
+    },
+    {
+      title: "Material Fidelity",
+      desc: "Retain specific elements like hardwood floors or window frames while changing only the soft furnishings.",
+      wrapperClass:
+        "w-12 h-12 flex items-center justify-center border-2 border-transparent transition-all duration-300 rounded-2xl group-hover:bg-black group-hover:text-white",
+      svgClass:
+        "w-7 h-7 text-neutral-600 group-hover:text-white transition-colors duration-300",
+      svgPath: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          fill="none"
+          d="M12 3l-8 4 8 4 8-4-8-4z M4 11l8 4 8-4 M4 15l8 4 8-4"
+        />
+      ),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
@@ -181,7 +184,7 @@ export default function Home() {
               selectedStyle={selectedStyle}
               setSelectedStyle={setSelectedStyle}
               isScraping={isScraping}
-              isUploading={isUploading}
+              isUploading={false}
               isPendingUploading={isPendingUploading}
               onGenerateRender={handleGenerateRender}
             />
@@ -226,7 +229,9 @@ export default function Home() {
           <span className="text-xl font-serif font-bold italic text-neutral-500">
             Dezeen
           </span>
-          <span className="text-xl font-serif font-semibold text-neutral-500">Dwell</span>
+          <span className="text-xl font-serif font-semibold text-neutral-500">
+            Dwell
+          </span>
           <span className="text-xl font-serif font-bold italic text-neutral-500">
             Elle Decor
           </span>
@@ -501,8 +506,4 @@ export default function Home() {
       <Footer />
     </div>
   );
-}
-
-function uploadImages(fd: FormData) {
-  throw new Error("Function not implemented.");
 }

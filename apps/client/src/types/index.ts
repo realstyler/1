@@ -97,3 +97,14 @@ export type ImagePair = {
   tmp: string;
   gen: string;
 };
+
+export type ScrapedImage = {
+  url: string;
+  selected: boolean;
+};
+
+export type UploadResponse = {
+  id?: string;
+  tmpId: string;
+  path: string;
+};

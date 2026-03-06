@@ -10,7 +10,7 @@ import {
   useUploadImages,
 } from "@/upload/image-upload.hooks";
 import { createImageSignedUrlsApi } from "@/upload/image-upload.api";
-import { StoredPath, UploadedFile, UploadingStatus } from "@/types";
+import { StoredPath, UploadedFile, UploadingStatus, UploadResponse } from "@/types";
 
 const MAX_FILES = 5;
 
@@ -48,7 +48,7 @@ export default function UploadPage() {
     });
 
     uploadImages(fd, {
-      onSuccess: (images) => {
+      onSuccess: (images: UploadResponse[]) => {
         setUploadedImages((prev) => {
           const updated = prev.map((img) => {
             const uploaded = images.find((i) => i.tmpId === img.id);
@@ -58,9 +58,9 @@ export default function UploadPage() {
               return {
                 ...img,
                 status: "ready" as UploadingStatus,
-                id: uploaded.id,
+                id: uploaded.id || uploaded.tmpId,
                 path: uploaded.path,
-                preview: uploaded.url,
+                preview: (uploaded as any).url || img.preview, // Use backend URL if available, fallback to existing preview
               };
             }
 
@@ -125,19 +125,95 @@ export default function UploadPage() {
     }
   };
 
-  const handleUseSample = () => {
+  const handleUseSample = async () => {
     if (uploadedImages.length >= MAX_FILES) return;
 
-    const sampleId = Math.random().toString(36).substring(7);
-    const sampleImage: UploadedFile = {
-      id: sampleId,
+    setIsGlobalUploading(true);
+
+    const tmpId = Math.random().toString(36).substring(7);
+
+    const tempSample: UploadedFile = {
+      id: tmpId,
       file: null,
       preview: sampleRoomImage,
       name: "sample-room.jpg",
-      status: "ready",
+      status: "uploading",
     };
 
-    setUploadedImages((prev) => [...prev, sampleImage]);
+    setUploadedImages((prev) => [...prev, tempSample]);
+
+    try {
+      const res = await fetch(sampleRoomImage);
+      
+      if (!res.ok) {
+        throw new Error(`Failed to fetch sample image. Status: ${res.status}`);
+      }
+
+      const blob = await res.blob();
+      const file = new File([blob], "sample-room.jpg", { type: blob.type });
+
+      const fd = new FormData();
+      fd.append("images", file);
+      fd.append("tmpIds", tmpId);
+
+      await uploadImages(fd, {
+        onSuccess: (images: UploadResponse[]) => {
+          const uploaded = images.find((i) => i.tmpId === tmpId);
+
+          if (!uploaded) {
+            throw new Error("Backend did not return data for the sample image.");
+          }
+
+          const finalFile: UploadedFile = {
+            id: uploaded.id || uploaded.tmpId,
+            file: null,
+            preview: (uploaded as any).url || sampleRoomImage,
+            name: "sample-room.jpg",
+            path: uploaded.path,
+            status: "ready",
+          };
+
+          // Update state
+          setUploadedImages((prev) => 
+            prev.map((img) => img.id === tmpId ? finalFile : img)
+          );
+
+          // Update sessionStorage
+          const raw = sessionStorage.getItem("uploadedImages");
+          const stored: StoredPath[] = raw ? JSON.parse(raw) : [];
+          
+          const newStoredPath: StoredPath = {
+            id: finalFile.id,
+            name: finalFile.name,
+            path: uploaded.path,
+          };
+
+          sessionStorage.setItem(
+            "uploadedImages", 
+            JSON.stringify([...stored, newStoredPath])
+          );
+
+          setIsGlobalUploading(false);
+        },
+        onError: (error) => {
+          console.error("Failed to upload sample image to backend:", error);
+          setUploadedImages((prev) =>
+            prev.map((img) =>
+              img.id === tmpId ? { ...img, status: "error" } : img
+            )
+          );
+          setIsGlobalUploading(false);
+        },
+      });
+    } catch (error) {
+      console.error("Failed to process sample image:", error);
+      setUploadedImages((prev) =>
+        prev.map((img) =>
+          img.id === tmpId ? { ...img, status: "error" } : img
+        )
+      );
+      setIsGlobalUploading(false);
+    }
   };
 
   const handleContinue = () => {
@@ -159,7 +235,7 @@ export default function UploadPage() {
       const stored: StoredPath[] = JSON.parse(raw);
       if (stored.length === 0) return;
 
-      const tmpStored = stored.filter(s => s.path && s.path.startsWith('tmp/'));
+      const tmpStored = stored.filter((s) => s.path && s.path.startsWith("tmp/"));
 
       if (tmpStored.length === 0) {
         sessionStorage.removeItem("uploadedImages");
@@ -167,7 +243,7 @@ export default function UploadPage() {
       }
 
       const paths = tmpStored.map((s) => s.path);
-      
+
       try {
         const urls = await createImageSignedUrlsApi(paths);
         const restored: UploadedFile[] = [];
@@ -271,7 +347,12 @@ export default function UploadPage() {
               <span className="text-zinc-400 text-sm mb-4 block">or</span>
               <button
                 onClick={handleUseSample}
-                className="text-zinc-900 hover:text-zinc-600 font-medium text-sm border-b border-zinc-900 hover:border-zinc-600 pb-0.5 transition-colors"
+                disabled={isGlobalUploading}
+                className={`font-medium text-sm border-b pb-0.5 transition-colors ${
+                  isGlobalUploading
+                    ? "text-zinc-300 border-zinc-300 cursor-not-allowed"
+                    : "text-zinc-900 hover:text-zinc-600 border-zinc-900 hover:border-zinc-600"
+                }`}
               >
                 Use a sample image
               </button>
@@ -291,7 +372,9 @@ export default function UploadPage() {
             onClick={handleContinue}
             disabled={uploadedImages.length === 0 || isGlobalUploading}
             className={`px-10 py-3.5 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${
-              uploadedImages.length > 0 && !isGlobalUploading
+              uploadedImages.length > 0 &&
+              !isGlobalUploading &&
+              uploadedImages.every((img) => img.status === "ready")
                 ? "bg-zinc-900 text-white hover:bg-black shadow-lg hover:shadow-xl translate-y-0 hover:-translate-y-0.5"
                 : "bg-zinc-100 text-zinc-400 cursor-not-allowed"
             }`}
