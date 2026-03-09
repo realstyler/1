@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createProjectApi, getProjectByIdApi, addProjectImagesApi, getAllProjectsApi } from "./projects.api";
-import { ImagePair } from "@/types";
+import { AddProjectImageInput } from "@/types";
 
 export function useCreateProject() {
   const queryClient = useQueryClient();
@@ -32,8 +32,8 @@ export function useAddProjectImages() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ projectId, imagePairs }: { projectId: string; imagePairs: ImagePair[]; }) =>
-      addProjectImagesApi(projectId, imagePairs),
+    mutationFn: ({ projectId, imagesData }: { projectId: string; imagesData: AddProjectImageInput[]; }) =>
+      addProjectImagesApi(projectId, imagesData),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["project", variables.projectId] });
     },

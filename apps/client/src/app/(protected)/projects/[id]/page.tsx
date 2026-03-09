@@ -15,7 +15,7 @@ export default function ProjectDetailsPage() {
   const { data: project, isLoading } = useGetProject(projectId, true);
 
   const displayImages = useMemo(() => {
-    return (project?.images || []).flatMap((img) => {
+    return (project?.originalImages || []).flatMap((img) => {
       const items = [];
       
       if (img.originalUrl) {
@@ -26,17 +26,21 @@ export default function ProjectDetailsPage() {
         });
       }
 
-      if (img.restyledUrl) {
-        items.push({
-          id: `${img.id}-restyled`,
-          url: img.restyledUrl,
-          isRestyled: true,
+      if (img.styledImages && img.styledImages.length > 0) {
+        img.styledImages.forEach((styled) => {
+          if (styled.restyledUrl) {
+            items.push({
+              id: `${styled.id}-restyled`,
+              url: styled.restyledUrl,
+              isRestyled: true,
+            });
+          }
         });
       }
 
       return items;
     });
-  }, [project?.images]);
+  }, [project?.originalImages]);
 
   const selectedImagesSet = useMemo(() => new Set(selectedImages), [selectedImages]);
 

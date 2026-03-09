@@ -1,5 +1,3 @@
-// Types for RealStyler UI
-
 import { StylePreset } from "shared";
 
 export interface Style {
@@ -39,15 +37,25 @@ export interface AppState {
   resultImage: string | null;
 }
 
-export interface ProjectImageDTO {
+export interface StyledProjectImageDTO {
   id: string;
+  originalImageId: string;
+  restyledPath: string;
+  lighting: Lighting | null;
+  creativity: Creativity | null;
+  aesthetic: Aesthetic | null;
   createdAt: string;
+  restyledUrl?: string | null;
+}
+
+export interface OriginalProjectImageDTO {
+  id: string;
   projectId: string;
   originalPath: string;
-  restyledPath: string;
   orderIndex: number;
-  originalUrl?: string; 
-  restyledUrl?: string;
+  createdAt: string;
+  originalUrl?: string;
+  styledImages: StyledProjectImageDTO[];
 }
 
 export interface ProjectDTO {
@@ -59,7 +67,7 @@ export interface ProjectDTO {
   stylePreset: StylePreset | null;
   createdAt: string;
   updatedAt: string;
-  images: ProjectImageDTO[];
+  originalImages: OriginalProjectImageDTO[];
 }
 
 export interface Project {
@@ -93,11 +101,6 @@ export interface ProjectListItem {
 
 export type UploadingStatus = "uploading" | "ready" | "error";
 
-export type ImagePair = {
-  tmp: string;
-  gen: string;
-};
-
 export type ScrapedImage = {
   url: string;
   selected: boolean;
@@ -108,3 +111,19 @@ export type UploadResponse = {
   tmpId: string;
   path: string;
 };
+
+export interface StyledImageInput {
+  restyledPath: string;
+  lighting?: Lighting;
+  creativity?: Creativity;
+  aesthetic?: Aesthetic;
+}
+
+export interface AddProjectImageInput {
+  originalPath: string;
+  styledImages: StyledImageInput[];
+}
+
+type Lighting = 'NATURAL' | 'WARM' | 'AMBIENT';
+type Creativity = 'SUBTLE' | 'BALANCED' | 'BOLD';
+type Aesthetic = 'MODERN' | 'COASTAL' | 'MINIMAL' | 'JAPANDI' | 'INDUSTRIAL' | 'CLASSIC' | 'SCANDI' | 'BOHO' | 'RUSTIC';

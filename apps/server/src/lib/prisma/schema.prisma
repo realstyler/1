@@ -24,37 +24,54 @@ model User {
 }
 
 model Project {
-  id          String      @id @default(uuid())
-  userId      String      @map("user_id")
+  id          String       @id @default(uuid())
+  userId      String       @map("user_id")
   name        String
-  address      String?
+  address     String?
   stylePreset StylePreset? @map("style_preset")
-  shareId     String?     @unique @map("share_id")
+  shareId     String?      @unique @map("share_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  images ProjectImage[]
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalImages OriginalProjectImage[]
 
   @@index([userId])
   @@map("projects")
 }
 
-model ProjectImage {
+model OriginalProjectImage {
   id        String @id @default(uuid())
   projectId String @map("project_id")
 
   originalPath String @map("original_url")
-  restyledPath String? @map("restyled_url")
   orderIndex   Int    @map("order_index")
 
   createdAt DateTime @default(now()) @map("created_at")
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project      Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  styledImages StyledProjectImage[]
 
   @@index([projectId])
-  @@map("project_images")
+  @@map("original_project_images")
+}
+
+model StyledProjectImage {
+  id              String @id @default(uuid())
+  originalImageId String @map("original_image_id")
+
+  restyledPath String @map("restyled_url")
+  lighting     Lighting?
+  creativity   Creativity?
+  aesthetic    Aesthetic?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  originalImage OriginalProjectImage @relation(fields: [originalImageId], references: [id], onDelete: Cascade)
+
+  @@index([originalImageId])
+  @@map("styled_project_images")
 }
 
 model Subscription {
@@ -102,6 +119,30 @@ model StylePrompt {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("style_prompt")
+}
+
+enum Lighting {
+  NATURAL
+  WARM
+  AMBIENT
+}
+
+enum Creativity {
+  SUBTLE
+  BALANCED
+  BOLD
+}
+
+enum Aesthetic {
+  MODERN
+  COASTAL
+  MINIMAL
+  JAPANDI
+  INDUSTRIAL
+  CLASSIC
+  SCANDI
+  BOHO
+  RUSTIC
 }
 
 enum StylePreset {

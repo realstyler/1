@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BeforeAfterSlider, DownloadButton } from "@/components/viewer";
-import { Style } from "@/types";
+import { Style, AddProjectImageInput } from "@/types";
 import { useGetJobsResultsApi } from "@/restyle/restyle.hooks";
 import { Job } from "shared";
 import SaveToProjectModal from "@/components/viewer/SaveToProject";
@@ -84,14 +84,18 @@ export default function ViewerPage() {
         return parts.length > 1 ? parts[1] : baseUrl;
       };
 
-      const imagePairs = images.map((img) => ({
-        tmp: getFilePath(img.before),
-        gen: getFilePath(img.after),
+      const imagesData: AddProjectImageInput[] = images.map((img) => ({
+        originalPath: getFilePath(img.before),
+        styledImages: [
+          {
+            restyledPath: getFilePath(img.after),
+          }
+        ]
       }));
 
       await addProjectImagesMutation.mutateAsync({ 
         projectId: projectId, 
-        imagePairs: imagePairs 
+        imagesData: imagesData 
       });
       
       router.push(`/projects/${projectId}`);

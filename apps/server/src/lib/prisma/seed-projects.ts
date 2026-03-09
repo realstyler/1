@@ -1,5 +1,11 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, StylePreset } from "@prisma/client";
+import { 
+  PrismaClient, 
+  StylePreset, 
+  Lighting, 
+  Creativity, 
+  Aesthetic 
+} from "@prisma/client";
 import "dotenv/config";
 import { imageUploadService } from "../../upload/image-upload.service.js";
 
@@ -38,6 +44,9 @@ const ADDRESSES = [
 ];
 
 const STYLES = Object.values(StylePreset);
+const LIGHTING_OPTIONS = Object.values(Lighting);
+const CREATIVITY_OPTIONS = Object.values(Creativity);
+const AESTHETIC_OPTIONS = Object.values(Aesthetic);
 
 const getRandomElement = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]!;
 const getRandomElements = <T>(arr: T[], count: number): T[] => {
@@ -79,30 +88,55 @@ const getRandomElements = <T>(arr: T[], count: number): T[] => {
     });
 
     if (hasImages) {
-      const imagesCount = Math.floor(Math.random() * 3) + 1;
+      const imagesCount = Math.floor(Math.random() * 3) + 1; // 1 to 3 original images
       const selectedImageUrls = getRandomElements(MOCK_IMAGES, imagesCount);
 
       const uploadedTmpImages = await imageUploadService.uploadImagesByUrls(selectedImageUrls);
-      const projectImagesData = [];
 
       for (let j = 0; j < uploadedTmpImages.length; j++) {
         const tmpImage = uploadedTmpImages[j];
         
         if (tmpImage && tmpImage.path) {
           const origPath = await imageUploadService.moveImageToProject(tmpImage.path, project.id);
-          projectImagesData.push({
-            projectId: project.id,
-            originalPath: origPath,
-            restyledPath: null,
-            orderIndex: j
+          
+          const originalImage = await prisma.originalProjectImage.create({
+            data: {
+              projectId: project.id,
+              originalPath: origPath,
+              orderIndex: j
+            }
           });
-        }
-      }
 
-      if (projectImagesData.length > 0) {
-        await prisma.projectImage.createMany({
-          data: projectImagesData
-        });
+          // Generate 1-2 styled variations for roughly 70% of the uploaded images
+          const shouldHaveStyledImages = Math.random() > 0.3;
+          
+          if (shouldHaveStyledImages) {
+            const stylesCount = Math.floor(Math.random() * 2) + 1;
+            const styleUrls = getRandomElements(MOCK_IMAGES, stylesCount);
+            const uploadedTmpStyles = await imageUploadService.uploadImagesByUrls(styleUrls);
+
+            const styledImagesData = [];
+
+            for (const tmpStyle of uploadedTmpStyles) {
+              if (tmpStyle && tmpStyle.path) {
+                const restyledPath = await imageUploadService.moveImageToProject(tmpStyle.path, project.id);
+                styledImagesData.push({
+                  originalImageId: originalImage.id,
+                  restyledPath: restyledPath,
+                  lighting: getRandomElement(LIGHTING_OPTIONS),
+                  creativity: getRandomElement(CREATIVITY_OPTIONS),
+                  aesthetic: getRandomElement(AESTHETIC_OPTIONS),
+                });
+              }
+            }
+
+            if (styledImagesData.length > 0) {
+              await prisma.styledProjectImage.createMany({
+                data: styledImagesData
+              });
+            }
+          }
+        }
       }
     }
 

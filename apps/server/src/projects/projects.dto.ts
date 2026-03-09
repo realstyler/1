@@ -1,6 +1,11 @@
 import type z from "zod";
 import type { CreateProjectSchema } from "./projects.schema.js";
-import { StylePreset } from "@prisma/client";
+import { 
+  StylePreset, 
+  Lighting, 
+  Creativity, 
+  Aesthetic 
+} from "@prisma/client";
 
 export type ProjectDTO = {
   id: string;
@@ -11,15 +16,23 @@ export type ProjectDTO = {
   stylePreset: StylePreset | null;
   createdAt: Date;
   updatedAt: Date;
-  images: {
+  originalImages: {
     id: string;
-    createdAt: Date;
     projectId: string;
     originalPath: string;
-    restyledPath: string | null;
     orderIndex: number;
-    originalUrl?: string;
-    restyledUrl?: string | null; 
+    createdAt: Date;
+    originalUrl?: string; 
+    styledImages: {
+      id: string;
+      originalImageId: string;
+      restyledPath: string;
+      lighting: Lighting | null;
+      creativity: Creativity | null;
+      aesthetic: Aesthetic | null;
+      createdAt: Date;
+      restyledUrl?: string | null;
+    }[];
   }[];
 };
 

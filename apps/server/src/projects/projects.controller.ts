@@ -18,7 +18,6 @@ class ProjectsController {
     res.json(result);
   }
 
-  
   async getById(req: any, res: any) {
     const { id } = req.params;
     if (!id) throw new BadRequestError("Project ID is required");
@@ -66,16 +65,16 @@ class ProjectsController {
     const { id } = req.params;
     if (!id) throw new BadRequestError("Project ID is required");
     
-    const { imagePairs } = req.body; 
-    if (!imagePairs || !Array.isArray(imagePairs)) {
-      throw new BadRequestError("imagePairs array is required");
+    const { imagesData } = req.body; 
+    if (!imagesData || !Array.isArray(imagesData)) {
+      throw new BadRequestError("imagesData array is required");
     }
 
     const user = req.user;
-    const project = await projectsService.addImages(user, id, imagePairs);
+    const project = await projectsService.addImages(user, id, imagesData);
     
     res.json(project);
-}
+  }
 }
 
 export const projectsController = new ProjectsController();
