@@ -19,3 +19,6 @@ export const getProjectByIdApi = async (id: string, loadSignedImages: boolean = 
 
 export const addProjectImagesApi = async (projectId: string, imagesData: AddProjectImageInput[]) =>
   fetcher(api.post(`/api/projects/${projectId}/images`, { imagesData }));
+
+export const addStyledImagesApi = async (projectId: string, styledImages: any[]) =>
+  fetcher(api.post(`/api/projects/${projectId}/styled-images`, { styledImages }));

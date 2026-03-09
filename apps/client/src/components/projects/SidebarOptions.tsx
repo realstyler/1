@@ -15,17 +15,42 @@ import { mockStyles } from '@/data/mock';
 
 interface Props {
   selectedCount: number;
+  onRestyle: (settings: any) => void;
+  isRestyling: boolean;
 }
 
-export default function SidebarOptions({ selectedCount }: Props) {
+const AESTHETICS_MAPPING = [
+  { id: 'Modern', preset: 'MID_CENTURY_MODERN' },
+  { id: 'Coastal', preset: 'MODERN_COASTAL' },
+  { id: 'Minimal', preset: 'MINIMAL_LUXE' },
+  { id: 'Japandi', preset: 'JAPANDI' },
+  { id: 'Industrial', preset: 'URBAN_INDUSTRIAL' },
+  { id: 'Classic', preset: 'HAMPTONS_CLASSIC' },
+  { id: 'Scandi', preset: 'SCANDINAVIAN' },
+  { id: 'Boho', preset: 'BOHO' }, 
+  { id: 'Rustic', preset: 'RUSTIC' } 
+];
+
+export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }: Props) {
   const [activeTab, setActiveTab] = useState<'Presets' | 'Custom Prompt'>('Presets');
   const [intent, setIntent] = useState<'Enhance' | 'Restyle' | 'Remodel'>('Restyle');
   const [lighting, setLighting] = useState<'Natural' | 'Warm' | 'Ambient'>('Natural');
   const [creativity, setCreativity] = useState<'Subtle' | 'Balanced' | 'Bold'>('Balanced');
-  const [selectedAesthetic, setSelectedAesthetic] = useState<string | null>('Coastal');
+  const [selectedAesthetic, setSelectedAesthetic] = useState<string>('Minimal');
   const [customPrompt, setCustomPrompt] = useState<string>('');
 
-  const aesthetics = ['Modern', 'Coastal', 'Minimal', 'Japandi', 'Industrial', 'Classic', 'Scandi', 'Boho', 'Rustic'];
+  const handleRestyleClick = () => {
+    const selectedMapping = AESTHETICS_MAPPING.find(a => a.id === selectedAesthetic);
+    
+    onRestyle({
+      intent,
+      lighting,
+      creativity,
+      aestheticLabel: selectedAesthetic,
+      aestheticPreset: selectedMapping?.preset || 'MINIMAL_LUXE',
+      customPrompt: activeTab === 'Custom Prompt' ? customPrompt : null,
+    });
+  };
 
   return (
     <aside className="w-[360px] h-full shrink-0 flex flex-col bg-white rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden">
@@ -142,14 +167,14 @@ export default function SidebarOptions({ selectedCount }: Props) {
               <div>
                 <label className="text-[12px] font-[700] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Aesthetic</label>
                 <div className="grid grid-cols-3 gap-4">
-                  {aesthetics.map((style, index) => {
-                    const isSelected = selectedAesthetic === style;
+                  {AESTHETICS_MAPPING.map((styleObj, index) => {
+                    const isSelected = selectedAesthetic === styleObj.id;
                     const mockImg = mockStyles[index % mockStyles.length].thumbnail;
 
                     return (
                       <div 
-                        key={style} 
-                        onClick={() => setSelectedAesthetic(style)}
+                        key={styleObj.id} 
+                        onClick={() => setSelectedAesthetic(styleObj.id)}
                         className="flex flex-col items-center cursor-pointer group"
                       >
                         <div className={`relative w-full aspect-[2/3] rounded-xl overflow-hidden mb-1.5 border-2 transition-all bg-gray-100 ${
@@ -157,7 +182,7 @@ export default function SidebarOptions({ selectedCount }: Props) {
                         }`}>
                           <img 
                             src={mockImg} 
-                            alt={style} 
+                            alt={styleObj.id} 
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                           />
                           {isSelected && (
@@ -169,7 +194,7 @@ export default function SidebarOptions({ selectedCount }: Props) {
                         <span className={`text-[11px] font-bold transition-colors ${
                           isSelected ? 'text-[#8ea28d]' : 'text-[#5a5f66]'
                         }`}>
-                          {style}
+                          {styleObj.id}
                         </span>
                       </div>
                     );
@@ -202,20 +227,28 @@ export default function SidebarOptions({ selectedCount }: Props) {
       {/* Action Button Section */}
       <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white/85 to-white/70 pt-8 z-10 border-t border-gray-100/60 backdrop-blur-[2px]">
         <button
-          disabled={selectedCount === 0}
+          onClick={handleRestyleClick}
+          disabled={selectedCount === 0 || isRestyling}
           className={`w-full py-4 rounded-[20px] font-bold text-[15px] flex items-center justify-center gap-2.5 transition-all shadow-xl active:scale-[0.98] ${
-            selectedCount > 0 
+            selectedCount > 0 && !isRestyling
               ? 'bg-[#2d2d2d] text-white hover:bg-black' 
               : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
           }`}
         >
-          <Sparkles 
-            size={18} 
-            strokeWidth={2} 
-            className={selectedCount > 0 ? 'text-[#e17a5f]' : 'text-gray-400'} 
-          />
+          {isRestyling ? (
+            <div className="w-5 h-5 border-2 border-gray-300 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Sparkles 
+              size={18} 
+              strokeWidth={2} 
+              className={selectedCount > 0 ? 'text-[#e17a5f]' : 'text-gray-400'} 
+            />
+          )}
           
-          Restyle {selectedCount > 0 ? `${selectedCount} Photo${selectedCount > 1 ? 's' : ''}` : 'Photos'}
+          {isRestyling 
+            ? 'Styling...' 
+            : `Restyle ${selectedCount > 0 ? `${selectedCount} Photo${selectedCount > 1 ? 's' : ''}` : 'Photos'}`
+          }
         </button>
         
         <p className="text-center text-[9px] text-[#b1b5bd] mt-3.5 font-medium uppercase tracking-[0.1em]">

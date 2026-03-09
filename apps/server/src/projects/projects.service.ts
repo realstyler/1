@@ -1,4 +1,4 @@
-import { ForbiddenError, NotFoundError } from "../errors/apiErrors.js";
+import { ForbiddenError, NotFoundError, BadRequestError } from "../errors/apiErrors.js";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { imageUploadService } from "../upload/image-upload.service.js";
@@ -261,6 +261,38 @@ class ProjectsService {
     });
 
     return this.loadSignedUrls(updatedProject as any);
+  }
+
+  async addStyledImages(user: UserDTO, projectId: string, styledImages: any[]) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId, userId: user.id },
+      include: { originalImages: true },
+    });
+
+    if (!project) throw new NotFoundError("Project not found");
+
+    const originalImageIds = project.originalImages.map(img => img.id);
+
+    for (const img of styledImages) {
+      if (!originalImageIds.includes(img.originalId)) {
+        throw new BadRequestError(`Original image ${img.originalId} does not belong to this project`);
+      }
+      
+      await imageUploadService.existImageOrThrow(img.restyledPath);
+      const finalRestyledPath = await imageUploadService.moveImageToProject(img.restyledPath, projectId);
+
+      await prisma.styledProjectImage.create({
+        data: {
+          originalImageId: img.originalId,
+          restyledPath: finalRestyledPath,
+          lighting: img.lighting || "NATURAL",
+          creativity: img.creativity || "BALANCED",
+          aesthetic: img.aesthetic || "MODERN",
+        }
+      });
+    }
+
+    return this.getById(user, projectId, { loadSignedImages: true });
   }
 
   private async loadSignedUrls(project: any) {

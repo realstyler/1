@@ -75,6 +75,21 @@ class ProjectsController {
     
     res.json(project);
   }
+
+  async addStyledImages(req: any, res: any) {
+    const { id } = req.params;
+    if (!id) throw new BadRequestError("Project ID is required");
+    
+    const { styledImages } = req.body; 
+    if (!styledImages || !Array.isArray(styledImages)) {
+      throw new BadRequestError("styledImages array is required");
+    }
+
+    const user = req.user;
+    const project = await projectsService.addStyledImages(user, id, styledImages);
+    
+    res.json(project);
+  }
 }
 
 export const projectsController = new ProjectsController();
