@@ -3,14 +3,14 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import SidebarOptions from "@/components/projects/SidebarOptions";
-import { ArrowLeft, MapPin, Upload, Download, Plus, Wand2 } from "lucide-react";
+import { ArrowLeft, MapPin, Upload, Download, Plus, Wand2, Library } from "lucide-react";
 import { useGetProject, useAddStyledImages } from "@/projects/projects.hooks";
 import { startRestyleApi, getJobsResultsApi } from "@/restyle/restyle.api";
 
 export default function ProjectDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const projectId = params.id as string;
+  const projectId = params.projectId as string;
   
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isRestyling, setIsRestyling] = useState(false);
@@ -212,6 +212,14 @@ export default function ProjectDetailsPage() {
                 >
                   <Upload size={16} strokeWidth={2} className="text-[#1a1a1a]" />
                   Upload
+                </button>
+
+                <button
+                  onClick={() => router.push(`/projects/${projectId}/library`)}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-[#8ea28d] text-white rounded-full font-semibold text-[14px] hover:bg-[#7a8e79] transition-all shadow-md"
+                >
+                  <Library size={16} strokeWidth={2} />
+                  Create Collection
                 </button>
 
                 <button className="flex items-center gap-2 px-6 py-2.5 bg-[#2d2d2d] text-white rounded-full font-semibold text-[14px] hover:bg-black transition-all shadow-md">

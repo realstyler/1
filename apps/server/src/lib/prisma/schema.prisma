@@ -19,8 +19,24 @@ model User {
   projects      Project[]
   subscriptions Subscription[]
   usageTracking UsageTracking[]
+  agentProfile  AgentProfile?
 
   @@map("users")
+}
+
+model AgentProfile {
+  id          String  @id @default(uuid())
+  userId      String  @unique @map("user_id")
+  companyName String? @map("company_name")
+  contactInfo String? @map("contact_info")
+  logoUrl     String? @map("logo_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("agent_profiles")
 }
 
 model Project {
@@ -36,6 +52,7 @@ model Project {
 
   user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   originalImages OriginalProjectImage[]
+  collections    Collection[]
 
   @@index([userId])
   @@map("projects")
@@ -50,8 +67,9 @@ model OriginalProjectImage {
 
   createdAt DateTime @default(now()) @map("created_at")
 
-  project      Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  styledImages StyledProjectImage[]
+  project         Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  styledImages    StyledProjectImage[]
+  collectionItems CollectionItem[]
 
   @@index([projectId])
   @@map("original_project_images")
@@ -61,17 +79,53 @@ model StyledProjectImage {
   id              String @id @default(uuid())
   originalImageId String @map("original_image_id")
 
-  restyledPath String @map("restyled_url")
+  restyledPath String      @map("restyled_url")
   lighting     Lighting?
   creativity   Creativity?
   aesthetic    Aesthetic?
 
   createdAt DateTime @default(now()) @map("created_at")
 
-  originalImage OriginalProjectImage @relation(fields: [originalImageId], references: [id], onDelete: Cascade)
+  originalImage   OriginalProjectImage @relation(fields: [originalImageId], references: [id], onDelete: Cascade)
+  collectionItems CollectionItem[]
 
   @@index([originalImageId])
   @@map("styled_project_images")
+}
+
+model Collection {
+  id        String  @id @default(uuid())
+  projectId String  @map("project_id")
+  name      String
+  shareId   String? @unique @map("share_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items   CollectionItem[]
+
+  @@index([projectId])
+  @@map("collections")
+}
+
+model CollectionItem {
+  id              String  @id @default(uuid())
+  collectionId    String  @map("collection_id")
+  originalImageId String? @map("original_image_id")
+  styledImageId   String? @map("styled_image_id")
+  orderIndex      Int     @map("order_index")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  collection    Collection            @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  originalImage OriginalProjectImage? @relation(fields: [originalImageId], references: [id], onDelete: SetNull)
+  styledImage   StyledProjectImage?   @relation(fields: [styledImageId], references: [id], onDelete: SetNull)
+
+  @@index([collectionId])
+  @@index([originalImageId])
+  @@index([styledImageId])
+  @@map("collection_items")
 }
 
 model Subscription {
@@ -113,7 +167,7 @@ model StylePrompt {
   preset       StylePreset @id
   displayName  String      @map("display_name")
   description  String
-  content      String // prompt template
+  content      String 
   colorPalette String?     @map("color_palette")
 
   updatedAt DateTime @updatedAt @map("updated_at")

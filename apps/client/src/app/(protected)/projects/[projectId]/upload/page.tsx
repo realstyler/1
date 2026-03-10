@@ -23,7 +23,7 @@ const getStorageKey = (projectId: string) => `uploadedImages_project_${projectId
 export default function ProjectUploadPage() {
   const params = useParams();
   const router = useRouter();
-  const projectId = params.id as string;
+  const projectId = params.projectId as string;
   const storageKey = getStorageKey(projectId);
 
   const [isNewProject, setIsNewProject] = useState(false);
@@ -202,7 +202,12 @@ export default function ProjectUploadPage() {
 
     if (pathsToSave.length > 0) {
       try {
-        await addProjectImages({ projectId, paths: pathsToSave });
+        const imagesData = pathsToSave.map(path => ({
+          originalPath: path,
+          styledImages: []
+        }));
+
+        await addProjectImages({ projectId, imagesData });
         sessionStorage.removeItem(storageKey);
         router.push(`/projects/${projectId}`);
       } catch (error) {
@@ -236,7 +241,6 @@ export default function ProjectUploadPage() {
         
         <div className="flex-1 w-full max-w-[1000px] mx-auto flex flex-col min-h-0">
           
-          {/* Header Section */}
           <div className="flex items-center justify-between mb-10 shrink-0">
             <div className="flex items-center gap-6">
               <button 
@@ -266,7 +270,6 @@ export default function ProjectUploadPage() {
             maxFiles={MAX_FILES} 
           />
 
-          {/* Image Preview List */}
           <div className="shrink-0 px-1 mb-4">
             <p className="text-[12px] font-bold text-[#87817c] mb-3">
               Uploaded <span className="text-[#d7d3d2]">{uploadedImages.length}/{MAX_FILES}</span>
@@ -321,7 +324,6 @@ export default function ProjectUploadPage() {
           </div>
         </div>
 
-        {/* Navigation Actions */}
         <div className="mt-auto pt-2 flex justify-end shrink-0 max-w-[1000px] mx-auto w-full">
           {isNewProject && uploadedImages.length === 0 ? (
             <button 

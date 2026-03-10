@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { imageUploadService } from "../upload/image-upload.service.js";
 import type { UserDTO } from "../user/user.dto.js";
-import type { CreateProjectDTO, ProjectDTO } from "./projects.dto.js";
+import type { CreateProjectDTO } from "./projects.dto.js";
 import { CreateProjectSchema } from "./projects.schema.js";
 import { zodParseOrThrow } from "shared";
 

@@ -124,6 +124,58 @@ export interface AddProjectImageInput {
   styledImages: StyledImageInput[];
 }
 
+export interface CollectionItemDTO {
+  id: string;
+  orderIndex: number;
+  type: "RESTYLED" | "ORIGINAL" | "UNKNOWN";
+  imageUrl: string | null;
+  originalImageId: string | null;
+  styledImageId: string | null;
+  metadata: {
+    lighting: Lighting | null;
+    creativity: Creativity | null;
+    aesthetic: Aesthetic | null;
+  } | null;
+}
+
+export interface CollectionDTO {
+  id: string;
+  projectId: string;
+  name: string;
+  shareId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CollectionDetailsDTO {
+  id: string;
+  name: string;
+  shareId: string | null;
+  createdAt: string;
+  project: {
+    id: string;
+    name: string;
+    address: string | null;
+  } | null;
+  agentProfile: {
+    companyName: string | null;
+    contactInfo: string | null;
+    logoUrl: string | null;
+  } | null;
+  items: CollectionItemDTO[];
+}
+
+export interface CreateCollectionItemInput {
+  originalImageId?: string;
+  styledImageId?: string;
+  orderIndex: number;
+}
+
+export interface CreateCollectionDTO {
+  name: string;
+  items: CreateCollectionItemInput[];
+}
+
 type Lighting = 'NATURAL' | 'WARM' | 'AMBIENT';
 type Creativity = 'SUBTLE' | 'BALANCED' | 'BOLD';
 type Aesthetic = 'MODERN' | 'COASTAL' | 'MINIMAL' | 'JAPANDI' | 'INDUSTRIAL' | 'CLASSIC' | 'SCANDI' | 'BOHO' | 'RUSTIC';

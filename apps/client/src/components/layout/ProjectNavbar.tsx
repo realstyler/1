@@ -19,7 +19,7 @@ export default function ProjectNavbar() {
   const isDetailsPage = !isUploadPage && !isMainProjectsPage;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'projects' | 'collections'>('projects');
+  const [activeTab, setActiveTab] = useState<'photos' | 'collections'>('photos');
   
   const { mutate: createProject } = useCreateProject();
   const { show } = useErrorToastStore();
@@ -62,14 +62,14 @@ export default function ProjectNavbar() {
           {isLibraryPage && (
             <div className="flex items-center gap-2">
               <button 
-                onClick={() => setActiveTab('projects')}
+                onClick={() => setActiveTab('photos')}
                 className={`px-4 py-1 text-[14px] font-medium rounded-full transition-all duration-200 border-[2px] ${
-                  activeTab === 'projects' 
+                  activeTab === 'photos' 
                     ? 'border-[#ebebeb] text-[#1a1a1a]' 
                     : 'border-transparent text-[#7a7a7a] hover:text-[#1a1a1a]'
                 }`}
               >
-                Projects
+                Photos
               </button>
               <button 
                 onClick={() => setActiveTab('collections')}
