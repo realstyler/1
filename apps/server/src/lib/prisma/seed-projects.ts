@@ -7,7 +7,7 @@ import {
   Aesthetic 
 } from "@prisma/client";
 import "dotenv/config";
-import { imageUploadService } from "../../images/images.service.js";
+import { imagesService } from "../../images/images.service.js";
 
 const pool = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter: pool });
@@ -91,13 +91,13 @@ const getRandomElements = <T>(arr: T[], count: number): T[] => {
       const imagesCount = Math.floor(Math.random() * 3) + 1; // 1 to 3 original images
       const selectedImageUrls = getRandomElements(MOCK_IMAGES, imagesCount);
 
-      const uploadedTmpImages = await imageUploadService.uploadImagesByUrls(selectedImageUrls);
+      const uploadedTmpImages = await imagesService.uploadImagesByUrls(selectedImageUrls);
 
       for (let j = 0; j < uploadedTmpImages.length; j++) {
         const tmpImage = uploadedTmpImages[j];
         
         if (tmpImage && tmpImage.path) {
-          const origPath = await imageUploadService.moveImageToProject(tmpImage.path, project.id);
+          const origPath = await imagesService.moveImageToProject(tmpImage.path, project.id);
           
           const originalImage = await prisma.originalProjectImage.create({
             data: {
@@ -113,13 +113,13 @@ const getRandomElements = <T>(arr: T[], count: number): T[] => {
           if (shouldHaveStyledImages) {
             const stylesCount = Math.floor(Math.random() * 2) + 1;
             const styleUrls = getRandomElements(MOCK_IMAGES, stylesCount);
-            const uploadedTmpStyles = await imageUploadService.uploadImagesByUrls(styleUrls);
+            const uploadedTmpStyles = await imagesService.uploadImagesByUrls(styleUrls);
 
             const styledImagesData = [];
 
             for (const tmpStyle of uploadedTmpStyles) {
               if (tmpStyle && tmpStyle.path) {
-                const restyledPath = await imageUploadService.moveImageToProject(tmpStyle.path, project.id);
+                const restyledPath = await imagesService.moveImageToProject(tmpStyle.path, project.id);
                 styledImagesData.push({
                   originalImageId: originalImage.id,
                   restyledPath: restyledPath,

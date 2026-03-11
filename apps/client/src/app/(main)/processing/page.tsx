@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ProcessingSpinner } from "@/components/processing";
 import { Job } from "shared";
 import { getJobsResultsApi } from "@/restyle/restyle.api";
-import { createImageSignedUrlsApi } from "@/upload/images.api";
+import { createImageSignedUrlsApi } from "@/images/images.api";
 
 export default function ProcessingPage() {
   const router = useRouter();
