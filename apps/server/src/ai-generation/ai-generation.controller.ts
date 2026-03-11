@@ -3,7 +3,7 @@ import { aiGenerationService } from "./ai-generation.service.js";
 import { jobService } from "../job-pooling/job.service.js";
 import type { UserDTO } from "../user/user.dto.js";
 import { BadRequestError } from "../errors/apiErrors.js";
-import { imageUploadService } from "../upload/image-upload.service.js";
+import { imagesService } from "../images/images.service.js";
 import type { RequestIdentity } from "../types/index.js";
 
 class AIGenerationController {
@@ -58,10 +58,10 @@ class AIGenerationController {
           ? (j.result.path as string)
           : null,
       );
-      const originalUrls = await imageUploadService.createSignedUrls(
+      const originalUrls = await imagesService.createSignedUrls(
         originalPaths as string[],
       );
-      const restyledUrls = await imageUploadService.createSignedUrls(
+      const restyledUrls = await imagesService.createSignedUrls(
         restyledPaths as string[],
       );
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useUploadImages } from "@/upload/image-upload.hooks";
+import { useUploadImages } from "@/upload/images.hooks";
 import type { ScrapedImage, UploadResponse } from "@/types";
 
 interface Props {

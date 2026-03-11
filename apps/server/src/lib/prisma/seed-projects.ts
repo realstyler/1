@@ -7,7 +7,7 @@ import {
   Aesthetic 
 } from "@prisma/client";
 import "dotenv/config";
-import { imageUploadService } from "../../upload/image-upload.service.js";
+import { imageUploadService } from "../../images/images.service.js";
 
 const pool = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter: pool });

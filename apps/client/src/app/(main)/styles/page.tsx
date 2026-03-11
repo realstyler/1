@@ -8,7 +8,7 @@ import { StyleGrid } from "@/components/styles";
 import ModelSelector from "@/components/styles/ModelSelector";
 import { mockStyles } from "@/data/mock";
 import { Style, StoredPath } from "@/types";
-import { createImageSignedUrlsApi } from "@/upload/image-upload.api";
+import { createImageSignedUrlsApi } from "@/upload/images.api";
 import { Model, RestyleInput } from "shared";
 import { useStartRestyle } from "@/restyle/restyle.hooks";
 

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { imageUploadService } from "./image-upload.service.js";
+import { imageUploadService } from "./images.service.js";
 import { BadRequestError } from "../errors/apiErrors.js";
 
 class ImageUploadController {
@@ -53,6 +53,24 @@ class ImageUploadController {
     await imageUploadService.deleteImages(paths);
     res.status(204).end();
   };
+
+  async downloadImages(req: any, res: any) {
+    const { path } = req.query;
+    
+    if (!path || typeof path !== "string") {
+      throw new BadRequestError("Image path is required");
+    }
+
+    const blob = await imageUploadService.downloadImage(path);
+    const arrayBuffer = await blob.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const filename = path.split("/").pop() || "downloaded-image.jpg";
+
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Content-Type", blob.type || "application/octet-stream");
+    res.send(buffer);
+  }
 }
 
 export const imageUploadController = new ImageUploadController();

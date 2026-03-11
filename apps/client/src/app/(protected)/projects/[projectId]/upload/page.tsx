@@ -3,8 +3,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useUploadImages, useDeleteUploadedImages } from "@/upload/image-upload.hooks";
-import { createImageSignedUrlsApi } from "@/upload/image-upload.api";
+import { useUploadImages, useDeleteUploadedImages } from "@/upload/images.hooks";
+import { createImageSignedUrlsApi } from "@/upload/images.api";
 import { 
   ArrowLeft, 
   MoreHorizontal, 

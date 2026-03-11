@@ -27,3 +27,11 @@ export const deleteUploadedImagesApi = async (paths: string[] | string) =>
       },
     }),
   );
+
+export const downloadImageApi = async (path: string) => {
+  const response = await api.get("/api/download", {
+    params: { path },
+    responseType: "blob",
+  });
+  return response.data;
+};

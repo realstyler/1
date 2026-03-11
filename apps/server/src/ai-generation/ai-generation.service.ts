@@ -1,5 +1,5 @@
 import { environment } from "../config/environment.js";
-import { imageUploadService } from "../upload/image-upload.service.js";
+import { imagesService } from "../images/images.service.js";
 import { geminiProvider } from "../ai-providers/geminiProvider.js";
 import { mockGenProvider } from "../ai-providers/mockGenProvider.js";
 import { openaiProvider } from "../ai-providers/openaiProvider.js";
@@ -80,7 +80,7 @@ class AIGenerationService {
     model: Model,
     style: StylePreset,
   ) {
-    const blob = await imageUploadService.downloadImage(image);
+    const blob = await imagesService.downloadImage(image);
     const arrayBuffer = await blob.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const base64Image = buffer.toString("base64");
@@ -98,7 +98,7 @@ class AIGenerationService {
 
     if (!generatedBuffer) throw new Error("Failed to generate image");
 
-    return await imageUploadService.uploadGeneratedImage({
+    return await imagesService.uploadGeneratedImage({
       buffer: generatedBuffer,
       mimeType: "image/png",
     });

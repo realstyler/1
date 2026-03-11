@@ -1,5 +1,5 @@
 import { Router, type Router as ExpressRouter } from "express";
-import { imageUploadController } from "./image-upload.controller.js";
+import { imageUploadController } from "./images.controller.js";
 import { uploadImagesMulter } from "../middlewares/multerMiddleware.js";
 
 const imageUploadRouter: ExpressRouter = Router();
@@ -16,6 +16,7 @@ imageUploadRouter.post(
 );
 
 imageUploadRouter.get("/signed", imageUploadController.getSignedImageUrls)
+imageUploadRouter.get("/download", imageUploadController.downloadImages)
 imageUploadRouter.delete("/uploaded-tmp", imageUploadController.deleteUploadedTmpImage)
 
 export default imageUploadRouter;
