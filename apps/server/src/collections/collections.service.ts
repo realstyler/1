@@ -1,6 +1,6 @@
 import { ForbiddenError, NotFoundError, BadRequestError } from "../errors/apiErrors.js";
 import { prisma } from "../lib/prisma/index.js";
-import { imageUploadService } from "../upload/image-upload.service.js";
+import { imagesService } from "../images/images.service.js";
 import type { UserDTO } from "../user/user.dto.js";
 import type { 
   CreateCollectionDTO, 
@@ -183,14 +183,14 @@ class CollectionsService {
 
       collection.items.forEach((item: any) => {
         if (item.styledImageId && item.styledImage) {
-          pathsToSign.push(imageUploadService.getThumbPath(item.styledImage.restyledPath));
+          pathsToSign.push(imagesService.getThumbPath(item.styledImage.restyledPath));
         } else if (item.originalImageId && item.originalImage) {
-          pathsToSign.push(imageUploadService.getThumbPath(item.originalImage.originalPath));
+          pathsToSign.push(imagesService.getThumbPath(item.originalImage.originalPath));
         }
       });
 
       if (pathsToSign.length > 0) {
-        const signedUrls = await imageUploadService.createSignedUrls(pathsToSign);
+        const signedUrls = await imagesService.createSignedUrls(pathsToSign);
 
         let urlIndex = 0;
         processedItems = collection.items.map((item: any): CollectionItemDTO => {

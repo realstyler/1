@@ -1,7 +1,7 @@
 import { ForbiddenError, NotFoundError, BadRequestError } from "../errors/apiErrors.js";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
-import { imageUploadService } from "../upload/image-upload.service.js";
+import { imagesService } from "../images/images.service.js";
 import type { UserDTO } from "../user/user.dto.js";
 import type { CreateProjectDTO } from "./projects.dto.js";
 import { CreateProjectSchema } from "./projects.schema.js";
@@ -17,10 +17,10 @@ class ProjectsService {
     if (images && images.length > 0) {
       await Promise.all(
         images.flatMap((img) => {
-          const checks = [imageUploadService.existImageOrThrow(img.originalPath)];
+          const checks = [imagesService.existImageOrThrow(img.originalPath)];
           if (img.styledImages && img.styledImages.length > 0) {
             img.styledImages.forEach(styled => {
-              checks.push(imageUploadService.existImageOrThrow(styled.restyledPath));
+              checks.push(imagesService.existImageOrThrow(styled.restyledPath));
             });
           }
           return checks;
@@ -90,8 +90,8 @@ class ProjectsService {
         const firstImage = project.originalImages[0];
         
         if (firstImage) {
-          coverUrl = await imageUploadService.createSignedUrl(
-            imageUploadService.getThumbPath(firstImage.originalPath)
+          coverUrl = await imagesService.createSignedUrl(
+            imagesService.getThumbPath(firstImage.originalPath)
           );
         }
 
@@ -169,8 +169,8 @@ class ProjectsService {
     );
 
     await Promise.all([
-      ...(originalPaths.length > 0 ? [imageUploadService.deleteImages(originalPaths)] : []),
-      ...(restyledPaths.length > 0 ? [imageUploadService.deleteImages(restyledPaths)] : []),
+      ...(originalPaths.length > 0 ? [imagesService.deleteImages(originalPaths)] : []),
+      ...(restyledPaths.length > 0 ? [imagesService.deleteImages(restyledPaths)] : []),
     ]);
 
     await prisma.project.delete({ where: { id: project.id } });
@@ -222,14 +222,14 @@ class ProjectsService {
     for (let i = 0; i < imagesData.length; i++) {
       const imgData = imagesData[i];
       
-      await imageUploadService.existImageOrThrow(imgData.originalPath);
-      const originalPath = await imageUploadService.moveImageToProject(imgData.originalPath, projectId);
+      await imagesService.existImageOrThrow(imgData.originalPath);
+      const originalPath = await imagesService.moveImageToProject(imgData.originalPath, projectId);
 
       const styledImagesCreate = [];
       if (imgData.styledImages && imgData.styledImages.length > 0) {
         for (const styled of imgData.styledImages) {
-          await imageUploadService.existImageOrThrow(styled.restyledPath);
-          const restyledPath = await imageUploadService.moveImageToProject(styled.restyledPath, projectId);
+          await imagesService.existImageOrThrow(styled.restyledPath);
+          const restyledPath = await imagesService.moveImageToProject(styled.restyledPath, projectId);
           styledImagesCreate.push({
             restyledPath,
             lighting: styled.lighting,
@@ -280,8 +280,8 @@ class ProjectsService {
         throw new BadRequestError(`Original image ${img.originalId} does not belong to this project`);
       }
       
-      await imageUploadService.existImageOrThrow(img.restyledPath);
-      const finalRestyledPath = await imageUploadService.moveImageToProject(img.restyledPath, projectId);
+      await imagesService.existImageOrThrow(img.restyledPath);
+      const finalRestyledPath = await imagesService.moveImageToProject(img.restyledPath, projectId);
 
       await prisma.styledProjectImage.create({
         data: {
@@ -301,21 +301,21 @@ class ProjectsService {
     if (!project.originalImages || project.originalImages.length === 0) return [];
 
     const originalPaths = project.originalImages.map((i: any) => i.originalPath);
-    const originalThumbPaths = originalPaths.map((p: string) => imageUploadService.getThumbPath(p));
+    const originalThumbPaths = originalPaths.map((p: string) => imagesService.getThumbPath(p));
     
     const restyledPathsToSign = project.originalImages.flatMap((i: any) => 
       i.styledImages.map((styled: any) => styled.restyledPath)
     );
-    const restyledThumbPathsToSign = restyledPathsToSign.map((p: string) => imageUploadService.getThumbPath(p));
+    const restyledThumbPathsToSign = restyledPathsToSign.map((p: string) => imagesService.getThumbPath(p));
 
     const [originalUrls, originalThumbUrls, signedRestyledUrls, signedRestyledThumbUrls] = await Promise.all([
-      imageUploadService.createSignedUrls(originalPaths),
-      imageUploadService.createSignedUrls(originalThumbPaths),
+      imagesService.createSignedUrls(originalPaths),
+      imagesService.createSignedUrls(originalThumbPaths),
       restyledPathsToSign.length > 0 
-        ? imageUploadService.createSignedUrls(restyledPathsToSign) 
+        ? imagesService.createSignedUrls(restyledPathsToSign) 
         : Promise.resolve([]),
       restyledThumbPathsToSign.length > 0 
-        ? imageUploadService.createSignedUrls(restyledThumbPathsToSign) 
+        ? imagesService.createSignedUrls(restyledThumbPathsToSign) 
         : Promise.resolve([]),
     ]);
 

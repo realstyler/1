@@ -6,7 +6,7 @@ import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import billingRouter from "./billing/billing.router.js";
 import webhooksRouter from "./webhooks/webhooks.router.js";
 import { environment } from "./config/environment.js";
-import imageUploadRouter from "./upload/image-upload.router.js";
+import imagesRouter from "./images/images.router.js";
 import aiGenerationRouter from "./ai-generation/ai-generation.router.js";
 import authRouter from "./auth/auth.router.js";
 import initRedisStore from "./lib/redis.js";
@@ -53,7 +53,7 @@ import quotaRouter from "./quota/quota.router.js";
   });
 
   app.use("/api", authRouter);
-  app.use("/api", imageUploadRouter);
+  app.use("/api", imagesRouter);
   app.use("/api", urlScraperRouter);
   app.use("/api", aiGenerationRouter);
   app.use("/api", projectsRouter);

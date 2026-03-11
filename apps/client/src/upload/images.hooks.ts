@@ -3,7 +3,8 @@ import {
   deleteUploadedImagesApi,
   uploadImagesApi,
   uploadImagesByUrlsApi,
-} from "./image-upload.api";
+  downloadImageApi,
+} from "./images.api";
 
 export function useUploadImages() {
   return useMutation({
@@ -20,5 +21,11 @@ export function useUploadImagesByUrls() {
 export function useDeleteUploadedImages() {
   return useMutation({
     mutationFn: deleteUploadedImagesApi,
+  });
+}
+
+export function useDownloadImage() {
+  return useMutation({
+    mutationFn: downloadImageApi,
   });
 }

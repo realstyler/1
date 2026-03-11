@@ -13,7 +13,7 @@ import sharp from "sharp";
 
 const BUCKET = environment.SUPABASE_BUCKET_NAME;
 
-class ImageUploadService {
+class ImagesService {
   public getThumbPath(path: string): string {
     const parts = path.split(".");
     if (parts.length > 1) {
@@ -316,4 +316,4 @@ class ImageUploadService {
   }
 }
 
-export const imageUploadService = new ImageUploadService();
+export const imagesService = new ImagesService();
