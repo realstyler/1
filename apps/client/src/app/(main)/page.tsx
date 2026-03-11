@@ -151,7 +151,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="container mx-auto px-6 py-16 md:py-24">
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 xl:gap-[110px] items-start">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 xl:gap-27.5 items-start">
           
           <div className="space-y-8 lg:pt-8 w-full max-w-md shrink-0">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full shadow-sm border border-neutral-100">
@@ -203,7 +203,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative w-full lg:max-w-[550px] xl:max-w-[800px] rounded-sm overflow-hidden shadow-2xl bg-white p-1.5 border border-gray-200 lg:mt-[60px]">
+          <div className="relative w-full lg:max-w-137.5 xl:max-w-200 rounded-sm overflow-hidden shadow-2xl bg-white p-1.5 border border-gray-200 lg:mt-15">
             <BeforeAfterSlider
               beforeImage="/modern_living_room_1766406771698.png"
               afterImage="/yellow_chair_interior_1766406787652.png"
@@ -248,7 +248,7 @@ export default function Home() {
             </h2>
           </div>
           <div className="lg:mt-16">
-            <p className="text-lg text-neutral-800 font-[200] leading-relaxed">
+            <p className="text-lg text-neutral-800 font-extralight leading-relaxed">
               Most generative models distort the physical reality of a room.
               RealStyler respects geometry, lighting, and textures to deliver
               architectural fidelity.
@@ -341,7 +341,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-350 mx-auto px-6">
           <div
             ref={scrollContainerRef}
             className="flex overflow-x-auto gap-6 md:gap-8 pb-6 scrollbar-hide snap-x"
@@ -379,7 +379,7 @@ export default function Home() {
                 className="flex-none w-[85%] sm:w-[calc(50%-12px)] md:w-[calc(33.333%-21px)] lg:w-[calc(25%-24px)] snap-start group cursor-pointer"
               >
                 <div className="space-y-3">
-                  <div className="relative aspect-[3/4] rounded-sm overflow-hidden">
+                  <div className="relative aspect-3/4 rounded-sm overflow-hidden">
                     <Image
                       src={style.img}
                       alt={`${style.title} style`}
@@ -417,7 +417,7 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            <div className="relative aspect-[3/4] rounded-lg overflow-hidden group cursor-pointer">
+            <div className="relative aspect-3/4 rounded-lg overflow-hidden group cursor-pointer">
               <Image
                 src="/profile_orange_goggles_1766406758143.png"
                 alt="Portfolio 1"
@@ -430,7 +430,7 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            <div className="relative aspect-[4/3] rounded-lg overflow-hidden group cursor-pointer">
+            <div className="relative aspect-4/3 rounded-lg overflow-hidden group cursor-pointer">
               <Image
                 src="/modern_living_room_1766406771698.png"
                 alt="Portfolio 2"
@@ -443,7 +443,7 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            <div className="relative aspect-[3/4] rounded-lg overflow-hidden group cursor-pointer">
+            <div className="relative aspect-3/4 rounded-lg overflow-hidden group cursor-pointer">
               <Image
                 src="/yellow_chair_interior_1766406787652.png"
                 alt="Portfolio 3"

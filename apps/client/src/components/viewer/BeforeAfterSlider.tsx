@@ -70,7 +70,7 @@ export default function BeforeAfterSlider({
     return (
         <div
             ref={containerRef}
-            className="relative w-full aspect-[4/3] cursor-ew-resize select-none rounded-sm overflow-hidden"
+            className="relative w-full aspect-4/3 cursor-ew-resize select-none rounded-sm overflow-hidden"
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
         >

@@ -10,7 +10,7 @@ export default function ProcessingSpinner() {
             <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-violet-500 border-r-fuchsia-500 animate-spin" />
 
             {/* Inner glow */}
-            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 animate-pulse" />
+            <div className="absolute inset-2 rounded-full bg-linear-to-br from-violet-500/20 to-fuchsia-500/20 animate-pulse" />
 
             {/* Center icon */}
             <div className="absolute inset-0 flex items-center justify-center">

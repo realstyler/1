@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import SidebarOptions from "@/components/projects/SidebarOptions";
 import { ArrowLeft, MapPin, Upload, Download, Plus, Wand2, Library } from "lucide-react";
 import { useGetProject, useAddStyledImages } from "@/projects/projects.hooks";
@@ -176,7 +177,7 @@ export default function ProjectDetailsPage() {
         }}
       />
 
-      <main className="max-w-[1600px] mx-auto px-6 py-8 flex items-start gap-10">
+      <main className="max-w-400 mx-auto px-6 py-8 flex items-start gap-10">
         <div className="flex-1 w-full">
           {/* Header Section */}
           <div className="flex items-center justify-between mb-4 pl-2">
@@ -230,18 +231,24 @@ export default function ProjectDetailsPage() {
             </div>
           </div>
 
-          <div className={`w-full ${displayImages.length === 0 && pendingGenerations.length === 0 ? "bg-white border border-gray-100 rounded-[32px] min-h-[400px]" : ""}`}>
+          <div className={`w-full ${displayImages.length === 0 && pendingGenerations.length === 0 ? "bg-white border border-gray-100 rounded-4xl min-h-100" : ""}`}>
             {displayImages.length > 0 || pendingGenerations.length > 0 ? (
               <div className="columns-1 md:columns-2 xl:columns-3 gap-6 pt-2 pb-16">
                 
                 {pendingGenerations.map((pending, idx) => (
-                  <div key={`pending-${pending.id}-${idx}`} className="relative break-inside-avoid mb-6 rounded-[24px] overflow-hidden border-2 border-transparent shadow-sm bg-gray-50 aspect-[4/3] flex items-center justify-center">
-                    <div className="absolute inset-0 overflow-hidden rounded-[24px]">
-                      <img src={pending.url} alt="Processing" className="w-full h-full object-cover" />
+                  <div key={`pending-${pending.id}-${idx}`} className="relative break-inside-avoid mb-6 rounded-3xl overflow-hidden border-2 border-transparent shadow-sm bg-gray-50 aspect-4/3 flex items-center justify-center">
+                    <div className="absolute inset-0 overflow-hidden rounded-3xl">
+                      <Image 
+                        src={pending.url} 
+                        alt="Processing" 
+                        fill 
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover" 
+                      />
                       <div className="absolute inset-0 bg-white/60" />
                     </div>
                     <div className="relative z-10 flex flex-col items-center gap-6">
-                      <div className="w-14 h-14 rounded-full border-[4px] border-[#8b9a7d]/40 border-t-[#8b9a7d] animate-spin" />
+                      <div className="w-14 h-14 rounded-full border-4 border-[#8b9a7d]/40 border-t-[#8b9a7d] animate-spin" />
                       
                       <div className="flex items-center gap-2.5 px-6 py-3 bg-white/95 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white">
                         <Wand2 size={16} strokeWidth={2} className="text-[#8b9a7d]" />
@@ -255,15 +262,18 @@ export default function ProjectDetailsPage() {
                   <div
                     key={img.id}
                     onClick={() => toggleImageSelection(img.id)}
-                    className={`relative break-inside-avoid mb-6 rounded-[24px] overflow-hidden cursor-pointer transition-all duration-300 border-2 ${
+                    className={`relative break-inside-avoid mb-6 rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 border-2 ${
                       selectedImagesSet.has(img.id)
                         ? "border-[#8ea28d] shadow-md"
                         : "border-transparent shadow-sm hover:border-gray-200"
                     } group bg-white`}
                   >
-                    <img
+                    <Image
                       src={img.url}
                       alt="Project view"
+                      width={1200}
+                      height={800}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="w-full h-auto block transition-transform duration-700 group-hover:scale-105"
                     />
 
@@ -290,7 +300,7 @@ export default function ProjectDetailsPage() {
                 ))}
               </div>
             ) : (
-              <div className="h-full w-full flex flex-col items-center justify-center p-6 min-h-[400px]">
+              <div className="h-full w-full flex flex-col items-center justify-center p-6 min-h-100">
                 <div className="w-14 h-14 bg-white rounded-full shadow-sm border border-gray-50 flex items-center justify-center mb-5">
                   <Plus size={24} className="text-[#949ba6]" />
                 </div>
@@ -311,7 +321,7 @@ export default function ProjectDetailsPage() {
           </div>
         </div>
 
-        <div className="shrink-0 sticky top-[104px] h-[calc(100vh-128px)] min-h-[600px] pb-6">
+        <div className="shrink-0 sticky top-26 h-[calc(100vh-128px)] min-h-150 pb-6">
           <SidebarOptions 
             selectedCount={selectedImages.length} 
             onRestyle={handleRestyle}

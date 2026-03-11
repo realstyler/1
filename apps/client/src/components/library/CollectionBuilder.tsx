@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { 
   Folder, 
   ArrowRight, 
@@ -36,9 +37,9 @@ export default function CollectionBuilder({
   onRemoveItem
 }: CollectionBuilderProps) {
   return (
-    <aside className="w-full h-full flex flex-col bg-white rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden">
+    <aside className="w-full h-full flex flex-col bg-white rounded-4xl border border-gray-100 shadow-sm relative overflow-hidden">
 
-      <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-white via-white/40 to-transparent pointer-events-none z-20" />
+      <div className="absolute top-0 left-0 right-0 h-6 bg-linear-to-b from-white via-white/40 to-transparent pointer-events-none z-20" />
 
       <div className="flex-1 overflow-y-auto p-7 pb-40 scrollbar-hide relative" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
         <style dangerouslySetInnerHTML={{ __html: `
@@ -47,7 +48,7 @@ export default function CollectionBuilder({
         
         <div className="flex items-center gap-2 text-[#a1a5ad] mb-4">
           <Folder size={14} strokeWidth={2} />
-          <span className="text-[11px] font-[700] uppercase tracking-[0.15em]">
+          <span className="text-[11px] font-bold uppercase tracking-[0.15em]">
             Collection Builder
           </span>
         </div>
@@ -60,10 +61,10 @@ export default function CollectionBuilder({
           Group selected variations into a single, shareable presentation page for your client.
         </p>
 
-        <div className="bg-[#f7f8f7] rounded-[24px] p-5 mb-8">
+        <div className="bg-[#f7f8f7] rounded-3xl p-5 mb-8">
           <div>
             <div className="flex justify-between items-center mb-5">
-              <span className="text-[11px] font-[800] uppercase tracking-[0.15em] text-gray-900">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-gray-900">
                 Selection
               </span>
               <span className="bg-[#8ea28d] text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
@@ -75,7 +76,13 @@ export default function CollectionBuilder({
               {selectedItems.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 group">
                   <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-200">
-                    <img src={item.url} alt={item.label} className="w-full h-full object-cover" />
+                    <Image 
+                      src={item.url} 
+                      alt={item.label} 
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover" 
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-[12px] font-bold text-gray-900 uppercase tracking-wider truncate">
@@ -98,7 +105,7 @@ export default function CollectionBuilder({
         </div>
 
         <div className="mb-10">
-          <label className="text-[11px] font-[800] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">
+          <label className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">
             Collection Name
           </label>
           <div className="relative flex items-center">
@@ -114,7 +121,7 @@ export default function CollectionBuilder({
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white 70% to-transparent pt-4 z-20 border-t border-gray-100 backdrop-blur-sm">
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-white via-white 70% to-transparent pt-4 z-20 border-t border-gray-100 backdrop-blur-sm">
         <div className="flex flex-col gap-3">
           <button 
             onClick={onCreate}

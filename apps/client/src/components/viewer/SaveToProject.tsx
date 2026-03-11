@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface Props {
   isOpen: boolean;
@@ -59,7 +60,7 @@ export default function SaveToProjectModal({
       onClick={!isSubmitting ? onCancel : undefined}
     >
       <div
-        className="bg-white w-full max-w-[460px] rounded-[24px] shadow-2xl flex flex-col overflow-hidden relative"
+        className="bg-white w-full max-w-115 rounded-3xl shadow-2xl flex flex-col overflow-hidden relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -76,7 +77,14 @@ export default function SaveToProjectModal({
         <div className="p-8 md:p-10 flex flex-col items-center text-center">
           <div className="flex gap-2 mb-6">
             <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-100 shadow-sm relative">
-              <img src={beforeImage} alt="Original" className="w-full h-full object-cover" />
+              <Image 
+                src={beforeImage} 
+                alt="Original" 
+                width={64}
+                height={64}
+                unoptimized={beforeImage.startsWith('blob:')}
+                className="w-full h-full object-cover" 
+              />
               <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[8px] uppercase tracking-wider py-0.5">Original</div>
             </div>
             <div className="flex items-center text-gray-300">
@@ -85,7 +93,14 @@ export default function SaveToProjectModal({
               </svg>
             </div>
             <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-[#8ea28d] shadow-sm relative">
-              <img src={afterImage} alt="Restyled" className="w-full h-full object-cover" />
+              <Image 
+                src={afterImage} 
+                alt="Restyled" 
+                width={64}
+                height={64}
+                unoptimized={afterImage.startsWith('blob:')}
+                className="w-full h-full object-cover" 
+              />
               <div className="absolute bottom-0 inset-x-0 bg-[#8ea28d]/90 text-white text-[8px] uppercase tracking-wider py-0.5">Styled</div>
             </div>
           </div>
@@ -93,7 +108,7 @@ export default function SaveToProjectModal({
           <h2 className="text-[28px] font-luxury-serif leading-tight mb-3 tracking-tight">
             Save to a new project
           </h2>
-          <p className="text-sm text-[#8e94a0] mb-8 max-w-[300px] leading-relaxed font-sans">
+          <p className="text-sm text-[#8e94a0] mb-8 max-w-75 leading-relaxed font-sans">
             Create a workspace to save this result and continue styling your property.
           </p>
 

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import { useGetProject } from '@/projects/projects.hooks';
 import { useCreateCollection } from '@/collections/collections.hooks'; 
@@ -89,7 +90,7 @@ export default function LibraryPage() {
         }}
       />
 
-      <div className="max-w-[1600px] mx-auto px-6 py-8 flex gap-10 items-start">
+      <div className="max-w-400 mx-auto px-6 py-8 flex gap-10 items-start">
         
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex items-center gap-6 mb-8 pl-2">
@@ -116,7 +117,7 @@ export default function LibraryPage() {
               return (
                 <div 
                   key={origGroup.id} 
-                  className="bg-white border border-gray-100 rounded-[24px] p-6 w-full shadow-sm"
+                  className="bg-white border border-gray-100 rounded-3xl p-6 w-full shadow-sm"
                 >
                   <div className="flex gap-5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2">
                     
@@ -127,12 +128,14 @@ export default function LibraryPage() {
                         url: origGroup.originalUrl!,
                         label: 'Original'
                       })}
-                      className="relative w-[280px] h-[200px] shrink-0 rounded-2xl overflow-hidden bg-gray-100 cursor-pointer group"
+                      className="relative w-70 h-50 shrink-0 rounded-2xl overflow-hidden bg-gray-100 cursor-pointer group"
                     >
-                      <img 
+                      <Image 
                         src={origGroup.originalUrl} 
-                        alt="Original" 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        alt="Original"
+                        fill
+                        sizes="280px"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       
                       <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-white/95 text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wider shadow-sm uppercase">
@@ -155,7 +158,7 @@ export default function LibraryPage() {
                     </div>
 
                     {origGroup.styledImages && origGroup.styledImages.length > 0 && (
-                      <div className="w-px shrink-0 my-4 mx-2 bg-gradient-to-b from-transparent via-gray-200 to-transparent"></div>
+                      <div className="w-px shrink-0 my-4 mx-2 bg-linear-to-b from-transparent via-gray-200 to-transparent"></div>
                     )}
 
                     {origGroup.styledImages?.map((styled) => {
@@ -173,14 +176,16 @@ export default function LibraryPage() {
                             url: styled.restyledUrl!,
                             label: styled.aesthetic || 'Restyled'
                           })}
-                          className={`relative w-[280px] h-[200px] shrink-0 rounded-2xl overflow-hidden bg-gray-100 cursor-pointer group border-2 transition-all ${
+                          className={`relative w-70 h-50 shrink-0 rounded-2xl overflow-hidden bg-gray-100 cursor-pointer group border-2 transition-all ${
                             isSelected ? "border-[#8ea28d]" : "border-transparent hover:border-gray-200"
                           }`}
                         >
-                          <img 
+                          <Image 
                             src={styled.restyledUrl} 
                             alt={styled.aesthetic || 'Restyled'} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            fill
+                            sizes="280px"
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
                           />
                           
                           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-[#1a1a1a] text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wider shadow-sm uppercase">
@@ -209,14 +214,14 @@ export default function LibraryPage() {
             })}
 
             {(!project.originalImages || project.originalImages.length === 0) && (
-              <div className="bg-white border border-gray-100 rounded-[24px] p-12 text-center">
+              <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center">
                 <p className="text-[#8e94a0]">No images available in this project to create a collection.</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="w-[340px] shrink-0 sticky top-8 h-[calc(100vh-9rem)]">
+        <div className="w-85 shrink-0 sticky top-8 h-[calc(100vh-9rem)]">
           <CollectionBuilder 
             selectedItems={selectedItems}
             collectionName={collectionName}

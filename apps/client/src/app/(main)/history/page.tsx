@@ -75,7 +75,7 @@ export default function HistoryPage() {
                                     </div>
                                     <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                                         {item.images.map((img, idx) => (
-                                            <div key={idx} className="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100 border border-neutral-200">
+                                            <div key={idx} className="w-32 h-32 rounded-lg overflow-hidden shrink-0 bg-neutral-100 border border-neutral-200">
                                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img src={img} alt="Result" className="w-full h-full object-cover" />
                                             </div>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Bell, Plus } from 'lucide-react';
 import { AxiosError } from 'axios';
@@ -53,7 +54,7 @@ export default function ProjectNavbar() {
         onSubmit={handleCreateProject}
       />
 
-      <header className="h-[80px] w-full bg-white flex items-center justify-between px-3 md:px-6 border-b border-gray-100 shrink-0 z-50 relative">
+      <header className="h-20 w-full bg-white flex items-center justify-between px-3 md:px-6 border-b border-gray-100 shrink-0 z-50 relative">
         <div className="flex items-center gap-8 md:gap-10">
           <Link href="/" className="font-luxury-serif text-[22px] font-bold tracking-tight text-[#1a1a1a]">
             RealStyler
@@ -63,7 +64,7 @@ export default function ProjectNavbar() {
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setActiveTab('photos')}
-                className={`px-4 py-1 text-[14px] font-medium rounded-full transition-all duration-200 border-[2px] ${
+                className={`px-4 py-1 text-[14px] font-medium rounded-full transition-all duration-200 border-2 ${
                   activeTab === 'photos' 
                     ? 'border-[#ebebeb] text-[#1a1a1a]' 
                     : 'border-transparent text-[#7a7a7a] hover:text-[#1a1a1a]'
@@ -73,7 +74,7 @@ export default function ProjectNavbar() {
               </button>
               <button 
                 onClick={() => setActiveTab('collections')}
-                className={`px-4 py-1 text-[14px] font-medium rounded-full transition-all duration-200 border-[2px] ${
+                className={`px-4 py-1 text-[14px] font-medium rounded-full transition-all duration-200 border-2 ${
                   activeTab === 'collections' 
                     ? 'border-[#ebebeb] text-[#1a1a1a]' 
                     : 'border-transparent text-[#7a7a7a] hover:text-[#1a1a1a]'
@@ -102,9 +103,12 @@ export default function ProjectNavbar() {
           )}
           
           <button className="w-9 h-9 rounded-full overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
-            <img 
+            <Image 
               src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
               alt="User avatar" 
+              width={36}
+              height={36}
+              unoptimized={true}
               className="w-full h-full object-cover bg-indigo-100"
             />
           </button>
@@ -114,7 +118,7 @@ export default function ProjectNavbar() {
               onClick={() => setIsModalOpen(true)}
               className="bg-[#2d2d2d] text-white px-5 py-2.5 rounded-full flex items-center gap-2 ml-1 hover:bg-[#1a1a1a] transition-all active:scale-95 shadow-sm"
             >
-              <div className="w-[18px] h-[18px] rounded-full border-[1.5px] border-white flex items-center justify-center">
+              <div className="w-4.5 h-4.5 rounded-full border-[1.5px] border-white flex items-center justify-center">
                 <Plus size={12} strokeWidth={2.5} color="white" />
               </div>
               <span className="text-[14px] font-medium tracking-wide">New Project</span>

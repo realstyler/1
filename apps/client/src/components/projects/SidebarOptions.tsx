@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { 
   Wand2, 
   Palette, 
@@ -53,9 +54,9 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
   };
 
   return (
-    <aside className="w-[360px] h-full shrink-0 flex flex-col bg-white rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden">
+    <aside className="w-90 h-full shrink-0 flex flex-col bg-white rounded-4xl border border-gray-100 shadow-sm relative overflow-hidden">
       
-      <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-white via-white/60 to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 right-0 h-10 bg-linear-to-b from-white via-white/60 to-transparent pointer-events-none z-10" />
 
       <div className="flex-1 overflow-y-auto p-7 pb-36 scrollbar-hide relative" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
         <style dangerouslySetInnerHTML={{ __html: `
@@ -84,7 +85,7 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
             <>
               {/* Intent Section */}
               <div>
-                <label className="text-[12px] font-[700] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Intent</label>
+                <label className="text-[12px] font-bold uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Intent</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { id: 'Enhance', label: 'Enhance', desc: 'Improve quality', icon: Wand2 },
@@ -117,7 +118,7 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
 
               {/* Lighting Section */}
               <div>
-                <label className="text-[12px] font-[700] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Lighting</label>
+                <label className="text-[12px] font-bold uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Lighting</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { id: 'Natural', icon: Sun },
@@ -143,7 +144,7 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
               {/* Creativity Section */}
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <label className="text-[12px] font-[700] uppercase tracking-[0.15em] text-[#a1a5ad]">Creativity</label>
+                  <label className="text-[12px] font-bold uppercase tracking-[0.15em] text-[#a1a5ad]">Creativity</label>
                   <span className="text-[10px] font-semibold text-[#8ea28d] px-2 py-0.5 rounded bg-[#8ea28d]/10 transition-all">
                     {creativity}
                   </span>
@@ -165,7 +166,7 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
 
               {/* Aesthetic Section */}
               <div>
-                <label className="text-[12px] font-[700] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Aesthetic</label>
+                <label className="text-[12px] font-bold uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Aesthetic</label>
                 <div className="grid grid-cols-3 gap-4">
                   {AESTHETICS_MAPPING.map((styleObj, index) => {
                     const isSelected = selectedAesthetic === styleObj.id;
@@ -177,12 +178,14 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
                         onClick={() => setSelectedAesthetic(styleObj.id)}
                         className="flex flex-col items-center cursor-pointer group"
                       >
-                        <div className={`relative w-full aspect-[2/3] rounded-xl overflow-hidden mb-1.5 border-2 transition-all bg-gray-100 ${
+                        <div className={`relative w-full aspect-2/3 rounded-xl overflow-hidden mb-1.5 border-2 transition-all bg-gray-100 ${
                           isSelected ? 'border-[#8ea28d] shadow-sm' : 'border-transparent group-hover:border-gray-200'
                         }`}>
-                          <img 
+                          <Image 
                             src={mockImg} 
                             alt={styleObj.id} 
+                            width={200}
+                            height={300}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                           />
                           {isSelected && (
@@ -205,7 +208,7 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
           ) : (
             /* Custom Prompt Section */
             <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-              <label className="text-[11px] font-[800] uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">
+              <label className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">
                 Describe your vision
               </label>
               <textarea
@@ -225,7 +228,7 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
       </div>
 
       {/* Action Button Section */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white/85 to-white/70 pt-8 z-10 border-t border-gray-100/60 backdrop-blur-[2px]">
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-white via-white/85 to-white/70 pt-8 z-10 border-t border-gray-100/60 backdrop-blur-[2px]">
         <button
           onClick={handleRestyleClick}
           disabled={selectedCount === 0 || isRestyling}
@@ -251,7 +254,7 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
           }
         </button>
         
-        <p className="text-center text-[9px] text-[#b1b5bd] mt-3.5 font-medium uppercase tracking-[0.1em]">
+        <p className="text-center text-[9px] text-[#b1b5bd] mt-3.5 font-medium uppercase tracking-widest">
           Est. time: ~45s
         </p>
       </div>

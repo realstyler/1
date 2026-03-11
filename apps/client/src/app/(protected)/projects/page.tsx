@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import CreateProjectModal from '@/components/projects/CreateProjectModal';
 import { useCreateProject, useGetAllProjects } from '@/projects/projects.hooks';
 import { useErrorToastStore } from "@/stores/useErrorToastStore";
@@ -77,7 +78,7 @@ export default function ProjectsPage() {
             <div className="w-5 h-5 rounded-full border border-white flex items-center justify-center">
                 <Plus size={12} strokeWidth={3} color="white" />
             </div>
-            <span className="text-[14px] font-[500]">New Project</span>
+            <span className="text-[14px] font-medium">New Project</span>
         </button>
       </div>
 
@@ -111,12 +112,14 @@ export default function ProjectsPage() {
               className="group cursor-pointer"
               onClick={() => router.push(`/projects/${project.id}`)}
             >
-              <div className="relative aspect-[1.38/1] mb-5 overflow-hidden rounded-[12px] bg-gray-100 shadow-sm border border-gray-50 flex items-center justify-center">
+              <div className="relative aspect-[1.38/1] mb-5 overflow-hidden rounded-xl bg-gray-100 shadow-sm border border-gray-50 flex items-center justify-center">
                 
                 {project.coverUrl ? (
-                  <img
+                  <Image
                     src={project.coverUrl} 
                     alt={project.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover w-full h-full transition-transform duration-1000 ease-[cubic-bezier(0.2,1,0.3,1)] group-hover:scale-105"
                   />
                 ) : (

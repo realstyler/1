@@ -34,11 +34,11 @@ export default function AuthPromptModal({
 
   return (
     <section
-      className="fixed inset-0 z-50 bg-white/60 backdrop-blur-md flex items-center justify-center p-4 pt-[80px]"
+      className="fixed inset-0 z-50 bg-white/60 backdrop-blur-md flex items-center justify-center p-4 pt-20"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-[460px] rounded-[24px] shadow-2xl flex flex-col overflow-hidden relative"
+        className="bg-white w-full max-w-115 rounded-3xl shadow-2xl flex flex-col overflow-hidden relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close "X" button */}
@@ -83,7 +83,7 @@ export default function AuthPromptModal({
           <h2 className="text-[32px] font-luxury-serif leading-tight mb-3 tracking-tight">
             Save Your Project
           </h2>
-          <p className="text-base text-[#8e94a0] mb-10 max-w-[300px] leading-relaxed font-sans">
+          <p className="text-base text-[#8e94a0] mb-10 max-w-75 leading-relaxed font-sans">
             Create an account or log in to save your transformed room and access
             it from any device.
           </p>
