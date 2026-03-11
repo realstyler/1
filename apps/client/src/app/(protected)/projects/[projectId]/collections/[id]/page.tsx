@@ -125,8 +125,8 @@ export default function CollectionViewPage() {
                       <Image
                         src={item.imageUrl}
                         alt={item.metadata?.aesthetic || item.type}
-                        width={1200}
-                        height={800}
+                        width={item.width || 1200}
+                        height={item.height || 800}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="w-full h-auto block transition-transform duration-700 group-hover:scale-105"
                       />

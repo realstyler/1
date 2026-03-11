@@ -64,6 +64,8 @@ model OriginalProjectImage {
 
   originalPath String @map("original_url")
   orderIndex   Int    @map("order_index")
+  width        Int?
+  height       Int?
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -83,6 +85,8 @@ model StyledProjectImage {
   lighting     Lighting?
   creativity   Creativity?
   aesthetic    Aesthetic?
+  width        Int?
+  height       Int?
 
   createdAt DateTime @default(now()) @map("created_at")
 

@@ -31,6 +31,8 @@ export default function ProjectDetailsPage() {
           originalPath: img.originalPath,
           url: img.originalUrl,
           isRestyled: false,
+          width: img.width || 1200,
+          height: img.height || 800,
         });
       }
 
@@ -43,6 +45,8 @@ export default function ProjectDetailsPage() {
               originalPath: img.originalPath,
               url: styled.restyledUrl,
               isRestyled: true,
+              width: styled.width || img.width || 1200,
+              height: styled.height || img.height || 800,
             });
           }
         });
@@ -271,8 +275,8 @@ export default function ProjectDetailsPage() {
                     <Image
                       src={img.url}
                       alt="Project view"
-                      width={1200}
-                      height={800}
+                      width={img.width}
+                      height={img.height}
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="w-full h-auto block transition-transform duration-700 group-hover:scale-105"
                     />

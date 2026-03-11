@@ -90,7 +90,9 @@ class ProjectsService {
         const firstImage = project.originalImages[0];
         
         if (firstImage) {
-          coverUrl = await imageUploadService.createSignedUrl(firstImage.originalPath);
+          coverUrl = await imageUploadService.createSignedUrl(
+            imageUploadService.getThumbPath(firstImage.originalPath)
+          );
         }
 
         const status = project._count.originalImages > 0 ? "Completed" : "Draft";
@@ -104,7 +106,7 @@ class ProjectsService {
           coverUrl,
           imagesCount: project._count.originalImages,
         };
-      })
+      }) 
     );
 
     return {
@@ -299,14 +301,21 @@ class ProjectsService {
     if (!project.originalImages || project.originalImages.length === 0) return [];
 
     const originalPaths = project.originalImages.map((i: any) => i.originalPath);
+    const originalThumbPaths = originalPaths.map((p: string) => imageUploadService.getThumbPath(p));
+    
     const restyledPathsToSign = project.originalImages.flatMap((i: any) => 
       i.styledImages.map((styled: any) => styled.restyledPath)
     );
+    const restyledThumbPathsToSign = restyledPathsToSign.map((p: string) => imageUploadService.getThumbPath(p));
 
-    const [originalUrls, signedRestyledUrls] = await Promise.all([
+    const [originalUrls, originalThumbUrls, signedRestyledUrls, signedRestyledThumbUrls] = await Promise.all([
       imageUploadService.createSignedUrls(originalPaths),
+      imageUploadService.createSignedUrls(originalThumbPaths),
       restyledPathsToSign.length > 0 
         ? imageUploadService.createSignedUrls(restyledPathsToSign) 
+        : Promise.resolve([]),
+      restyledThumbPathsToSign.length > 0 
+        ? imageUploadService.createSignedUrls(restyledThumbPathsToSign) 
         : Promise.resolve([]),
     ]);
 
@@ -315,16 +324,19 @@ class ProjectsService {
     return project.originalImages.map((img: any, i: number) => {
       const processedStyledImages = img.styledImages.map((styledImg: any) => {
         const signedUrl = signedRestyledUrls[restyledUrlIndex] || null;
+        const signedThumbUrl = signedRestyledThumbUrls[restyledUrlIndex] || null;
         restyledUrlIndex++;
         return {
           ...styledImg,
-          restyledUrl: signedUrl
+          restyledUrl: signedThumbUrl,
+          restyledHighResUrl: signedUrl
         };
       });
 
       return {
         ...img,
-        originalUrl: originalUrls[i],
+        originalUrl: originalThumbUrls[i],
+        originalHighResUrl: originalUrls[i],
         styledImages: processedStyledImages,
       };
     });
