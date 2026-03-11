@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { 
   ArrowLeft, 
   MapPin, 
@@ -86,7 +87,7 @@ export default function CollectionViewPage() {
         }}
       />
 
-      <main className="max-w-[1600px] mx-auto px-6 py-8 flex items-start gap-10">
+      <main className="max-w-400 mx-auto px-6 py-8 flex items-start gap-10">
         
         <div className="flex-1 w-full min-w-0">
           <div className="flex items-center gap-6 mb-8 pl-2">
@@ -118,12 +119,15 @@ export default function CollectionViewPage() {
                 {collection.items.map((item) => (
                   <div
                     key={item.id}
-                    className="relative break-inside-avoid mb-6 rounded-[24px] overflow-hidden border-2 border-transparent shadow-sm bg-white group"
+                    className="relative break-inside-avoid mb-6 rounded-3xl overflow-hidden border-2 border-transparent shadow-sm bg-white group"
                   >
                     {item.imageUrl && (
-                      <img
+                      <Image
                         src={item.imageUrl}
                         alt={item.metadata?.aesthetic || item.type}
+                        width={item.width || 1200}
+                        height={item.height || 800}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="w-full h-auto block transition-transform duration-700 group-hover:scale-105"
                       />
                     )}
@@ -141,15 +145,15 @@ export default function CollectionViewPage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white border border-gray-100 rounded-[32px] p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
+              <div className="bg-white border border-gray-100 rounded-4xl p-12 text-center min-h-100 flex flex-col items-center justify-center">
                 <p className="text-[#8e94a0]">This collection has no images yet.</p>
               </div>
             )}
           </div>
         </div>
 
-        <aside className="w-[340px] shrink-0 sticky top-8 flex flex-col gap-6">
-          <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm p-7">
+        <aside className="w-85 shrink-0 sticky top-8 flex flex-col gap-6">
+          <div className="bg-white rounded-4xl border border-gray-100 shadow-sm p-7">
             <h2 className="text-[24px] font-luxury-serif text-[#1a1a1a] mb-6">Share & Export</h2>
 
             <div className="flex flex-col gap-4 mb-8">
@@ -225,7 +229,7 @@ export default function CollectionViewPage() {
           </div>
 
           {collection.shareId && (
-            <div className="bg-[#f0f4ef] rounded-[24px] p-5 border border-[#dce5da] flex items-start gap-3">
+            <div className="bg-[#f0f4ef] rounded-3xl p-5 border border-[#dce5da] flex items-start gap-3">
               <Globe size={18} className="text-[#6b7b6a] shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-[13px] font-bold text-[#4a5849] mb-1">Link is Active</h4>

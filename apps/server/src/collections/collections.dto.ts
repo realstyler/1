@@ -13,6 +13,8 @@ export type CollectionItemDTO = {
   orderIndex: number;
   type: "RESTYLED" | "ORIGINAL" | "UNKNOWN";
   imageUrl: string | null;
+  width?: number | null;
+  height?: number | null;
   originalImageId: string | null;
   styledImageId: string | null;
   metadata: {
@@ -27,15 +29,15 @@ export type CollectionDTO = {
   projectId: string;
   name: string;
   shareId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type CollectionDetailsDTO = {
   id: string;
   name: string;
   shareId: string | null;
-  createdAt: Date;
+  createdAt: string;
   project: {
     id: string;
     name: string;

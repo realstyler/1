@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Footer from '@/components/layout/Footer';
 
 export default function BlogPage() {
@@ -17,10 +18,12 @@ export default function BlogPage() {
                         {/* Article 1 */}
                         <div className="group cursor-pointer">
                             <div className="aspect-video bg-neutral-100 rounded-2xl mb-6 overflow-hidden relative">
-                                <img
+                                <Image
                                     src="/modern_living_room_1766406771698.png"
                                     alt="Feature Allocator"
-                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    className="object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
                                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300"></div>
                             </div>
@@ -42,10 +45,12 @@ export default function BlogPage() {
                         {/* Article 2 */}
                         <div className="group cursor-pointer">
                             <div className="aspect-video bg-neutral-100 rounded-2xl mb-6 overflow-hidden relative">
-                                <img
+                                <Image
                                     src="/yellow_chair_interior_1766406787652.png"
                                     alt="Virtual Staging"
-                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    className="object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
                                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300"></div>
                             </div>

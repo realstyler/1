@@ -41,8 +41,8 @@ class CollectionsService {
       projectId: collection.projectId,
       name: collection.name,
       shareId: collection.shareId,
-      createdAt: collection.createdAt,
-      updatedAt: collection.updatedAt,
+      createdAt: collection.createdAt.toISOString(),
+      updatedAt: collection.updatedAt.toISOString(),
     };
   }
 
@@ -71,8 +71,8 @@ class CollectionsService {
       projectId: c.projectId,
       name: c.name,
       shareId: c.shareId,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
+      createdAt: c.createdAt.toISOString(),
+      updatedAt: c.updatedAt.toISOString(),
       itemsCount: c._count.items,
     }));
   }
@@ -183,9 +183,9 @@ class CollectionsService {
 
       collection.items.forEach((item: any) => {
         if (item.styledImageId && item.styledImage) {
-          pathsToSign.push(item.styledImage.restyledPath);
+          pathsToSign.push(imageUploadService.getThumbPath(item.styledImage.restyledPath));
         } else if (item.originalImageId && item.originalImage) {
-          pathsToSign.push(item.originalImage.originalPath);
+          pathsToSign.push(imageUploadService.getThumbPath(item.originalImage.originalPath));
         }
       });
 
@@ -196,14 +196,20 @@ class CollectionsService {
         processedItems = collection.items.map((item: any): CollectionItemDTO => {
           let imageUrl: string | null = null;
           let type: "RESTYLED" | "ORIGINAL" | "UNKNOWN" = "UNKNOWN";
+          let width: number | null = null;
+          let height: number | null = null;
 
           if (item.styledImageId && item.styledImage) {
             imageUrl = signedUrls[urlIndex] ?? null;
             type = "RESTYLED";
+            width = item.styledImage.width || null;
+            height = item.styledImage.height || null;
             urlIndex++;
           } else if (item.originalImageId && item.originalImage) {
             imageUrl = signedUrls[urlIndex] ?? null;
             type = "ORIGINAL";
+            width = item.originalImage.width || null;
+            height = item.originalImage.height || null;
             urlIndex++;
           }
 
@@ -212,6 +218,8 @@ class CollectionsService {
             orderIndex: item.orderIndex,
             type,
             imageUrl,
+            width,
+            height,
             originalImageId: item.originalImageId || null,
             styledImageId: item.styledImageId || null,
             metadata: item.styledImageId && item.styledImage ? {
@@ -244,7 +252,7 @@ class CollectionsService {
       id: collection.id,
       name: collection.name,
       shareId: collection.shareId || null,
-      createdAt: collection.createdAt,
+      createdAt: collection.createdAt.toISOString(),
       project: projectData,
       agentProfile: agentData,
       items: processedItems,

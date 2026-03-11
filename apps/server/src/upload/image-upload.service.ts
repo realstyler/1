@@ -9,10 +9,20 @@ import type {
   UploadedImage,
 } from "../types/index.js";
 import { ApiError } from "shared";
+import sharp from "sharp";
 
 const BUCKET = environment.SUPABASE_BUCKET_NAME;
 
 class ImageUploadService {
+  public getThumbPath(path: string): string {
+    const parts = path.split(".");
+    if (parts.length > 1) {
+      const ext = parts.pop();
+      return `${parts.join(".")}_thumb.${ext}`;
+    }
+    return `${path}_thumb`;
+  }
+
   async uploadTemporaryImages(
     files: Express.Multer.File[],
     tmpIds: string[],
@@ -27,10 +37,22 @@ class ImageUploadService {
       const id = uuidv4();
       const path = this.generateFilePath("tmp", id, file.mimetype);
 
+      const metadata = await sharp(file.buffer).metadata();
+
+      const thumbBuffer = await sharp(file.buffer)
+        .resize({ width: 800, withoutEnlargement: true })
+        .toBuffer();
+
       await this.uploadBuffer({
         buffer: file.buffer,
         mimeType: file.mimetype,
         path,
+      });
+
+      await this.uploadBuffer({
+        buffer: thumbBuffer,
+        mimeType: file.mimetype,
+        path: this.getThumbPath(path),
       });
 
       const url = await this.createSignedUrl(path, 300);
@@ -39,7 +61,9 @@ class ImageUploadService {
         id,
         path,
         url,
-      });
+        width: metadata.width,
+        height: metadata.height,
+      } as any);
     }
 
     return results;
@@ -71,10 +95,22 @@ class ImageUploadService {
       const id = uuidv4();
       const path = this.generateFilePath("tmp", id, contentType);
 
+      const metadata = await sharp(buffer).metadata();
+
+      const thumbBuffer = await sharp(buffer)
+        .resize({ width: 800, withoutEnlargement: true })
+        .toBuffer();
+
       await this.uploadBuffer({
         buffer,
         mimeType: contentType,
         path,
+      });
+
+      await this.uploadBuffer({
+        buffer: thumbBuffer,
+        mimeType: contentType,
+        path: this.getThumbPath(path),
       });
 
       const signedUrl = await this.createSignedUrl(path, 300);
@@ -84,7 +120,9 @@ class ImageUploadService {
         tmpId: "",
         path,
         url: signedUrl,
-      });
+        width: metadata.width,
+        height: metadata.height,
+      } as any);
     }
 
     return results;
@@ -97,13 +135,30 @@ class ImageUploadService {
     const id = uuidv4();
     const path = this.generateFilePath("generated", id, params.mimeType);
 
+    const metadata = await sharp(params.buffer).metadata();
+
+    const thumbBuffer = await sharp(params.buffer)
+      .resize({ width: 800, withoutEnlargement: true })
+      .toBuffer();
+
     await this.uploadBuffer({
       buffer: params.buffer,
       mimeType: params.mimeType,
       path,
     });
 
-    return { id, path };
+    await this.uploadBuffer({
+      buffer: thumbBuffer,
+      mimeType: params.mimeType,
+      path: this.getThumbPath(path),
+    });
+
+    return { 
+      id, 
+      path,
+      width: metadata.width,
+      height: metadata.height,
+    } as any;
   }
 
   async downloadImage(path: string): Promise<Blob> {
@@ -158,7 +213,12 @@ class ImageUploadService {
   }
 
   async deleteImages(paths: string[]) {
-    const { error } = await supabaseAdmin.storage.from(BUCKET).remove(paths);
+    const allPaths = [
+      ...paths,
+      ...paths.map((p) => this.getThumbPath(p)),
+    ];
+
+    const { error } = await supabaseAdmin.storage.from(BUCKET).remove(allPaths);
 
     if (error) {
       console.error(error);
@@ -188,6 +248,10 @@ class ImageUploadService {
       console.error(error);
       throw new ApiError(`Failed to move image to ${targetDirectory} project folder: ${sourcePath}`, 500);
     }
+
+    await supabaseAdmin.storage
+      .from(BUCKET)
+      .move(this.getThumbPath(sourcePath), this.getThumbPath(newPath));
 
     return newPath;
   }

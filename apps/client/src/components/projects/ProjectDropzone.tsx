@@ -58,7 +58,7 @@ export default function ProjectDropzone({ onFilesSelect, uploadedCount, maxFiles
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => !isLimitReached && fileInputRef.current?.click()}
-        className={`flex-1 min-h-[320px] border-2 border-dashed rounded-[32px] flex flex-col items-center justify-center bg-white transition-all cursor-pointer group mb-6 relative shadow-sm ${
+        className={`flex-1 min-h-80 border-2 border-dashed rounded-4xl flex flex-col items-center justify-center bg-white transition-all cursor-pointer group mb-6 relative shadow-sm ${
           isDragging && !isLimitReached ? 'border-[#8ea28d] bg-[#fdfefd] scale-[1.01]' : 'border-[#d1d7cb] hover:border-[#b5bcaf]'
         }`}
       >
@@ -88,7 +88,7 @@ export default function ProjectDropzone({ onFilesSelect, uploadedCount, maxFiles
         </p>
 
         {isLimitReached && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-[32px] flex flex-col items-center justify-center z-10 cursor-not-allowed">
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-4xl flex flex-col items-center justify-center z-10 cursor-not-allowed">
              <AlertCircle size={32} className="text-[#e17a5f] mb-3" strokeWidth={1.5} />
              <h3 className="font-luxury-serif text-xl tracking-tight text-[#1a1a1a]">Maximum limit reached</h3>
              <p className="text-sm text-[#8e94a0] mt-1">You can upload up to {maxFiles} images</p>

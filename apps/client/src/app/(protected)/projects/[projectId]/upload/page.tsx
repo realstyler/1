@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useUploadImages, useDeleteUploadedImages } from "@/upload/image-upload.hooks";
 import { createImageSignedUrlsApi } from "@/upload/image-upload.api";
 import { 
@@ -237,9 +238,9 @@ export default function ProjectUploadPage() {
 
   return (
     <div className="bg-[#f8f8f7] h-[calc(100vh-80px)] text-[#1a1a1a] overflow-hidden">
-      <main className="h-full max-w-[1400px] mx-auto pt-12 pb-6 flex flex-col px-6">
+      <main className="h-full max-w-350 mx-auto pt-12 pb-6 flex flex-col px-6">
         
-        <div className="flex-1 w-full max-w-[1000px] mx-auto flex flex-col min-h-0">
+        <div className="flex-1 w-full max-w-250 mx-auto flex flex-col min-h-0">
           
           <div className="flex items-center justify-between mb-10 shrink-0">
             <div className="flex items-center gap-6">
@@ -275,16 +276,19 @@ export default function ProjectUploadPage() {
               Uploaded <span className="text-[#d7d3d2]">{uploadedImages.length}/{MAX_FILES}</span>
             </p>
             
-            <div className="flex flex-row gap-4 overflow-x-auto pb-2 no-scrollbar min-h-[105px]">
+            <div className="flex flex-row gap-4 overflow-x-auto pb-2 no-scrollbar min-h-26.25">
                 {uploadedImages.map((img) => (
                   <div 
                     key={img.id} 
                     className="relative w-24 h-24 shrink-0 rounded-[18px] overflow-hidden border border-gray-200 shadow-sm group bg-gray-50"
                   >
-                    <img 
+                    <Image 
                       src={img.preview} 
-                      alt={img.name} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      alt={img.name}
+                      fill
+                      sizes="96px"
+                      unoptimized={img.preview.startsWith('blob:')}
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     
                     {img.status === "ready" && (
@@ -324,7 +328,7 @@ export default function ProjectUploadPage() {
           </div>
         </div>
 
-        <div className="mt-auto pt-2 flex justify-end shrink-0 max-w-[1000px] mx-auto w-full">
+        <div className="mt-auto pt-2 flex justify-end shrink-0 max-w-250 mx-auto w-full">
           {isNewProject && uploadedImages.length === 0 ? (
             <button 
               onClick={() => router.push(`/projects/${projectId}`)}

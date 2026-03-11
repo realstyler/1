@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useUploadImages } from "@/upload/image-upload.hooks";
 import type { ScrapedImage, UploadResponse } from "@/types";
 
@@ -125,16 +126,19 @@ export default function ScrapedImages({
               <div
                 key={img.url}
                 onClick={() => !isUploading && onSelectImg(img)}
-                className={`relative cursor-pointer group rounded-xl overflow-hidden border transition-all duration-200 ${
+                className={`relative h-48 cursor-pointer group rounded-xl overflow-hidden border transition-all duration-200 ${
                   img.selected
                     ? "border-black ring-2 ring-black"
                     : "border-gray-200 hover:border-gray-400"
                 } ${isUploading ? "opacity-50 pointer-events-none" : ""}`}
               >
-                <img
+                <Image
                   src={img.url}
-                  alt=""
-                  className="w-full h-48 object-cover"
+                  alt="Scraped image preview"
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  unoptimized={true}
+                  className="object-cover"
                 />
 
                 {/* Overlay */}

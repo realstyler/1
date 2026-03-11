@@ -13,6 +13,8 @@ export type UploadedImageApi = {
   id: string;
   path: string;
   url: string;
+  width?: number | null;
+  height?: number | null;
 };
 
 export type StoredPath = { id: string; name: string; path: string };
@@ -44,8 +46,11 @@ export interface StyledProjectImageDTO {
   lighting: Lighting | null;
   creativity: Creativity | null;
   aesthetic: Aesthetic | null;
+  width?: number | null;
+  height?: number | null;
   createdAt: string;
   restyledUrl?: string | null;
+  restyledHighResUrl?: string | null;
 }
 
 export interface OriginalProjectImageDTO {
@@ -53,8 +58,11 @@ export interface OriginalProjectImageDTO {
   projectId: string;
   originalPath: string;
   orderIndex: number;
+  width?: number | null;
+  height?: number | null;
   createdAt: string;
   originalUrl?: string;
+  originalHighResUrl?: string | null;
   styledImages: StyledProjectImageDTO[];
 }
 
@@ -110,6 +118,8 @@ export type UploadResponse = {
   id?: string;
   tmpId: string;
   path: string;
+  width?: number | null;
+  height?: number | null;
 };
 
 export interface StyledImageInput {
@@ -117,10 +127,14 @@ export interface StyledImageInput {
   lighting?: Lighting;
   creativity?: Creativity;
   aesthetic?: Aesthetic;
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface AddProjectImageInput {
   originalPath: string;
+  width?: number | null;
+  height?: number | null;
   styledImages: StyledImageInput[];
 }
 
@@ -131,6 +145,8 @@ export interface CollectionItemDTO {
   imageUrl: string | null;
   originalImageId: string | null;
   styledImageId: string | null;
+  width?: number | null;
+  height?: number | null;
   metadata: {
     lighting: Lighting | null;
     creativity: Creativity | null;

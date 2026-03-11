@@ -68,7 +68,7 @@ export default function PricingPage() {
                                 </li>
                             </ul>
 
-                            <button className="w-full py-3 bg-gradient-to-r from-[#A855F7] to-[#D946EF] text-white rounded-full text-sm font-bold tracking-wide hover:shadow-lg transition-shadow">
+                            <button className="w-full py-3 bg-linear-to-r from-[#A855F7] to-[#D946EF] text-white rounded-full text-sm font-bold tracking-wide hover:shadow-lg transition-shadow">
                                 Go Pro
                             </button>
                         </div>

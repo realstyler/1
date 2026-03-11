@@ -21,8 +21,11 @@ export type ProjectDTO = {
     projectId: string;
     originalPath: string;
     orderIndex: number;
+    width?: number | null;
+    height?: number | null;
     createdAt: Date;
-    originalUrl?: string; 
+    originalUrl?: string | null; 
+    originalHighResUrl?: string | null;
     styledImages: {
       id: string;
       originalImageId: string;
@@ -30,8 +33,11 @@ export type ProjectDTO = {
       lighting: Lighting | null;
       creativity: Creativity | null;
       aesthetic: Aesthetic | null;
+      width?: number | null;
+      height?: number | null;
       createdAt: Date;
       restyledUrl?: string | null;
+      restyledHighResUrl?: string | null;
     }[];
   }[];
 };
