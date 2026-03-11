@@ -1,9 +1,9 @@
-import { ForbiddenError, NotFoundError } from "../errors/apiErrors.js";
+import { ForbiddenError, NotFoundError, BadRequestError } from "../errors/apiErrors.js";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { imageUploadService } from "../upload/image-upload.service.js";
 import type { UserDTO } from "../user/user.dto.js";
-import type { CreateProjectDTO, ProjectDTO } from "./projects.dto.js";
+import type { CreateProjectDTO } from "./projects.dto.js";
 import { CreateProjectSchema } from "./projects.schema.js";
 import { zodParseOrThrow } from "shared";
 
@@ -18,8 +18,10 @@ class ProjectsService {
       await Promise.all(
         images.flatMap((img) => {
           const checks = [imageUploadService.existImageOrThrow(img.originalPath)];
-          if (img.restyledPath) {
-            checks.push(imageUploadService.existImageOrThrow(img.restyledPath));
+          if (img.styledImages && img.styledImages.length > 0) {
+            img.styledImages.forEach(styled => {
+              checks.push(imageUploadService.existImageOrThrow(styled.restyledPath));
+            });
           }
           return checks;
         }),
@@ -33,11 +35,18 @@ class ProjectsService {
         stylePreset: stylePreset ?? null,
         user: { connect: { id: user.id } },
         ...(images && images.length > 0 && {
-          images: {
+          originalImages: {
             create: images.map((img) => ({
               originalPath: img.originalPath,
-              restyledPath: img.restyledPath ?? null,
               orderIndex: img.orderIndex,
+              styledImages: {
+                create: img.styledImages?.map(styled => ({
+                  restyledPath: styled.restyledPath,
+                  lighting: styled.lighting,
+                  creativity: styled.creativity,
+                  aesthetic: styled.aesthetic,
+                })) || []
+              }
             })),
           },
         }),
@@ -63,12 +72,12 @@ class ProjectsService {
         take: params.limit,
         orderBy: { updatedAt: 'desc' },
         include: {
-          images: {
+          originalImages: {
             orderBy: { orderIndex: 'asc' },
             take: 1, 
           },
           _count: {
-            select: { images: true }
+            select: { originalImages: true }
           }
         }
       }),
@@ -78,13 +87,13 @@ class ProjectsService {
     const projectsWithUrls = await Promise.all(
       projects.map(async (project) => {
         let coverUrl = null;
-        const firstImage = project.images[0];
+        const firstImage = project.originalImages[0];
         
         if (firstImage) {
           coverUrl = await imageUploadService.createSignedUrl(firstImage.originalPath);
         }
 
-        const status = project._count.images > 0 ? "Completed" : "Draft";
+        const status = project._count.originalImages > 0 ? "Completed" : "Draft";
 
         return {
           id: project.id,
@@ -93,7 +102,7 @@ class ProjectsService {
           status,
           updatedAt: project.updatedAt,
           coverUrl,
-          imagesCount: project._count.images,
+          imagesCount: project._count.originalImages,
         };
       })
     );
@@ -116,16 +125,20 @@ class ProjectsService {
     const project = await prisma.project.findUnique({
       where: { id, userId: user.id },
       include: {
-        images: true,
+        originalImages: {
+          include: {
+            styledImages: true
+          }
+        },
       },
     });
 
     if (!project) throw new NotFoundError("Project not found");
 
-    const projectDto: ProjectDTO = project;
+    let projectDto: any = project; 
 
-    if (options.loadSignedImages && projectDto.images.length > 0) {
-      projectDto.images = await this.loadSignedUrls(projectDto);
+    if (options.loadSignedImages && projectDto.originalImages.length > 0) {
+      projectDto.originalImages = await this.loadSignedUrls(projectDto);
     }
 
     return projectDto;
@@ -138,19 +151,23 @@ class ProjectsService {
         userId: user.id,
       },
       include: {
-        images: true,
+        originalImages: {
+          include: {
+            styledImages: true
+          }
+        },
       },
     });
 
     if (!project) throw new NotFoundError("Project not found");
 
-    const originalPaths = project.images.map((img) => img.originalPath);
-    const restyledPaths = project.images
-      .map((img) => img.restyledPath)
-      .filter((path): path is string => path !== null);
+    const originalPaths = project.originalImages.map((img) => img.originalPath);
+    const restyledPaths = project.originalImages.flatMap((img) => 
+      img.styledImages.map(styled => styled.restyledPath)
+    );
 
     await Promise.all([
-      imageUploadService.deleteImages(originalPaths),
+      ...(originalPaths.length > 0 ? [imageUploadService.deleteImages(originalPaths)] : []),
       ...(restyledPaths.length > 0 ? [imageUploadService.deleteImages(restyledPaths)] : []),
     ]);
 
@@ -177,7 +194,11 @@ class ProjectsService {
     const project = await prisma.project.findUnique({
       where: { shareId },
       include: {
-        images: true,
+        originalImages: {
+          include: {
+            styledImages: true
+          }
+        },
       },
     });
 
@@ -185,53 +206,102 @@ class ProjectsService {
     return project;
   }
 
-  async addImages(user: UserDTO, projectId: string, imagePairs: { tmp: string; gen: string }[]) {
+  async addImages(user: UserDTO, projectId: string, imagesData: any[]) {
     const project = await prisma.project.findUnique({
       where: { id: projectId, userId: user.id },
-      include: { images: true },
+      include: { originalImages: true },
     });
 
     if (!project) throw new NotFoundError("Project not found");
 
-    const startingOrderIndex = project.images.length;
-    const projectImagesData = [];
+    const startingOrderIndex = project.originalImages.length;
+    const projectImagesCreateData = [];
 
-    for (let i = 0; i < imagePairs.length; i++) {
-      const { tmp, gen } = imagePairs[i]!;
+    for (let i = 0; i < imagesData.length; i++) {
+      const imgData = imagesData[i];
       
-      await imageUploadService.existImageOrThrow(tmp);
-      await imageUploadService.existImageOrThrow(gen);
+      await imageUploadService.existImageOrThrow(imgData.originalPath);
+      const originalPath = await imageUploadService.moveImageToProject(imgData.originalPath, projectId);
 
-      const originalPath = await imageUploadService.moveImageToProject(tmp, projectId);
-      const restyledPath = await imageUploadService.moveImageToProject(gen, projectId);
+      const styledImagesCreate = [];
+      if (imgData.styledImages && imgData.styledImages.length > 0) {
+        for (const styled of imgData.styledImages) {
+          await imageUploadService.existImageOrThrow(styled.restyledPath);
+          const restyledPath = await imageUploadService.moveImageToProject(styled.restyledPath, projectId);
+          styledImagesCreate.push({
+            restyledPath,
+            lighting: styled.lighting,
+            creativity: styled.creativity,
+            aesthetic: styled.aesthetic,
+          });
+        }
+      }
 
-      projectImagesData.push({
+      projectImagesCreateData.push({
         originalPath,
-        restyledPath,
         orderIndex: startingOrderIndex + i,
+        styledImages: {
+          create: styledImagesCreate
+        }
       });
     }
 
     const updatedProject = await prisma.project.update({
       where: { id: projectId },
       data: {
-        images: {
-          create: projectImagesData,
+        originalImages: {
+          create: projectImagesCreateData,
         },
       },
-      include: { images: true },
+      include: { 
+        originalImages: {
+          include: { styledImages: true }
+        } 
+      },
     });
 
-    return this.loadSignedUrls(updatedProject as unknown as ProjectDTO);
+    return this.loadSignedUrls(updatedProject as any);
   }
 
-  private async loadSignedUrls(project: ProjectDTO) {
-    if (!project.images || project.images.length === 0) return [];
+  async addStyledImages(user: UserDTO, projectId: string, styledImages: any[]) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId, userId: user.id },
+      include: { originalImages: true },
+    });
 
-    const originalPaths = project.images.map((i) => i.originalPath);
-    const restyledPathsToSign = project.images
-      .map((i) => i.restyledPath)
-      .filter((path): path is string => path !== null);
+    if (!project) throw new NotFoundError("Project not found");
+
+    const originalImageIds = project.originalImages.map(img => img.id);
+
+    for (const img of styledImages) {
+      if (!originalImageIds.includes(img.originalId)) {
+        throw new BadRequestError(`Original image ${img.originalId} does not belong to this project`);
+      }
+      
+      await imageUploadService.existImageOrThrow(img.restyledPath);
+      const finalRestyledPath = await imageUploadService.moveImageToProject(img.restyledPath, projectId);
+
+      await prisma.styledProjectImage.create({
+        data: {
+          originalImageId: img.originalId,
+          restyledPath: finalRestyledPath,
+          lighting: img.lighting || "NATURAL",
+          creativity: img.creativity || "BALANCED",
+          aesthetic: img.aesthetic || "MODERN",
+        }
+      });
+    }
+
+    return this.getById(user, projectId, { loadSignedImages: true });
+  }
+
+  private async loadSignedUrls(project: any) {
+    if (!project.originalImages || project.originalImages.length === 0) return [];
+
+    const originalPaths = project.originalImages.map((i: any) => i.originalPath);
+    const restyledPathsToSign = project.originalImages.flatMap((i: any) => 
+      i.styledImages.map((styled: any) => styled.restyledPath)
+    );
 
     const [originalUrls, signedRestyledUrls] = await Promise.all([
       imageUploadService.createSignedUrls(originalPaths),
@@ -242,18 +312,20 @@ class ProjectsService {
 
     let restyledUrlIndex = 0;
 
-    return project.images.map((img, i) => {
-      let currentRestyledUrl: string | null = null;
-      
-      if (img.restyledPath !== null) {
-        currentRestyledUrl = signedRestyledUrls[restyledUrlIndex] || null;
+    return project.originalImages.map((img: any, i: number) => {
+      const processedStyledImages = img.styledImages.map((styledImg: any) => {
+        const signedUrl = signedRestyledUrls[restyledUrlIndex] || null;
         restyledUrlIndex++;
-      }
+        return {
+          ...styledImg,
+          restyledUrl: signedUrl
+        };
+      });
 
       return {
         ...img,
         originalUrl: originalUrls[i],
-        restyledUrl: currentRestyledUrl,
+        styledImages: processedStyledImages,
       };
     });
   }

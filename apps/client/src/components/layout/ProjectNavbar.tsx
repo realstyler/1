@@ -15,9 +15,12 @@ export default function ProjectNavbar() {
   
   const isUploadPage = pathname?.includes('/upload');
   const isMainProjectsPage = pathname === '/projects' || pathname === '/projects/';
+  const isLibraryPage = pathname?.includes('/library');
   const isDetailsPage = !isUploadPage && !isMainProjectsPage;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'photos' | 'collections'>('photos');
+  
   const { mutate: createProject } = useCreateProject();
   const { show } = useErrorToastStore();
 
@@ -37,7 +40,6 @@ export default function ProjectNavbar() {
           const err = error as AxiosError<{ message: string }>;
           const errorMessage = err.response?.data?.message || err.message || "Something went wrong";
           show(errorMessage);
-          console.error("Failed to create project:", error);
         }
       }
     );
@@ -52,16 +54,44 @@ export default function ProjectNavbar() {
       />
 
       <header className="h-[80px] w-full bg-white flex items-center justify-between px-3 md:px-6 border-b border-gray-100 shrink-0 z-50 relative">
-        <Link href="/" className="font-luxury-serif text-[22px] font-bold tracking-tight text-[#1a1a1a]">
-          RealStyler
-        </Link>
+        <div className="flex items-center gap-8 md:gap-10">
+          <Link href="/" className="font-luxury-serif text-[22px] font-bold tracking-tight text-[#1a1a1a]">
+            RealStyler
+          </Link>
+          
+          {isLibraryPage && (
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setActiveTab('photos')}
+                className={`px-4 py-1 text-[14px] font-medium rounded-full transition-all duration-200 border-[2px] ${
+                  activeTab === 'photos' 
+                    ? 'border-[#ebebeb] text-[#1a1a1a]' 
+                    : 'border-transparent text-[#7a7a7a] hover:text-[#1a1a1a]'
+                }`}
+              >
+                Photos
+              </button>
+              <button 
+                onClick={() => setActiveTab('collections')}
+                className={`px-4 py-1 text-[14px] font-medium rounded-full transition-all duration-200 border-[2px] ${
+                  activeTab === 'collections' 
+                    ? 'border-[#ebebeb] text-[#1a1a1a]' 
+                    : 'border-transparent text-[#7a7a7a] hover:text-[#1a1a1a]'
+                }`}
+              >
+                Collections
+              </button>
+            </div>
+          )}
+        </div>
         
         <div className="flex items-center gap-5">
-
           {isDetailsPage && (
-            <div className="flex items-center gap-2 px-3 md:px-6 py-1.5 border border-gray-200 rounded-full bg-white shadow-sm">
-              <div className="w-2 h-2 rounded-full bg-[#d68a73]"></div>
-              <span className="text-[12px] font-semibold text-[#5a5a5a]">34 Credits Remaining</span>
+            <div className="flex items-center gap-2 px-2 md:px-4 py-1.5 border border-gray-200 rounded-full bg-white shadow-sm">
+              <div className={`w-2 h-2 rounded-full ${isLibraryPage ? 'bg-[#0fba81]' : 'bg-[#d68a73]'}`}></div>
+              <span className="text-[12px] font-medium text-[#5a5a5a]">
+                {isLibraryPage ? 'System Ready' : '34 Credits Remaining'}
+              </span>
             </div>
           )}
 
@@ -90,7 +120,6 @@ export default function ProjectNavbar() {
               <span className="text-[14px] font-medium tracking-wide">New Project</span>
             </button>
           )}
-
         </div>
       </header>
     </>

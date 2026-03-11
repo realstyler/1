@@ -52,4 +52,11 @@ projectsRouter.post(
   projectsController.addImages,
 );
 
+projectsRouter.post(
+  "/projects/:id/styled-images",
+  requireAuth,
+  sessionUser,
+  projectsController.addStyledImages,
+);
+
 export default projectsRouter;

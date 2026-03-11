@@ -13,6 +13,7 @@ import initRedisStore from "./lib/redis.js";
 import { promptCacheService } from "./prompts/prompts.service.js";
 import promptsRouter from "./prompts/prompts.router.js";
 import projectsRouter from "./projects/projects.router.js";
+import collectionsRouter from "./collections/collections.router.js";
 import quotaRouter from "./quota/quota.router.js";
 
 (async () => {
@@ -56,6 +57,7 @@ import quotaRouter from "./quota/quota.router.js";
   app.use("/api", urlScraperRouter);
   app.use("/api", aiGenerationRouter);
   app.use("/api", projectsRouter);
+  app.use("/api", collectionsRouter);
   app.use("/api", billingRouter);
   app.use("/api", quotaRouter);
   app.use("/api", promptsRouter);

@@ -114,7 +114,7 @@ export default function ProjectsPage() {
               <div className="relative aspect-[1.38/1] mb-5 overflow-hidden rounded-[12px] bg-gray-100 shadow-sm border border-gray-50 flex items-center justify-center">
                 
                 {project.coverUrl ? (
-                  <img 
+                  <img
                     src={project.coverUrl} 
                     alt={project.name}
                     className="object-cover w-full h-full transition-transform duration-1000 ease-[cubic-bezier(0.2,1,0.3,1)] group-hover:scale-105"
