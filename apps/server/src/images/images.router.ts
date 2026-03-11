@@ -1,22 +1,22 @@
 import { Router, type Router as ExpressRouter } from "express";
-import { imageUploadController } from "./images.controller.js";
+import { imagesController } from "./images.controller.js";
 import { uploadImagesMulter } from "../middlewares/multerMiddleware.js";
 
-const imageUploadRouter: ExpressRouter = Router();
+const imagesRouter: ExpressRouter = Router();
 
-imageUploadRouter.post(
+imagesRouter.post(
   "/upload",
   uploadImagesMulter.array("images"),
-  imageUploadController.uploadImages,
+  imagesController.uploadImages,
 );
 
-imageUploadRouter.post(
+imagesRouter.post(
   "/upload-by-urls",
-  imageUploadController.uploadImagesByUrls,
+  imagesController.uploadImagesByUrls,
 );
 
-imageUploadRouter.get("/signed", imageUploadController.getSignedImageUrls)
-imageUploadRouter.get("/download", imageUploadController.downloadImages)
-imageUploadRouter.delete("/uploaded-tmp", imageUploadController.deleteUploadedTmpImage)
+imagesRouter.get("/signed", imagesController.getSignedImageUrls)
+imagesRouter.get("/download", imagesController.downloadImages)
+imagesRouter.delete("/uploaded-tmp", imagesController.deleteUploadedTmpImage)
 
-export default imageUploadRouter;
+export default imagesRouter;

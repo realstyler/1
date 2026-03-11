@@ -1,6 +1,6 @@
 "use client";
 
-import { useDownloadImage } from "@/upload/images.hooks";
+import { useDownloadImage } from "@/images/images.hooks";
 
 interface DownloadButtonProps {
   imageUrl: string;

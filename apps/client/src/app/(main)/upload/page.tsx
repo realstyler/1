@@ -8,8 +8,8 @@ import { sampleRoomImage } from "@/data/mock";
 import {
   useDeleteUploadedImages,
   useUploadImages,
-} from "@/upload/images.hooks";
-import { createImageSignedUrlsApi } from "@/upload/images.api";
+} from "@/images/images.hooks";
+import { createImageSignedUrlsApi } from "@/images/images.api";
 import { StoredPath, UploadedFile, UploadingStatus, UploadResponse } from "@/types";
 
 const MAX_FILES = 5;

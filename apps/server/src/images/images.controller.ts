@@ -1,15 +1,15 @@
 import type { Request, Response } from "express";
-import { imageUploadService } from "./images.service.js";
+import { imagesService } from "./images.service.js";
 import { BadRequestError } from "../errors/apiErrors.js";
 
-class ImageUploadController {
+class ImagesController {
   uploadImages = async (req: Request, res: Response) => {
     const files = req.files as Express.Multer.File[];
     const tmpIds = req.body.tmpIds;
 
     const normalizedTmpIds = Array.isArray(tmpIds) ? tmpIds : [tmpIds];
 
-    const result = await imageUploadService.uploadTemporaryImages(
+    const result = await imagesService.uploadTemporaryImages(
       files,
       normalizedTmpIds,
     );
@@ -23,7 +23,7 @@ class ImageUploadController {
       throw new BadRequestError("Urls array is required");
     }
 
-    const result = await imageUploadService.uploadImagesByUrls(urls);
+    const result = await imagesService.uploadImagesByUrls(urls);
 
     res.json(result);
   };
@@ -36,7 +36,7 @@ class ImageUploadController {
 
     const normalized = raw.split(",");
 
-    const result = await imageUploadService.createSignedUrls(normalized);
+    const result = await imagesService.createSignedUrls(normalized);
     res.json(result);
   };
 
@@ -50,7 +50,7 @@ class ImageUploadController {
         throw new BadRequestError(`The image should be temporary: ${p}`);
     });
 
-    await imageUploadService.deleteImages(paths);
+    await imagesService.deleteImages(paths);
     res.status(204).end();
   };
 
@@ -61,7 +61,7 @@ class ImageUploadController {
       throw new BadRequestError("Image path is required");
     }
 
-    const blob = await imageUploadService.downloadImage(path);
+    const blob = await imagesService.downloadImage(path);
     const arrayBuffer = await blob.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
@@ -73,4 +73,4 @@ class ImageUploadController {
   }
 }
 
-export const imageUploadController = new ImageUploadController();
+export const imagesController = new ImagesController();

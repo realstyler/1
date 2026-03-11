@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { StoredPath } from "@/types";
 import ScrapedImages from "@/components/main/ScrapedImages";
 import useScrapeUrl from "@/hooks/useScrapeImages";
-import { useUploadImages } from "@/upload/images.hooks";
+import { useUploadImages } from "@/images/images.hooks";
 import { useErrorToastStore } from "@/stores/useErrorToastStore";
 import HeroUploadCard from "@/components/landing/HeroUploadCard";
 
