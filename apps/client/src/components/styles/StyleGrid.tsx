@@ -14,9 +14,9 @@ export default function StyleGrid({ styles, selectedStyle, onSelectStyle }: Styl
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {styles.map((style) => (
                 <StyleCard
-                    key={style.id}
+                    key={style.preset}
                     style={style}
-                    isSelected={selectedStyle?.id === style.id}
+                    isSelected={selectedStyle?.preset === style.preset}
                     onSelect={onSelectStyle}
                 />
             ))}

@@ -28,7 +28,6 @@ class URLScraperService {
     // og:image
     if (ogImage) images.push(ogImage);
 
-    // всі img теги
     $("img").each((_, el) => {
       const src = $(el).attr("src") || $(el).attr("data-src");
 
@@ -37,7 +36,6 @@ class URLScraperService {
       }
     });
 
-    // прибрати дублікати
     const unique = [...new Set(images)];
 
     if (unique.length === 0) {

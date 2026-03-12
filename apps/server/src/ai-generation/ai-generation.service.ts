@@ -6,7 +6,7 @@ import { openaiProvider } from "../ai-providers/openaiProvider.js";
 import { stableDiffusionProvider } from "../ai-providers/stableDiffusionProvider.js";
 import { jobService } from "../job-pooling/job.service.js";
 import type { StylePreset } from "@prisma/client";
-import { promptCacheService } from "../prompts/prompts.service.js";
+import { stylesService } from "../styles/styles.service.js";
 import { quotaService } from "../quota/quota.service.js";
 import { BadRequestError } from "../errors/apiErrors.js";
 import { RestyleSchema, zodParseOrThrow, type Model } from "shared";
@@ -86,7 +86,7 @@ class AIGenerationService {
     const base64Image = buffer.toString("base64");
     const mime = blob.type || "application/octet-stream";
 
-    const prompt = promptCacheService.get(style);
+    const prompt = stylesService.getPrompt(style);
 
     const generatedBuffer = await this.generateImage(model, {
       base64Image,

@@ -309,9 +309,8 @@ class ImagesService {
     }
   }
 
-  private getPublicUrl(filePath: string): string {
+  public getPublicUrl(filePath: string): string {
     const { data } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(filePath);
-
     return data.publicUrl;
   }
 }

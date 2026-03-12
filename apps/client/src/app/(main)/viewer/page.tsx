@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { BeforeAfterSlider, DownloadButton } from "@/components/viewer";
 import { Style, AddProjectImageInput } from "@/types";
 import { useGetJobsResultsApi } from "@/restyle/restyle.hooks";
@@ -134,7 +135,7 @@ export default function ViewerPage() {
           <h1 className="text-4xl font-bold mb-4">Your New Space</h1>
           <p className="text-black/60 max-w-xl mx-auto">
             {selectedStyle
-              ? `Here's your room transformed with the ${selectedStyle.name} style.`
+              ? `Here's your room transformed with the ${selectedStyle.displayName} style.`
               : "Drag the slider to compare before and after."}
           </p>
         </div>
@@ -211,30 +212,40 @@ export default function ViewerPage() {
         {selectedStyle && (
           <div className="max-w-md mx-auto p-6 rounded-2xl bg-black/5 border border-black/10">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-linear-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-violet-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              <div className="w-16 h-16 rounded-xl bg-zinc-100 flex items-center justify-center relative overflow-hidden shrink-0">
+                {selectedStyle.imageUrl ? (
+                  <Image 
+                    src={selectedStyle.imageUrl} 
+                    alt={selectedStyle.displayName} 
+                    fill
+                    className="object-cover"
+                    unoptimized
                   />
-                </svg>
+                ) : (
+                  <svg
+                    className="w-8 h-8 text-violet-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                )}
               </div>
               <div>
                 <h3 className="font-semibold text-black">
-                  {selectedStyle.name}
+                  {selectedStyle.displayName}
                 </h3>
                 <p className="text-black/60 text-sm">
                   {selectedStyle.description}
                 </p>
                 <span className="inline-block mt-2 px-2 py-1 text-xs font-medium text-black/80 bg-black/10 rounded-full">
-                  {selectedStyle.category}
+                  {selectedStyle.preset}
                 </span>
               </div>
             </div>
