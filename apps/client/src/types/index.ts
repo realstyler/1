@@ -1,11 +1,11 @@
 import { StylePreset } from "shared";
 
 export interface Style {
-  id: string;
-  name: string;
+  preset: StylePreset;
+  displayName: string;
   description: string;
-  thumbnail: string;
-  category: StylePreset;
+  colorPalette: string | null;
+  imageUrl: string | null;
 }
 
 export type UploadedImageApi = {

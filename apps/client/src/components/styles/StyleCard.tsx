@@ -19,13 +19,15 @@ export default function StyleCard({ style, isSelected, onSelect }: StyleCardProp
                 }`}
         >
             {/* Image */}
-            <Image
-                src={style.thumbnail}
-                alt={style.name}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-                unoptimized
-            />
+            {style.imageUrl && (
+                <Image
+                    src={style.imageUrl}
+                    alt={style.displayName}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    unoptimized
+                />
+            )}
 
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
@@ -41,12 +43,12 @@ export default function StyleCard({ style, isSelected, onSelect }: StyleCardProp
 
             {/* Content */}
             <div className="absolute bottom-0 left-0 right-0 p-6 text-left">
-                <h3 className="text-white font-medium text-lg mb-1">{style.name}</h3>
+                <h3 className="text-white font-medium text-lg mb-1">{style.displayName}</h3>
                 <p className="text-white/80 text-sm line-clamp-2 font-light">{style.description}</p>
 
                 {/* Category badge */}
                 <span className="inline-block mt-3 px-2.5 py-1 text-[10px] uppercase tracking-wider font-semibold text-white/90 bg-white/20 backdrop-blur-md rounded-full border border-white/10">
-                    {style.category}
+                    {style.preset}
                 </span>
             </div>
         </button>

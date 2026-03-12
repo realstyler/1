@@ -10,8 +10,8 @@ import imagesRouter from "./images/images.router.js";
 import aiGenerationRouter from "./ai-generation/ai-generation.router.js";
 import authRouter from "./auth/auth.router.js";
 import initRedisStore from "./lib/redis.js";
-import { promptCacheService } from "./prompts/prompts.service.js";
-import promptsRouter from "./prompts/prompts.router.js";
+import { stylesService } from "./styles/styles.service.js";
+import promptsRouter from "./styles/styles.router.js";
 import projectsRouter from "./projects/projects.router.js";
 import collectionsRouter from "./collections/collections.router.js";
 import quotaRouter from "./quota/quota.router.js";
@@ -20,7 +20,7 @@ import quotaRouter from "./quota/quota.router.js";
   const PORT = environment.PORT;
   const app = express();
   const store = await initRedisStore(); // connect Redis or fallback
-  await promptCacheService.load(); // load and save prompts
+  await stylesService.loadPrompts(); // load and save prompts
 
   app.use("/webhooks", webhooksRouter);
 

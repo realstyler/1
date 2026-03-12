@@ -12,7 +12,7 @@ import {
   Check, 
   Sparkles 
 } from 'lucide-react';
-import { mockStyles } from '@/data/mock';
+import { useGetStyles } from '@/styles/styles.hooks';
 
 interface Props {
   selectedCount: number;
@@ -20,35 +20,25 @@ interface Props {
   isRestyling: boolean;
 }
 
-const AESTHETICS_MAPPING = [
-  { id: 'Modern', preset: 'MID_CENTURY_MODERN' },
-  { id: 'Coastal', preset: 'MODERN_COASTAL' },
-  { id: 'Minimal', preset: 'MINIMAL_LUXE' },
-  { id: 'Japandi', preset: 'JAPANDI' },
-  { id: 'Industrial', preset: 'URBAN_INDUSTRIAL' },
-  { id: 'Classic', preset: 'HAMPTONS_CLASSIC' },
-  { id: 'Scandi', preset: 'SCANDINAVIAN' },
-  { id: 'Boho', preset: 'BOHO' }, 
-  { id: 'Rustic', preset: 'RUSTIC' } 
-];
-
 export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }: Props) {
   const [activeTab, setActiveTab] = useState<'Presets' | 'Custom Prompt'>('Presets');
   const [intent, setIntent] = useState<'Enhance' | 'Restyle' | 'Remodel'>('Restyle');
   const [lighting, setLighting] = useState<'Natural' | 'Warm' | 'Ambient'>('Natural');
   const [creativity, setCreativity] = useState<'Subtle' | 'Balanced' | 'Bold'>('Balanced');
-  const [selectedAesthetic, setSelectedAesthetic] = useState<string>('Minimal');
+  const [selectedAesthetic, setSelectedAesthetic] = useState<string>('MINIMAL_LUXE');
   const [customPrompt, setCustomPrompt] = useState<string>('');
 
+  const { data: styles = [], isLoading } = useGetStyles();
+
   const handleRestyleClick = () => {
-    const selectedMapping = AESTHETICS_MAPPING.find(a => a.id === selectedAesthetic);
+    const selectedStyle = styles.find(s => s.preset === selectedAesthetic);
     
     onRestyle({
       intent,
       lighting,
       creativity,
-      aestheticLabel: selectedAesthetic,
-      aestheticPreset: selectedMapping?.preset || 'MINIMAL_LUXE',
+      aestheticLabel: selectedStyle?.displayName || 'Minimal Luxe',
+      aestheticPreset: selectedAesthetic,
       customPrompt: activeTab === 'Custom Prompt' ? customPrompt : null,
     });
   };
@@ -167,42 +157,50 @@ export default function SidebarOptions({ selectedCount, onRestyle, isRestyling }
               {/* Aesthetic Section */}
               <div>
                 <label className="text-[12px] font-bold uppercase tracking-[0.15em] text-[#a1a5ad] block mb-3">Aesthetic</label>
-                <div className="grid grid-cols-3 gap-4">
-                  {AESTHETICS_MAPPING.map((styleObj, index) => {
-                    const isSelected = selectedAesthetic === styleObj.id;
-                    const mockImg = mockStyles[index % mockStyles.length].thumbnail;
+                
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-10">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#8ea28d]"></div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-4">
+                    {styles.map((style) => {
+                      const isSelected = selectedAesthetic === style.preset;
 
-                    return (
-                      <div 
-                        key={styleObj.id} 
-                        onClick={() => setSelectedAesthetic(styleObj.id)}
-                        className="flex flex-col items-center cursor-pointer group"
-                      >
-                        <div className={`relative w-full aspect-2/3 rounded-xl overflow-hidden mb-1.5 border-2 transition-all bg-gray-100 ${
-                          isSelected ? 'border-[#8ea28d] shadow-sm' : 'border-transparent group-hover:border-gray-200'
-                        }`}>
-                          <Image 
-                            src={mockImg} 
-                            alt={styleObj.id} 
-                            width={200}
-                            height={300}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                          />
-                          {isSelected && (
-                            <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-[#8ea28d] rounded-full flex items-center justify-center shadow-sm">
-                              <Check size={12} strokeWidth={4} color="white" />
-                            </div>
-                          )}
+                      return (
+                        <div 
+                          key={style.preset} 
+                          onClick={() => setSelectedAesthetic(style.preset)}
+                          className="flex flex-col items-center cursor-pointer group"
+                        >
+                          <div className={`relative w-full aspect-2/3 rounded-xl overflow-hidden mb-1.5 border-2 transition-all bg-gray-100 ${
+                            isSelected ? 'border-[#8ea28d] shadow-sm' : 'border-transparent group-hover:border-gray-200'
+                          }`}>
+                            {style.imageUrl && (
+                              <Image 
+                                src={style.imageUrl} 
+                                alt={style.displayName} 
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                unoptimized
+                              />
+                            )}
+                            {isSelected && (
+                              <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-[#8ea28d] rounded-full flex items-center justify-center shadow-sm z-10">
+                                <Check size={12} strokeWidth={4} color="white" />
+                              </div>
+                            )}
+                          </div>
+                          <span className={`text-[11px] text-center leading-tight font-bold transition-colors ${
+                            isSelected ? 'text-[#8ea28d]' : 'text-[#5a5f66]'
+                          }`}>
+                            {style.displayName}
+                          </span>
                         </div>
-                        <span className={`text-[11px] font-bold transition-colors ${
-                          isSelected ? 'text-[#8ea28d]' : 'text-[#5a5f66]'
-                        }`}>
-                          {styleObj.id}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </>
           ) : (

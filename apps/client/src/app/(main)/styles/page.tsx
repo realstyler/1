@@ -6,11 +6,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { StyleGrid } from "@/components/styles";
 import ModelSelector from "@/components/styles/ModelSelector";
-import { mockStyles } from "@/data/mock";
 import { Style, StoredPath } from "@/types";
 import { createImageSignedUrlsApi } from "@/images/images.api";
 import { Model, RestyleInput } from "shared";
 import { useStartRestyle } from "@/restyle/restyle.hooks";
+import { useGetStyles } from "@/styles/styles.hooks";
 
 export default function StylesPage() {
   const router = useRouter();
@@ -18,7 +18,9 @@ export default function StylesPage() {
   const [selectedModel, setSelectedModel] = useState<Model>("openai");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [restyleError, setRestyleError] = useState<string | null>(null);
+
   const { mutate: startRestyle, error } = useStartRestyle();
+  const { data: fetchedStyles, isLoading } = useGetStyles();
 
   const handleSelectStyle = (style: Style) => {
     setSelectedStyle(style);
@@ -42,7 +44,7 @@ export default function StylesPage() {
         if (stored) {
           const input: RestyleInput = {
             model: selectedModel,
-            style: selectedStyle.category,
+            style: selectedStyle.preset,
             paths: stored.map((s) => s.path),
           };
 
@@ -118,11 +120,17 @@ export default function StylesPage() {
 
         {/* Style Grid */}
         <div className="mb-16">
-          <StyleGrid
-            styles={mockStyles}
-            selectedStyle={selectedStyle}
-            onSelectStyle={handleSelectStyle}
-          />
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900"></div>
+            </div>
+          ) : (
+            <StyleGrid
+              styles={fetchedStyles || []}
+              selectedStyle={selectedStyle}
+              onSelectStyle={handleSelectStyle}
+            />
+          )}
         </div>
 
         <div className="my-4 flex h-12">
@@ -161,7 +169,7 @@ export default function StylesPage() {
               Selected style
             </p>
             <h3 className="text-xl font-serif font-medium text-zinc-900">
-              {selectedStyle.name}
+              {selectedStyle.displayName}
             </h3>
             <p className="text-zinc-500 text-sm mt-1">
               {selectedStyle.description}
