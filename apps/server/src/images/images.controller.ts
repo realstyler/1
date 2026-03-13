@@ -16,6 +16,17 @@ class ImagesController {
     res.json(result);
   };
 
+  uploadAvatar = async (req: Request, res: Response) => {
+    const file = req.file as Express.Multer.File;
+    
+    if (!file) {
+      throw new BadRequestError("Avatar file is required");
+    }
+
+    const result = await imagesService.uploadAvatarImage(file);
+    res.json(result);
+  };
+
   uploadImagesByUrls = async (req: Request, res: Response) => {
     const urls = req.body.urls as string[];
 

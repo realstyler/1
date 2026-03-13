@@ -15,6 +15,12 @@ imagesRouter.post(
   imagesController.uploadImagesByUrls,
 );
 
+imagesRouter.post(
+  "/upload-avatar", 
+  uploadImagesMulter.single("file"), 
+  imagesController.uploadAvatar
+);
+
 imagesRouter.get("/signed", imagesController.getSignedImageUrls)
 imagesRouter.get("/download", imagesController.downloadImages)
 imagesRouter.delete("/uploaded-tmp", imagesController.deleteUploadedTmpImage)

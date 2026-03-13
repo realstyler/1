@@ -2,7 +2,7 @@ import { ForbiddenError, NotFoundError, BadRequestError } from "../errors/apiErr
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma/index.js";
 import { imagesService } from "../images/images.service.js";
-import type { UserDTO } from "../user/user.dto.js";
+import type { UserDTO } from "../users/users.dto.js";
 import type { CreateProjectDTO } from "./projects.dto.js";
 import { CreateProjectSchema } from "./projects.schema.js";
 import { zodParseOrThrow } from "shared";
