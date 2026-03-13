@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { aiGenerationService } from "./ai-generation.service.js";
 import { jobService } from "../job-pooling/job.service.js";
-import type { UserDTO } from "../user/user.dto.js";
+import type { UserDTO } from "../users/users.dto.js";
 import { BadRequestError } from "../errors/apiErrors.js";
 import { imagesService } from "../images/images.service.js";
 import type { RequestIdentity } from "../types/index.js";

@@ -128,6 +128,34 @@ class ImagesService {
     return results;
   }
 
+  async uploadAvatarImage(file: Express.Multer.File): Promise<{ url: string; path: string }> {
+    if (!file) throw new BadRequestError("No file provided");
+    if (!file.mimetype.startsWith("image/")) {
+      throw new BadRequestError(`Invalid file type: ${file.mimetype}. Only images are allowed`);
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      throw new BadRequestError("File exceeds maximum size");
+    }
+
+    const id = uuidv4();
+    const ext = file.mimetype.split("/")[1];
+    const path = `avatars/${id}.${ext}`;
+
+    const optimizedBuffer = await sharp(file.buffer)
+      .resize({ width: 400, height: 400, fit: "cover" })
+      .toBuffer();
+
+    await this.uploadBuffer({
+      buffer: optimizedBuffer,
+      mimeType: file.mimetype,
+      path,
+    });
+
+    const url = this.getPublicUrl(path);
+
+    return { url, path };
+  }
+
   async uploadGeneratedImage(params: {
     buffer: Buffer;
     mimeType: string;

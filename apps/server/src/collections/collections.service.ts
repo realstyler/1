@@ -1,7 +1,7 @@
 import { ForbiddenError, NotFoundError, BadRequestError } from "../errors/apiErrors.js";
 import { prisma } from "../lib/prisma/index.js";
 import { imagesService } from "../images/images.service.js";
-import type { UserDTO } from "../user/user.dto.js";
+import type { UserDTO } from "../users/users.dto.js";
 import type { 
   CreateCollectionDTO, 
   CollectionDTO, 

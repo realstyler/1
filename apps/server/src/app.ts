@@ -14,6 +14,7 @@ import { stylesService } from "./styles/styles.service.js";
 import promptsRouter from "./styles/styles.router.js";
 import projectsRouter from "./projects/projects.router.js";
 import collectionsRouter from "./collections/collections.router.js";
+import usersRouter from "./users/users.router.js";
 import quotaRouter from "./quota/quota.router.js";
 
 (async () => {
@@ -61,6 +62,7 @@ import quotaRouter from "./quota/quota.router.js";
   app.use("/api", billingRouter);
   app.use("/api", quotaRouter);
   app.use("/api", promptsRouter);
+  app.use("/api", usersRouter);
 
   app.use(errorMiddleware);
 

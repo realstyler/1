@@ -4,15 +4,17 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Plus } from 'lucide-react';
+import { Bell, Plus, User } from 'lucide-react';
 import { AxiosError } from 'axios';
 import CreateProjectModal from '@/components/projects/CreateProjectModal';
 import { useCreateProject } from '@/projects/projects.hooks';
 import { useErrorToastStore } from "@/stores/useErrorToastStore";
+import { useAuthStore } from "@/auth/auth.store";
 
 export default function ProjectNavbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   
   const isUploadPage = pathname?.includes('/upload');
   const isMainProjectsPage = pathname === '/projects' || pathname === '/projects/';
@@ -91,27 +93,34 @@ export default function ProjectNavbar() {
             <div className="flex items-center gap-2 px-2 md:px-4 py-1.5 border border-gray-200 rounded-full bg-white shadow-sm">
               <div className={`w-2 h-2 rounded-full ${isLibraryPage ? 'bg-[#0fba81]' : 'bg-[#d68a73]'}`}></div>
               <span className="text-[12px] font-medium text-[#5a5a5a]">
-                {isLibraryPage ? 'System Ready' : '34 Credits Remaining'}
+                {isLibraryPage ? 'System Ready' : `${user?.creditsRemaining || 0} Credits Remaining`}
               </span>
             </div>
           )}
 
           {!isUploadPage && (
               <button className="text-gray-400 hover:text-black transition-colors">
-              <Bell size={22} strokeWidth={2} />
+                <Bell size={22} strokeWidth={2} />
               </button>
           )}
           
-          <button className="w-9 h-9 rounded-full overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
-            <Image 
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
-              alt="User avatar" 
-              width={36}
-              height={36}
-              unoptimized={true}
-              className="w-full h-full object-cover bg-indigo-100"
-            />
-          </button>
+          <Link 
+            href="/dashboard"
+            className="w-9 h-9 rounded-full overflow-hidden border border-gray-200 hover:shadow-md transition-shadow flex items-center justify-center bg-black text-white"
+          >
+            {user?.avatarUrl ? (
+              <Image 
+                src={user.avatarUrl} 
+                alt="User avatar" 
+                width={36}
+                height={36}
+                unoptimized={true}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-sm font-serif">{user?.name?.charAt(0).toUpperCase() || <User size={16} />}</span>
+            )}
+          </Link>
 
           {isUploadPage && (
             <button 

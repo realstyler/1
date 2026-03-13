@@ -5,6 +5,9 @@ import { UploadedImageApi } from "@/types";
 export const uploadImagesApi = async (fd: FormData) =>
   fetcher<UploadedImageApi[]>(api.post("/api/upload", fd));
 
+export const uploadAvatarImageApi = async (fd: FormData) =>
+  fetcher<{ url: string; path: string }>(api.post("/api/upload-avatar", fd));
+
 export const uploadImagesByUrlsApi = async (urls: string[]) =>
   fetcher<UploadedImageApi[]>(
     api.post("/api/upload-by-urls", {

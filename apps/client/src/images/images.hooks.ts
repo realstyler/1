@@ -4,11 +4,18 @@ import {
   uploadImagesApi,
   uploadImagesByUrlsApi,
   downloadImageApi,
+  uploadAvatarImageApi,
 } from "./images.api";
 
 export function useUploadImages() {
   return useMutation({
     mutationFn: uploadImagesApi,
+  });
+}
+
+export function useUploadAvatarImage() {
+  return useMutation({
+    mutationFn: uploadAvatarImageApi,
   });
 }
 
