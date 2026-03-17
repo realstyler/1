@@ -48,7 +48,7 @@ export default function ProjectDropzone({ onFilesSelect, uploadedCount, maxFiles
         ref={fileInputRef} 
         hidden 
         multiple 
-        accept="image/jpeg, image/png" 
+        accept="image/jpeg, image/png, image/webp" 
         onChange={handleFileSelect} 
       />
 
@@ -68,7 +68,7 @@ export default function ProjectDropzone({ onFilesSelect, uploadedCount, maxFiles
           <UploadCloud size={22} className={isDragging && !isLimitReached ? 'text-[#8ea28d]' : 'text-[#949ba6]'} strokeWidth={1.5} />
         </div>
 
-        <h2 className="text-[22px] md:text-[24px] font-luxury-serif mb-2 tracking-tight text-center">
+        <h2 className="text-[22px] md:text-[24px] font-luxury-serif mb-2 tracking-tight text-center text-[#1a1a1a]">
           Drop your photos here
         </h2>
         
@@ -83,12 +83,12 @@ export default function ProjectDropzone({ onFilesSelect, uploadedCount, maxFiles
           </button>
         </div>
 
-        <p className="text-[#b1b5bd] text-[9px] font-black uppercase tracking-[0.2em]">
-          JPEG, PNG • UP TO {maxFiles} IMAGES
+        <p className="text-[#b1b5bd] text-[9px] font-black uppercase tracking-[0.2em] text-center px-4">
+          JPEG, PNG, WEBP • MAX 10MB PER FILE • UP TO {maxFiles} IMAGES
         </p>
 
         {isLimitReached && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-4xl flex flex-col items-center justify-center z-10 cursor-not-allowed">
+          <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-4xl flex flex-col items-center justify-center z-10 cursor-not-allowed">
              <AlertCircle size={32} className="text-[#e17a5f] mb-3" strokeWidth={1.5} />
              <h3 className="font-luxury-serif text-xl tracking-tight text-[#1a1a1a]">Maximum limit reached</h3>
              <p className="text-sm text-[#8e94a0] mt-1">You can upload up to {maxFiles} images</p>
