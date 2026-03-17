@@ -110,9 +110,7 @@ export default function ProjectUploadPage() {
     const remainingSlots = MAX_FILES - uploadedImages.length;
     if (remainingSlots <= 0) return;
 
-    const validFiles = validFilesBySize
-      .filter(file => file.type === 'image/jpeg' || file.type === 'image/png')
-      .slice(0, remainingSlots);
+    const validFiles = validFilesBySize.slice(0, remainingSlots);
 
     if (validFiles.length === 0) return;
 
