@@ -9,8 +9,7 @@ import {
   ArrowLeft, 
   MoreHorizontal, 
   Trash2, 
-  ChevronRight,
-  AlertCircle
+  ChevronRight
 } from 'lucide-react';
 import { UploadedFile, UploadingStatus, StoredPath } from '@/types';
 import { useGetProject, useAddProjectImages } from '@/projects/projects.hooks';
@@ -19,6 +18,7 @@ import { useErrorToastStore } from "@/stores/useErrorToastStore";
 import { AxiosError } from "axios";
 
 const MAX_FILES = 10;
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const getStorageKey = (projectId: string) => `uploadedImages_project_${projectId}`;
 
 export default function ProjectUploadPage() {
@@ -90,10 +90,27 @@ export default function ProjectUploadPage() {
   const processFiles = useCallback((files: File[]) => {
     if (files.length === 0) return;
 
+    const validFilesBySize: File[] = [];
+    let hasOversizedFiles = false;
+
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        hasOversizedFiles = true;
+      } else {
+        validFilesBySize.push(file);
+      }
+    }
+
+    if (hasOversizedFiles) {
+      showError("One or more images exceed the 10MB size limit and were ignored.");
+    }
+
+    if (validFilesBySize.length === 0) return;
+
     const remainingSlots = MAX_FILES - uploadedImages.length;
     if (remainingSlots <= 0) return;
 
-    const validFiles = files
+    const validFiles = validFilesBySize
       .filter(file => file.type === 'image/jpeg' || file.type === 'image/png')
       .slice(0, remainingSlots);
 
@@ -117,28 +134,33 @@ export default function ProjectUploadPage() {
 
     uploadImages(fd, {
       onSuccess: (images) => {
+        let hasPartialError = false;
+
         setUploadedImages((prev) => {
-          const updated = prev.map((img) => {
+          const updated: UploadedFile[] = [];
+
+          prev.forEach((img) => {
             const uploaded = images.find((i) => i.tmpId === img.id);
 
             if (uploaded) {
               if (img.preview.startsWith('blob:')) {
                 URL.revokeObjectURL(img.preview);
               }
-              return {
+              updated.push({
                 ...img,
                 status: "ready" as UploadingStatus,
                 id: uploaded.id,
                 path: uploaded.path,
                 preview: uploaded.url,
-              };
+              });
+            } else {
+              const wasUploading = newUploads.some((i) => i.id === img.id);
+              if (wasUploading) {
+                hasPartialError = true;
+              } else {
+                updated.push(img);
+              }
             }
-
-            const wasUploading = newUploads.some((i) => i.id === img.id);
-            if (wasUploading)
-              return { ...img, status: "error" as UploadingStatus };
-
-            return img;
           });
 
           const raw = sessionStorage.getItem(storageKey);
@@ -162,18 +184,22 @@ export default function ProjectUploadPage() {
 
           return updated;
         });
+
+        if (hasPartialError) {
+          showError("Some images failed to upload.");
+        }
       },
-      onError: () => {
+      onError: (error) => {
         setUploadedImages((prev) =>
-          prev.map((img) => {
-            const wasUploading = newUploads.some((i) => i.id === img.id);
-            if (!wasUploading) return img;
-            return { ...img, status: "error" };
-          }),
+          prev.filter((img) => !newUploads.some((i) => i.id === img.id))
         );
+
+        const err = error as AxiosError<{ message: string }>;
+        const errorMessage = err.response?.data?.message || err.message || "Failed to upload image.";
+        showError(errorMessage);
       },
     });
-  }, [uploadedImages.length, uploadImages, storageKey]);
+  }, [uploadedImages.length, uploadImages, storageKey, showError]);
 
   const handleDelete = async (id: string, path?: string) => {
     setUploadedImages(prev => {
@@ -307,19 +333,6 @@ export default function ProjectUploadPage() {
                       <div className="absolute inset-0 bg-gray-50/80 backdrop-blur-[2px] flex flex-col items-center justify-center z-20 gap-2">
                         <div className="w-5 h-5 rounded-full border-2 border-gray-200 border-t-gray-800 animate-spin" />
                         <span className="text-[10px] font-bold text-gray-400">Processing</span>
-                      </div>
-                    )}
-
-                    {img.status === "error" && (
-                      <div className="absolute inset-0 bg-red-50/80 backdrop-blur-[2px] flex flex-col items-center justify-center z-20">
-                        <AlertCircle size={16} className="text-red-500 mb-1" />
-                        <span className="text-[8px] font-black uppercase tracking-widest text-red-500">Error</span>
-                        <button 
-                          onClick={() => handleDelete(img.id)}
-                          className="absolute top-1 right-1 p-1 hover:bg-red-100 rounded-full transition-colors"
-                        >
-                          <Trash2 size={10} className="text-red-500" />
-                        </button>
                       </div>
                     )}
                   </div>

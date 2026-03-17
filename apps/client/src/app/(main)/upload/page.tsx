@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AxiosError } from "axios";
 import { Dropzone, ImagePreview } from "@/components/upload";
 import { sampleRoomImage } from "@/data/mock";
 import {
@@ -11,8 +12,10 @@ import {
 } from "@/images/images.hooks";
 import { createImageSignedUrlsApi } from "@/images/images.api";
 import { StoredPath, UploadedFile, UploadingStatus, UploadResponse } from "@/types";
+import { useErrorToastStore } from "@/stores/useErrorToastStore";
 
 const MAX_FILES = 5;
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export default function UploadPage() {
   const router = useRouter();
@@ -20,14 +23,33 @@ export default function UploadPage() {
   const [isGlobalUploading, setIsGlobalUploading] = useState(false);
   const { mutateAsync: uploadImages } = useUploadImages();
   const { mutateAsync: deleteUploadedImages } = useDeleteUploadedImages();
+  
+  const { show } = useErrorToastStore();
 
   const handleImageSelect = async (files: File[]) => {
     if (files.length === 0) return;
 
+    const validFiles: File[] = [];
+    let hasOversizedFiles = false;
+
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        hasOversizedFiles = true;
+      } else {
+        validFiles.push(file);
+      }
+    }
+
+    if (hasOversizedFiles) {
+      show("One or more images exceed the 10MB size limit and were ignored.");
+    }
+
+    if (validFiles.length === 0) return;
+
     const remainingSlots = MAX_FILES - uploadedImages.length;
     if (remainingSlots <= 0) return;
 
-    const filesToProcess = files.slice(0, remainingSlots);
+    const filesToProcess = validFiles.slice(0, remainingSlots);
     setIsGlobalUploading(true);
 
     const newUploads: UploadedFile[] = filesToProcess.map((file) => ({
@@ -49,26 +71,31 @@ export default function UploadPage() {
 
     uploadImages(fd, {
       onSuccess: (images: UploadResponse[]) => {
+        let hasPartialError = false;
+
         setUploadedImages((prev) => {
-          const updated = prev.map((img) => {
+          const updated: UploadedFile[] = [];
+
+          prev.forEach((img) => {
             const uploaded = images.find((i) => i.tmpId === img.id);
 
             if (uploaded) {
               URL.revokeObjectURL(img.preview);
-              return {
+              updated.push({
                 ...img,
                 status: "ready" as UploadingStatus,
                 id: uploaded.id || uploaded.tmpId,
                 path: uploaded.path,
                 preview: (uploaded as any).url || img.preview, // Use backend URL if available, fallback to existing preview
-              };
+              });
+            } else {
+              const wasUploading = newUploads.some((i) => i.id === img.id);
+              if (wasUploading) {
+                hasPartialError = true;
+              } else {
+                updated.push(img);
+              }
             }
-
-            const wasUploading = newUploads.some((i) => i.id === img.id);
-            if (wasUploading)
-              return { ...img, status: "error" as UploadingStatus };
-
-            return img;
           });
 
           const raw = sessionStorage.getItem("uploadedImages");
@@ -94,19 +121,22 @@ export default function UploadPage() {
           return updated;
         });
 
+        if (hasPartialError) {
+          show("Some images failed to upload.");
+        }
+
         setIsGlobalUploading(false);
       },
 
-      onError: () => {
+      onError: (error) => {
         setUploadedImages((prev) =>
-          prev.map((img) => {
-            const wasUploading = newUploads.some((i) => i.id === img.id);
-            if (!wasUploading) return img;
-            return { ...img, status: "error" };
-          }),
+          prev.filter((img) => !newUploads.some((i) => i.id === img.id))
         );
-
         setIsGlobalUploading(false);
+
+        const err = error as AxiosError<{ message: string }>;
+        const errorMessage = err.response?.data?.message || err.message || "Failed to upload image.";
+        show(errorMessage);
       },
     });
   };
@@ -197,22 +227,21 @@ export default function UploadPage() {
         },
         onError: (error) => {
           console.error("Failed to upload sample image to backend:", error);
-          setUploadedImages((prev) =>
-            prev.map((img) =>
-              img.id === tmpId ? { ...img, status: "error" } : img
-            )
-          );
+          setUploadedImages((prev) => prev.filter((img) => img.id !== tmpId));
           setIsGlobalUploading(false);
+          
+          const err = error as AxiosError<{ message: string }>;
+          const errorMessage = err.response?.data?.message || err.message || "Failed to upload sample image.";
+          show(errorMessage);
         },
       });
     } catch (error) {
       console.error("Failed to process sample image:", error);
-      setUploadedImages((prev) =>
-        prev.map((img) =>
-          img.id === tmpId ? { ...img, status: "error" } : img
-        )
-      );
+      setUploadedImages((prev) => prev.filter((img) => img.id !== tmpId));
       setIsGlobalUploading(false);
+      
+      const errorMessage = error instanceof Error ? error.message : "Failed to process sample image";
+      show(errorMessage);
     }
   };
 
@@ -316,7 +345,7 @@ export default function UploadPage() {
                       onRemove={() => handleRemove(img.id)}
                     />
                   </div>
-                  {img.status === "uploading" ? (
+                  {img.status === "uploading" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-2xl z-20">
                       <div className="flex flex-col items-center">
                         <div className="w-8 h-8 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mb-3" />
@@ -325,16 +354,6 @@ export default function UploadPage() {
                         </span>
                       </div>
                     </div>
-                  ) : (
-                    img.status === "error" && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-sm rounded-2xl z-20">
-                        <div className="flex flex-col items-center">
-                          <span className="text-xs font-medium uppercase tracking-wider text-zinc-900">
-                            Failed to upload image
-                          </span>
-                        </div>
-                      </div>
-                    )
                   )}
                 </div>
               ))}
