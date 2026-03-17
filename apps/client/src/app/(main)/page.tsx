@@ -12,11 +12,13 @@ import useScrapeUrl from "@/hooks/useScrapeImages";
 import { useUploadImages } from "@/images/images.hooks";
 import { useErrorToastStore } from "@/stores/useErrorToastStore";
 import HeroUploadCard from "@/components/landing/HeroUploadCard";
+import ScrapeFailModal from "@/components/main/ScrapeFailModal";
 
 export default function Home() {
   const [imageUrl, setImageUrl] = useState("");
   const [loadedImage, setLoadedImage] = useState<File | null>(null);
   const [selectedStyle, setSelectedStyle] = useState("Nordic");
+  const [showScrapeFailModal, setShowScrapeFailModal] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -48,6 +50,7 @@ export default function Home() {
 
   const handleGenerateRender = async () => {
     setInputError(false);
+    setShowScrapeFailModal(false);
 
     if (!imageUrl) {
       setInputError(true);
@@ -73,16 +76,19 @@ export default function Home() {
           onError: (error) => showError(error.message),
         });
       } else if (imageUrl) {
-        await scrapeUrl(imageUrl);
+        const result = await scrapeUrl(imageUrl);
+        
+        if (Array.isArray(result) && result.length === 0) {
+          setShowScrapeFailModal(true);
+        }
       }
     } catch (e) {
       console.error(e);
+      setShowScrapeFailModal(true);
     }
   };
 
   const handleContinue = () => {
-    // Картинки вже завантажені на сервер модалкою, 
-    // тому просто закриваємо її і переходимо далі
     resetScrapedImages();
     router.push("/upload");
   };
@@ -147,6 +153,12 @@ export default function Home() {
         onSelectImg={toggleSelect}
         onCancel={resetScrapedImages}
         onSubmit={handleContinue}
+      />
+
+      <ScrapeFailModal 
+        isOpen={showScrapeFailModal}
+        onCancel={() => setShowScrapeFailModal(false)}
+        onUploadManually={() => router.push("/upload")}
       />
 
       {/* Hero Section */}
