@@ -115,6 +115,25 @@ class QuotaService {
     });
   }
 
+  async migrateGuestQuotaToUser(guestId: string, userId: string): Promise<number> {
+    const result = await prisma.usageTracking.updateMany({
+      where: {
+        guestId: guestId,
+        userId: null,
+      },
+      data: {
+        userId: userId,
+        guestId: null,
+      },
+    });
+
+    if (result.count > 0) {
+      console.log(`Migrated ${result.count} quota period(s) from guest (IP: ${guestId}) to user ${userId}`);
+    }
+
+    return result.count;
+  }
+
   async repairQuotaFromStripe(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
