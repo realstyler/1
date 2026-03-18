@@ -4,23 +4,29 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { AxiosError } from "axios";
 import { StyleGrid } from "@/components/styles";
 import ModelSelector from "@/components/styles/ModelSelector";
-import { Style, StoredPath } from "@/types";
+import { Style, StoredPath, UserSubscription } from "@/types";
 import { createImageSignedUrlsApi } from "@/images/images.api";
 import { Model, RestyleInput } from "shared";
 import { useStartRestyle } from "@/restyle/restyle.hooks";
 import { useGetStyles } from "@/styles/styles.hooks";
+import { useMe } from "@/auth/auth.hooks";
+import UpgradeModal from "@/components/styles/UpgradeModal";
+import { useErrorToastStore } from "@/stores/useErrorToastStore";
 
 export default function StylesPage() {
   const router = useRouter();
   const [selectedStyle, setSelectedStyle] = useState<Style | null>(null);
   const [selectedModel, setSelectedModel] = useState<Model>("openai");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [restyleError, setRestyleError] = useState<string | null>(null);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
-  const { mutate: startRestyle, error } = useStartRestyle();
+  const { show: showError } = useErrorToastStore();
+  const { mutate: startRestyle } = useStartRestyle();
   const { data: fetchedStyles, isLoading } = useGetStyles();
+  const { user } = useMe();
 
   const handleSelectStyle = (style: Style) => {
     setSelectedStyle(style);
@@ -32,35 +38,53 @@ export default function StylesPage() {
   };
 
   const handleContinue = async () => {
-    setRestyleError(null);
-    let err: string | undefined;
+    if (!selectedStyle) {
+      showError("Style preset is required");
+      return;
+    }
 
-    if (selectedStyle) {
-      sessionStorage.setItem("selectedStyle", JSON.stringify(selectedStyle));
+    sessionStorage.setItem("selectedStyle", JSON.stringify(selectedStyle));
 
-      const raw = sessionStorage.getItem("uploadedImages");
-      if (raw) {
-        const stored = JSON.parse(raw) as StoredPath[];
-        if (stored) {
-          const input: RestyleInput = {
-            model: selectedModel,
-            style: selectedStyle.preset,
-            paths: stored.map((s) => s.path),
-          };
+    const raw = sessionStorage.getItem("uploadedImages");
+    if (!raw) {
+      showError("Uploaded images not found");
+      return;
+    }
 
-          startRestyle(input, {
-            onSuccess: (data) => {
-              localStorage.setItem("jobs", data.join(","));
-              router.push("/processing");
-            },
-          });
+    const stored = JSON.parse(raw) as StoredPath[];
+    if (!stored || stored.length === 0) {
+      showError("Uploaded images not found");
+      return;
+    }
 
-          return;
-        } else err = "Uploaded images not found";
-      } else err = "Uploaded images not found";
-    } else err = "Style preset is required";
+    const input: RestyleInput = {
+      model: selectedModel,
+      style: selectedStyle.preset,
+      paths: stored.map((s) => s.path),
+    };
 
-    if (err) setRestyleError(err);
+    startRestyle(input, {
+      onSuccess: (data) => {
+        localStorage.setItem("jobs", data.join(","));
+        router.push("/processing");
+      },
+      onError: (error: unknown) => {
+        const axiosErr = error as AxiosError<{ message?: string }>;
+        const status = axiosErr.response?.status || (error as { status?: number }).status || (error as { statusCode?: number }).statusCode;
+        const msg = axiosErr.response?.data?.message || (error as Error).message || "";
+
+        const isForbidden = 
+          status === 403 || 
+          msg.includes("403") || 
+          msg.toLowerCase().includes("forbidden");
+
+        if (isForbidden) {
+          setIsUpgradeModalOpen(true);
+        } else {
+          showError(msg || "Something went wrong. Please try again.");
+        }
+      },
+    });
   };
 
   useEffect(() => {
@@ -69,8 +93,12 @@ export default function StylesPage() {
       if (raw) {
         const stored = JSON.parse(raw) as StoredPath;
         if (stored) {
-          const url = await createImageSignedUrlsApi([stored.path]);
-          setUploadedImage(url[0]);
+          try {
+            const url = await createImageSignedUrlsApi([stored.path]);
+            setUploadedImage(url[0]);
+          } catch (error) {
+            console.error("Failed to restore image preview:", error);
+          }
         }
       }
     };
@@ -78,105 +106,109 @@ export default function StylesPage() {
     restoreImage();
   }, []);
 
-  const err = restyleError ?? error?.message;
+  const activeSubscription = user?.subscriptions?.find(
+    (sub: UserSubscription) => sub.status === "ACTIVE"
+  ) || user?.subscriptions?.[0] as UserSubscription | undefined;
+  
+  const currentPlan = activeSubscription?.planTier;
 
   return (
-    <div className="min-h-screen py-32 bg-[#fafafa]">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-serif italic font-medium text-zinc-900 mb-6">
-            Choose Your Style
-          </h1>
-          <p className="text-zinc-500 max-w-xl mx-auto text-lg font-light">
-            Select the interior design style you want to apply to your room.
-            Each style has been curated by professional designers.
-          </p>
-        </div>
+    <>
+      <div className="min-h-screen py-32 bg-[#fafafa]">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-5xl font-serif italic font-medium text-zinc-900 mb-6">
+              Choose Your Style
+            </h1>
+            <p className="text-zinc-500 max-w-xl mx-auto text-lg font-light">
+              Select the interior design style you want to apply to your room.
+              Each style has been curated by professional designers.
+            </p>
+          </div>
 
-        {/* Model Selector */}
-        <ModelSelector
-          selectedModel={selectedModel}
-          onSelectModel={handleSelectModel}
-        />
+          {/* Model Selector */}
+          <ModelSelector
+            selectedModel={selectedModel}
+            onSelectModel={handleSelectModel}
+          />
 
-        {/* Current Image Preview */}
-        {uploadedImage && (
+          {/* Current Image Preview */}
+          {uploadedImage && (
+            <div className="mb-16">
+              <p className="text-zinc-400 text-xs font-bold tracking-widest uppercase text-center mb-4">
+                Your room
+              </p>
+              <div className="relative w-full max-w-lg mx-auto aspect-video rounded-2xl overflow-hidden border border-zinc-200 shadow-sm">
+                <Image
+                  src={uploadedImage}
+                  alt="Your room"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Style Grid */}
           <div className="mb-16">
-            <p className="text-zinc-400 text-xs font-bold tracking-widest uppercase text-center mb-4">
-              Your room
-            </p>
-            <div className="relative w-full max-w-lg mx-auto aspect-video rounded-2xl overflow-hidden border border-zinc-200 shadow-sm">
-              <Image
-                src={uploadedImage}
-                alt="Your room"
-                fill
-                className="object-cover"
-                unoptimized
+            {isLoading ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900"></div>
+              </div>
+            ) : (
+              <StyleGrid
+                styles={fetchedStyles || []}
+                selectedStyle={selectedStyle}
+                onSelectStyle={handleSelectStyle}
               />
-            </div>
+            )}
           </div>
-        )}
 
-        {/* Style Grid */}
-        <div className="mb-16">
-          {isLoading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900"></div>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pb-20 mt-12">
+            <Link
+              href="/upload"
+              className="px-8 py-3 text-zinc-500 hover:text-zinc-900 font-medium transition-colors"
+            >
+              Change Photo
+            </Link>
+            <button
+              onClick={handleContinue}
+              disabled={!selectedStyle}
+              className={`px-10 py-3.5 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${
+                selectedStyle
+                  ? "bg-zinc-900 text-white hover:bg-black shadow-lg hover:shadow-xl translate-y-0 hover:-translate-y-0.5"
+                  : "bg-zinc-100 text-zinc-400 cursor-not-allowed"
+              }`}
+            >
+              APPLY STYLE
+            </button>
+          </div>
+
+          {/* Selected Style Info */}
+          {selectedStyle && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl p-6 rounded-2xl max-w-md w-full mx-4 text-center animate-in slide-in-from-bottom-4 fade-in">
+              <p className="text-zinc-400 text-[10px] uppercase tracking-widest font-bold mb-2">
+                Selected style
+              </p>
+              <h3 className="text-xl font-serif font-medium text-zinc-900">
+                {selectedStyle.displayName}
+              </h3>
+              <p className="text-zinc-500 text-sm mt-1">
+                {selectedStyle.description}
+              </p>
             </div>
-          ) : (
-            <StyleGrid
-              styles={fetchedStyles || []}
-              selectedStyle={selectedStyle}
-              onSelectStyle={handleSelectStyle}
-            />
           )}
         </div>
-
-        <div className="my-4 flex h-12">
-          {err && (
-            <div className="mx-auto text-center flex items-center text-red-400 border border-red-400 bg-red-100 px-3 rounded-2xl">
-              {err}
-            </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pb-20">
-          <Link
-            href="/upload"
-            className="px-8 py-3 text-zinc-500 hover:text-zinc-900 font-medium transition-colors"
-          >
-            Change Photo
-          </Link>
-          <button
-            onClick={handleContinue}
-            disabled={!selectedStyle}
-            className={`px-10 py-3.5 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${
-              selectedStyle
-                ? "bg-zinc-900 text-white hover:bg-black shadow-lg hover:shadow-xl translate-y-0 hover:-translate-y-0.5"
-                : "bg-zinc-100 text-zinc-400 cursor-not-allowed"
-            }`}
-          >
-            APPLY STYLE
-          </button>
-        </div>
-
-        {/* Selected Style Info */}
-        {selectedStyle && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl p-6 rounded-2xl max-w-md w-full mx-4 text-center animate-in slide-in-from-bottom-4 fade-in">
-            <p className="text-zinc-400 text-[10px] uppercase tracking-widest font-bold mb-2">
-              Selected style
-            </p>
-            <h3 className="text-xl font-serif font-medium text-zinc-900">
-              {selectedStyle.displayName}
-            </h3>
-            <p className="text-zinc-500 text-sm mt-1">
-              {selectedStyle.description}
-            </p>
-          </div>
-        )}
       </div>
-    </div>
+
+      <UpgradeModal 
+        isOpen={isUpgradeModalOpen}
+        onCancel={() => setIsUpgradeModalOpen(false)}
+        currentPlan={currentPlan}
+      />
+    </>
   );
 }

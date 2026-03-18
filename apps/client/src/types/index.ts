@@ -192,6 +192,13 @@ export interface CreateCollectionDTO {
   items: CreateCollectionItemInput[];
 }
 
+export interface UserSubscription {
+  status: SubscriptionStatus;
+  planTier: PlanTier;
+}
+
 type Lighting = 'NATURAL' | 'WARM' | 'AMBIENT';
 type Creativity = 'SUBTLE' | 'BALANCED' | 'BOLD';
 type Aesthetic = 'MODERN' | 'COASTAL' | 'MINIMAL' | 'JAPANDI' | 'INDUSTRIAL' | 'CLASSIC' | 'SCANDI' | 'BOHO' | 'RUSTIC';
+type PlanTier = "PRO" | "PRO_PLUS";
+type SubscriptionStatus = "ACTIVE" | "PAUSED" | "CANCELED" | "PAST_DUE" | "UNPAID" | "TRIALING" | "INCOMPLETE" | "INCOMPLETE_EXPIRED";
