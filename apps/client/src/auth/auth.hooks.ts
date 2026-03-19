@@ -49,7 +49,7 @@ export function useLogout() {
   return async () => {
     await logoutApi();
     setUser(null);
-    redirect("/login");
+    redirect("/");
   };
 }
 
