@@ -32,7 +32,10 @@ const PROJECT_NAMES = [
   "Sunset Valley Remodel", "Cozy Cabin Retreat", "Modern Glass Villa",
   "Urban Studio", "Lakeside Mansion", "Minimalist Apartment",
   "Classic Victorian Update", "Desert Oasis", "Mountain View Lodge",
-  "Riverfront Condo", "Historic Brownstone", "Eco-Friendly Home"
+  "Riverfront Condo", "Historic Brownstone", "Eco-Friendly Home",
+  "Skyline Penthouse", "Sunny Bungalow", "Forest Hideaway",
+  "Oceanfront Estate", "Industrial Loft", "Zen Garden Home",
+  "Modern Farmhouse", "Scandinavian Haven"
 ];
 
 const ADDRESSES = [
@@ -57,92 +60,120 @@ const getRandomElements = <T>(arr: T[], count: number): T[] => {
 (async () => {
   console.log("🌱 Seed for projects started");
 
-  const user = await prisma.user.findUnique({
-    where: { email: "user@gmail.com" },
-  });
+  const usersConfig = [
+    { email: "free@gmail.com", projectCount: 2 },
+    { email: "pro@gmail.com", projectCount: 5 },
+    { email: "proplus@gmail.com", projectCount: 15 }
+  ];
 
-  if (!user) {
-    console.error("❌ User not found! Please run seed.ts first.");
-    process.exit(1);
-  }
+  let globalProjectIndex = 0;
 
-  await prisma.project.deleteMany({
-    where: { userId: user.id }
-  });
-
-  console.log("⬇️ Creating 15 mock projects (this may take a minute due to real image uploads to Supabase)...");
-
-  for (let i = 0; i < 15; i++) {
-    const hasImages = Math.random() > 0.2;
-    const name = PROJECT_NAMES[i] || `Test Project ${i}`;
-    const address = getRandomElement(ADDRESSES);
-    const style = getRandomElement(STYLES);
-
-    const project = await prisma.project.create({
-      data: {
-        userId: user.id,
-        name,
-        address,
-        stylePreset: style,
-      }
+  for (const config of usersConfig) {
+    const user = await prisma.user.findUnique({
+      where: { email: config.email },
     });
 
-    if (hasImages) {
-      const imagesCount = Math.floor(Math.random() * 3) + 1; // 1 to 3 original images
-      const selectedImageUrls = getRandomElements(MOCK_IMAGES, imagesCount);
+    if (!user) {
+      console.error(`❌ User ${config.email} not found! Skipping.`);
+      continue;
+    }
 
-      const uploadedTmpImages = await imagesService.uploadImagesByUrls(selectedImageUrls);
+    await prisma.project.deleteMany({
+      where: { userId: user.id }
+    });
 
-      for (let j = 0; j < uploadedTmpImages.length; j++) {
-        const tmpImage = uploadedTmpImages[j];
-        
-        if (tmpImage && tmpImage.path) {
-          const origPath = await imagesService.moveImageToProject(tmpImage.path, project.id);
+    let imagesUsedInSeed = 0;
+
+    console.log(`⬇️ Creating ${config.projectCount} projects for ${config.email}...`);
+
+    for (let i = 0; i < config.projectCount; i++) {
+      const hasImages = Math.random() > 0.2;
+      const nameIndex = globalProjectIndex % PROJECT_NAMES.length;
+      const name = PROJECT_NAMES[nameIndex] || `Test Project ${globalProjectIndex}`;
+      const address = getRandomElement(ADDRESSES);
+      const style = getRandomElement(STYLES);
+
+      const project = await prisma.project.create({
+        data: {
+          userId: user.id,
+          name,
+          address,
+          stylePreset: style,
+        }
+      });
+
+      if (hasImages) {
+        const imagesCount = Math.floor(Math.random() * 3) + 1;
+        const selectedImageUrls = getRandomElements(MOCK_IMAGES, imagesCount);
+
+        const uploadedTmpImages = await imagesService.uploadImagesByUrls(selectedImageUrls);
+
+        for (let j = 0; j < uploadedTmpImages.length; j++) {
+          const tmpImage = uploadedTmpImages[j];
           
-          const originalImage = await prisma.originalProjectImage.create({
-            data: {
-              projectId: project.id,
-              originalPath: origPath,
-              orderIndex: j
-            }
-          });
-
-          // Generate 1-2 styled variations for roughly 70% of the uploaded images
-          const shouldHaveStyledImages = Math.random() > 0.3;
-          
-          if (shouldHaveStyledImages) {
-            const stylesCount = Math.floor(Math.random() * 2) + 1;
-            const styleUrls = getRandomElements(MOCK_IMAGES, stylesCount);
-            const uploadedTmpStyles = await imagesService.uploadImagesByUrls(styleUrls);
-
-            const styledImagesData = [];
-
-            for (const tmpStyle of uploadedTmpStyles) {
-              if (tmpStyle && tmpStyle.path) {
-                const restyledPath = await imagesService.moveImageToProject(tmpStyle.path, project.id);
-                styledImagesData.push({
-                  originalImageId: originalImage.id,
-                  restyledPath: restyledPath,
-                  lighting: getRandomElement(LIGHTING_OPTIONS),
-                  creativity: getRandomElement(CREATIVITY_OPTIONS),
-                  aesthetic: getRandomElement(AESTHETIC_OPTIONS),
-                });
+          if (tmpImage && tmpImage.path) {
+            const origPath = await imagesService.moveImageToProject(tmpImage.path, project.id);
+            
+            const originalImage = await prisma.originalProjectImage.create({
+              data: {
+                projectId: project.id,
+                originalPath: origPath,
+                orderIndex: j
               }
-            }
+            });
 
-            if (styledImagesData.length > 0) {
-              await prisma.styledProjectImage.createMany({
-                data: styledImagesData
-              });
+            const shouldHaveStyledImages = Math.random() > 0.3;
+            
+            if (shouldHaveStyledImages) {
+              const stylesCount = Math.floor(Math.random() * 2) + 1;
+              const styleUrls = getRandomElements(MOCK_IMAGES, stylesCount);
+              const uploadedTmpStyles = await imagesService.uploadImagesByUrls(styleUrls);
+
+              const styledImagesData = [];
+
+              for (const tmpStyle of uploadedTmpStyles) {
+                if (tmpStyle && tmpStyle.path) {
+                  const restyledPath = await imagesService.moveImageToProject(tmpStyle.path, project.id);
+                  styledImagesData.push({
+                    originalImageId: originalImage.id,
+                    restyledPath: restyledPath,
+                    lighting: getRandomElement(LIGHTING_OPTIONS),
+                    creativity: getRandomElement(CREATIVITY_OPTIONS),
+                    aesthetic: getRandomElement(AESTHETIC_OPTIONS),
+                  });
+                }
+              }
+
+              if (styledImagesData.length > 0) {
+                await prisma.styledProjectImage.createMany({
+                  data: styledImagesData
+                });
+                imagesUsedInSeed += styledImagesData.length;
+              }
             }
           }
         }
       }
+
+      console.log(`✅ Created project ${i + 1}/${config.projectCount} for ${config.email}: ${name}`);
+      globalProjectIndex++;
     }
 
-    console.log(`✅ Created project ${i + 1}/15: ${name} (${hasImages ? 'Completed' : 'Draft'})`);
+    if (imagesUsedInSeed > 0) {
+      const usageTracking = await prisma.usageTracking.findFirst({
+        where: { userId: user.id },
+        orderBy: { periodEnd: 'desc' }
+      });
+
+      if (usageTracking) {
+        await prisma.usageTracking.update({
+          where: { id: usageTracking.id },
+          data: { imagesUsed: { increment: imagesUsedInSeed } }
+        });
+      }
+    }
   }
 
-  console.log("✅ Seed for projects finished successfully!");
+  console.log("✅ Seed for all users' projects finished successfully!");
   await prisma.$disconnect();
 })();
