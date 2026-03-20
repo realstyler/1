@@ -6,6 +6,7 @@ import { UserDTO } from "@/auth/auth.dto";
 import InitUserState from "@/components/providers/InitUserState";
 import { meServer } from "./actions/auth";
 import ErrorToast from "@/components/ui/ErrorToast";
+import SuccessToast from "@/components/ui/SuccessToast";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -40,6 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </QCProvider>
         </InitUserState>
         <ErrorToast />
+        <SuccessToast />
       </body>
     </html>
   );

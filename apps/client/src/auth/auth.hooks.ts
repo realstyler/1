@@ -1,9 +1,10 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { loginApi, logoutApi, meApi, registerApi } from "./auth.api";
 import { useAuthStore } from "./auth.store";
+import { useSuccessToastStore } from "@/stores/useSuccessToastStore";
 import {
   ApiError,
   LoginDTO,
@@ -45,11 +46,19 @@ export function useRegister() {
 
 export function useLogout() {
   const setUser = useAuthStore((s) => s.setUser);
+  const router = useRouter();
+  const showSuccess = useSuccessToastStore((s) => s.show);
 
   return async () => {
-    await logoutApi();
-    setUser(null);
-    redirect("/");
+    try {
+      await logoutApi();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setUser(null);
+      showSuccess("Successfully logged out");
+      router.push("/");
+    }
   };
 }
 
