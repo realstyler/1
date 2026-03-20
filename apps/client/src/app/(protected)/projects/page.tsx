@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import CreateProjectModal from '@/components/projects/CreateProjectModal';
@@ -12,24 +12,39 @@ import {
   Filter, 
   ArrowUpDown, 
   Image as LucideImage, 
-  Clock 
+  Clock,
+  Check
 } from 'lucide-react';
 import { ProjectListItem } from '@/types';
+import { FilterStatus } from '@/types';
 
 export default function ProjectsPage() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterStatus>('All');
+  const filterRef = useRef<HTMLDivElement>(null);
+
   const itemsPerPage = 12;
   
   const { mutate: createProject } = useCreateProject();
-  
   const { data, isLoading } = useGetAllProjects(currentPage, itemsPerPage);
   
   const currentItems = data?.projects || [];
   const totalPages = data?.totalPages || 1;
 
   const { show } = useErrorToastStore();
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleCreateProject = (data: { name: string; address: string }) => {
       createProject(
@@ -58,6 +73,14 @@ export default function ProjectsPage() {
     return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
   };
 
+  // Local filtering based on activeFilter. TODO: this should be done on the backend.
+  const filteredItems = currentItems.filter((project: ProjectListItem) => {
+    if (activeFilter === 'All') return true;
+    return project.status === activeFilter;
+  });
+
+  const filterOptions: FilterStatus[] = ['All', 'Draft', 'Processing', 'Completed'];
+
   return (
     <div className="bg-[#f8f8f7] min-h-screen px-4 md:px-12 py-10 text-[#1a1a1a]">
       <CreateProjectModal 
@@ -85,10 +108,43 @@ export default function ProjectsPage() {
       <div className="flex justify-between items-end mb-10">
         <h2 className="text-[26px] font-serif tracking-tighter">Recent Projects</h2>
         <div className="flex gap-3">
-            <button className="border border-gray-100 px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium text-slate-600 bg-white shadow-sm hover:bg-gray-50 transition-all">
-                <Filter size={18} strokeWidth={1.5} />
-                Filter
-            </button>
+            <div className="relative" ref={filterRef}>
+              <button 
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className={`border px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-all shadow-sm
+                  ${activeFilter !== 'All' 
+                    ? 'border-[#2d2d2d] text-[#2d2d2d] bg-gray-50' 
+                    : 'border-gray-100 text-slate-600 bg-white hover:bg-gray-50'
+                  }`}
+              >
+                  <Filter size={18} strokeWidth={1.5} />
+                  {activeFilter === 'All' ? 'Filter' : `Status: ${activeFilter}`}
+              </button>
+
+              {isFilterOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-20 animate-in fade-in slide-in-from-top-2">
+                  {filterOptions.map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => {
+                        setActiveFilter(status);
+                        setIsFilterOpen(false);
+                        setCurrentPage(1);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between transition-colors group"
+                    >
+                      <span className={`${activeFilter === status ? 'font-semibold text-[#1a1a1a]' : 'text-gray-600 group-hover:text-[#1a1a1a]'}`}>
+                        {status}
+                      </span>
+                      {activeFilter === status && (
+                        <Check size={16} strokeWidth={2} className="text-[#1a1a1a]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button className="border border-gray-100 px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium text-slate-600 bg-white shadow-sm hover:bg-gray-50 transition-all">
                 <ArrowUpDown size={18} strokeWidth={1.5} />
                 Sort by: Date
@@ -100,13 +156,15 @@ export default function ProjectsPage() {
         <div className="flex justify-center items-center py-20">
            <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-[#2d2d2d] animate-spin" />
         </div>
-      ) : currentItems.length === 0 ? (
+      ) : filteredItems.length === 0 ? (
         <div className="text-center py-20 text-[#8e94a0] font-medium">
-          No projects found. Create your first one!
+          {currentItems.length === 0 
+            ? "No projects found. Create your first one!" 
+            : `No projects found with status "${activeFilter}".`}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16">
-          {currentItems.map((project: ProjectListItem) => (
+          {filteredItems.map((project: ProjectListItem) => (
             <div 
               key={project.id} 
               className="group cursor-pointer"
