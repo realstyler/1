@@ -202,3 +202,5 @@ type Creativity = 'SUBTLE' | 'BALANCED' | 'BOLD';
 type Aesthetic = 'MODERN' | 'COASTAL' | 'MINIMAL' | 'JAPANDI' | 'INDUSTRIAL' | 'CLASSIC' | 'SCANDI' | 'BOHO' | 'RUSTIC';
 type PlanTier = "PRO" | "PRO_PLUS";
 type SubscriptionStatus = "ACTIVE" | "PAUSED" | "CANCELED" | "PAST_DUE" | "UNPAID" | "TRIALING" | "INCOMPLETE" | "INCOMPLETE_EXPIRED";
+
+export type FilterStatus = 'All' | 'Draft' | 'Processing' | 'Completed';
